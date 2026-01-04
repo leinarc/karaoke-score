@@ -33,12 +33,16 @@ body {
 	overflow: hidden;
 }
 
+
+
 .button-container {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
 	text-align: center;
+	
+	border-radius: 50%;
 
 	font-size: 2em;
 
@@ -125,6 +129,8 @@ body {
 	border-radius: 50%;
 
 	transition: all 0.2s ease-out;
+	
+	pointer-events: none;
 }
 
 .button-container:hover::before {
@@ -146,6 +152,11 @@ body {
 #finish-button-container::before {
 	border-color: var(--accent2);
 }
+
+
+
+
+
 
 #score-container {
 	display: flex;
@@ -172,29 +183,7 @@ body {
 	width: 0;
 
 	z-index: -1;
-}
-
-#show-score:checked ~ #score-container {
-	font-size: 10em;
-	margin: 0.2em 0;
-
-	transition: font-size 5s ease-out, margin 5s ease-out;
-}
-
-#effect3:checked ~ #score-container {
-	text-shadow: 0px 0px 0.02em var(--accent);
-	color: var(--bg);
-
-	transition: all 0.2s cubic-bezier(0.5, 0, 0, 0.52) !important;
-}
-
-#effect3:checked ~ * > #banner {
-	width: 100%;
-	opacity: 100%;
-
-	background-color: var(--fg);
-
-	transition: all 0.2s cubic-bezier(0.5, 0, 0, 0.52) !important;
+	pointer-events: none;
 }
 
 .bloom-container {
@@ -203,10 +192,11 @@ body {
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	width: 1em;
-	height: 1em;
+	width: 0;
+	height: 0;
 
 	overflow: visible;
+	pointer-events: none;
 }
 
 #score-container::after {
@@ -229,32 +219,8 @@ body {
 	box-shadow: 0 0 5em var(--accent-light);
 
 	box-sizing: border-box;
-}
 
-#effect2:checked ~ #score-container::after {
-	width: 150vh;
-	height: 150vh;
-	
-	border-width: 10vh;
-	opacity: 0;
-
-	transition: all 0.15s cubic-bezier(0, 0.25, 0.25, 1);
-}
-
-#effect2:checked ~ * #bloom1 {
-	animation: bloom1 1.3s ease-out forwards;
-}
-
-#effect2:checked ~ * #bloom2 {
-	animation: bloom2 1.3s ease-out forwards;
-}
-
-#effect2:checked ~ * #bloom3 {
-	animation: bloom3 1.3s ease-out forwards;
-}
-
-#effect2:checked ~ * #bloom4 {
-	animation: bloom4 1.3s ease-out forwards;
+	pointer-events: none;
 }
 
 #score-container::before {
@@ -273,19 +239,9 @@ body {
 	opacity: 0%;
 	
 	z-index: -1;
+	pointer-events: none;
 
 	box-sizing: border-box;
-}
-
-#effect4:checked ~ #score-container::before {
-	width: 2em;
-	height: 2em;
-	opacity: 20%;
-	
-	border-width: 0.04em;
-
-	transition: all 0.4s cubic-bezier(0, 0.25, 0.75, 1);
-	animation: rotating 10s linear infinite;
 }
 
 #message {
@@ -300,9 +256,83 @@ body {
 	transition: font-size 5s ease-out;
 }
 
+
+
+
+
 input {
 	z-index: 10000;
 }
+
+
+
+
+
+#show-score:checked ~ #score-container {
+	font-size: 10em;
+	margin: 0.2em 0;
+
+	transition: font-size 5s ease-out, margin 5s ease-out;
+}
+
+
+
+
+
+#effect2:checked ~ #score-container::after {
+	animation: bloom0 1.3s ease-out forwards;
+}
+
+#effect2:checked ~ * #bloom1 {
+	animation: bloom1 1.3s ease-out forwards;
+}
+
+#effect2:checked ~ * #bloom2 {
+	animation: bloom2 1.3s ease-out forwards;
+}
+
+#effect2:checked ~ * #bloom3 {
+	animation: bloom3 1.3s ease-out forwards;
+}
+
+#effect2:checked ~ * #bloom4 {
+	animation: bloom4 1.3s ease-out forwards;
+}
+
+
+
+
+
+#effect3:checked ~ #score-container {
+	text-shadow: 0px 0px 0.02em var(--accent);
+	color: var(--bg);
+
+	transition: all 0.2s cubic-bezier(0.5, 0, 0, 0.52) !important;
+}
+
+#effect3:checked ~ * > #banner {
+	width: 100%;
+	opacity: 100%;
+
+	background-color: var(--fg);
+
+	transition: all 0.2s cubic-bezier(0.5, 0, 0, 0.52) !important;
+}
+
+#effect4:checked ~ #score-container::before {
+	width: 2em;
+	height: 2em;
+	opacity: 20%;
+	
+	border-width: 0.04em;
+
+	transition: all 0.4s cubic-bezier(0, 0.25, 0.75, 1);
+	animation: rotating 10s linear infinite;
+}
+
+
+
+
 
 #effect1:checked ~ #score-container {
 	color: var(--accent2);
@@ -314,12 +344,15 @@ input {
 	text-shadow: 0px 0px 0.01em var(--bg);
 }
 
-
 #effect1:checked ~ #score-container::after,
 #effect1:checked ~ .bloom-container > * {
 	border-color: var(--accent2-light);
 	box-shadow: 0 0 5em var(--accent2-very-light);
 }
+
+
+
+
 
 #effect5:checked ~ #score-container {
 	text-shadow: 0px 0px 0.02em var(--fg);
@@ -340,6 +373,10 @@ input {
 #effect5:checked ~ #score-container::before {
 	background-color: var(--fg);
 }
+
+
+
+
 
 #effect6:checked ~ #score-container {
 	text-shadow: 0px 0px 0.05em var(--bg);
@@ -383,6 +420,30 @@ input {
 	}
 }
 
+@keyframes bloom0 {
+	0% {
+		width: 0;
+		height: 0;
+
+		border-width: 0;
+		opacity: 100%;
+	}
+	10% {
+		width: 150vh;
+		height: 150vh;
+		
+		border-width: 10vh;
+		opacity: 0;
+	}
+	100% {
+		width: 0;
+		height: 0;
+		
+		border-width: 0;
+		opacity: 0;
+	}
+}
+
 @keyframes bloom1 {
 	50% {
 		width: 0;
@@ -398,11 +459,18 @@ input {
 		border-width: 10vh;
 		opacity: 0;
 	}
-	100% {
-		width: 150vh;
-		height: 150vh;
+	61% {
+		width: 0;
+		height: 0;
 		
-		border-width: 10vh;
+		border-width: 0;
+		opacity: 0;
+	}
+	100% {
+		width: 0;
+		height: 0;
+		
+		border-width: 0;
 		opacity: 0;
 	}
 }
@@ -422,11 +490,18 @@ input {
 		border-width: 10vh;
 		opacity: 0;
 	}
-	100% {
-		width: 150vh;
-		height: 150vh;
+	73.5% {
+		width: 0;
+		height: 0;
 		
-		border-width: 10vh;
+		border-width: 0;
+		opacity: 0;
+	}
+	100% {
+		width: 0;
+		height: 0;
+		
+		border-width: 0;
 		opacity: 0;
 	}
 }
@@ -446,11 +521,18 @@ input {
 		border-width: 10vh;
 		opacity: 0;
 	}
-	100% {
-		width: 150vh;
-		height: 150vh;
+	86% {
+		width: 0;
+		height: 0;
 		
-		border-width: 10vh;
+		border-width: 0;
+		opacity: 0;
+	}
+	100% {
+		width: 0;
+		height: 0;
+		
+		border-width: 0;
 		opacity: 0;
 	}
 }
@@ -470,11 +552,18 @@ input {
 		border-width: 10vh;
 		opacity: 0;
 	}
-	100% {
-		width: 150vh;
-		height: 150vh;
+	98.5% {
+		width: 0;
+		height: 0;
 		
-		border-width: 10vh;
+		border-width: 0;
+		opacity: 0;
+	}
+	100% {
+		width: 0;
+		height: 0;
+		
+		border-width: 0;
 		opacity: 0;
 	}
 }
