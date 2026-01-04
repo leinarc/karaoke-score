@@ -1,3 +1,5 @@
+# [>>> TRY IT!!! <<<](https://leinarc.github.io/karaoke-score/)
+
 # karaoke-score
 
 Record a karaoke session and get a score, just like in parties! Although, I don't think this is how videoke machines actually work.
