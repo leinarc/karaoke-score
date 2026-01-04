@@ -328,19 +328,19 @@ input {
 	animation: bloom4 1.4s ease-out;
 }
 
-#effect2:checked ~ #effect5:checked ~ * #bloom1 {
+#effect2:checked ~ #effect4:checked ~ * #bloom1 {
 	animation: bloom1 2.6s ease-out;
 }
 
-#effect2:checked ~ #effect5:checked ~ * #bloom2 {
+#effect2:checked ~ #effect4:checked ~ * #bloom2 {
 	animation: bloom2 2.6s ease-out;
 }
 
-#effect2:checked ~ #effect5:checked ~ * #bloom3 {
+#effect2:checked ~ #effect4:checked ~ * #bloom3 {
 	animation: bloom3 2.6s ease-out;
 }
 
-#effect2:checked ~ #effect5:checked ~ * #bloom4 {
+#effect2:checked ~ #effect4:checked ~ * #bloom4 {
 	animation: bloom4 2.6s ease-out;
 }
 
