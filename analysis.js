@@ -1,5 +1,8 @@
 const segmentInterval = 5000
 const segmentLimit = 4
+
+const melodyDataLimit = 1024
+
 var segmentCount
 
 var nextKeyData
@@ -34,8 +37,15 @@ function addSegment() {
 }
 
 function removeSegment() {
-	nextKeyData = nextKeyData.next
-	nextMelodyData = nextMelodyData.next
+	const oldKeyData = nextKeyData
+	const oldMelodyData = nextMelodyData
+
+	nextKeyData = oldKeyData.next
+	nextMelodyData = oldMelodyData.next
+
+	// Praying for garbage collection
+	oldKeyData.next = undefined
+	oldMelodyData.next = undefined
 }
 
 
@@ -96,13 +106,19 @@ function analyseKey() {
 
 function analyseAudio() {
 
+	const melodyDataOverflow = lastMelodyData.length > melodyDataLimit
+	const expiredSegment = Date.now() >= lastSegmentDate + segmentInterval
+
 	if (
-		lastMelodyData.length &&
-		lastKeyData.length &&
-		Date.now() >= lastSegmentDate + segmentInterval
+		(lastMelodyData.length || expiredSegment) &&
+		(lastKeyData.length || melodyDataOverflow) &&
+		expiredSegment
 	) {
 		if (segmentCount >= segmentLimit) {
+
 			const key = getKey(lastSegmentKey, nextKeyData)
+			console.log('Detected key:', keyNames[key])
+
 			const newScores = getScores(key, nextMelodyData)
 			scores.push(...newScores)
 
@@ -110,9 +126,10 @@ function analyseAudio() {
 
 			removeSegment()
 
-			console.log('Detected key:', keyNames[key])
 		} else {
+
 			segmentCount++
+
 		}
 
 		addSegment()
@@ -127,7 +144,10 @@ async function finish() {
 	await clearAudio()
 
 	if (nextMelodyData.length && nextKeyData.length) {
+
 		const keys = getKeys(lastSegmentKey, nextKeyData)
+		console.log('Detected keys:', keys.map(key => keyNames[key]).join('\t'))
+
 		var melodyData = nextMelodyData
 
 		for (const key of keys) {
@@ -136,7 +156,6 @@ async function finish() {
 			melodyData = melodyData.next
 		}
 
-		console.log('Detected keys:', keys.map(key => keyNames[key]).join('\t'))
 	}
 
 	// Choose a random score wherein higher scores have higher chances of being chosen

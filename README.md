@@ -6,8 +6,8 @@ Record a karaoke session and get a score, just like in parties! Although, I don'
 
 Anyway, it:
 
-1. Records frequencies from the audio,
-2. Determines the key,
+1. Records frequencies from the audio (using [ACF2+](https://whatnoteisthis.com/)),
+2. Determines the key (using a heuristic [Bayesian model](https://davidtemperley.com/wp-content/uploads/2015/12/temperley-ms04.pdf)),
 3. Computes scores based on how fitting each frequency is to the key,
 4. Applies randomness by choosing one score (higher scores have higher chances of being chosen), and
 5. Picks one number between the chosen score and 100 (inclusive).
