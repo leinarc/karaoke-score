@@ -9,6 +9,7 @@
 		<script src="key.js"></script>
 		<script src="key-probabilities.js"></script>
 		<script src="score.js"></script>
+		<script src="display.js"></script>
 		<link rel="stylesheet" href="style.css">
 	</head>
 	<body>
@@ -20,16 +21,24 @@
 		<input id="effect5" type="checkbox" style="display: none"></input>
 		<input id="effect6" type="checkbox" style="display: none"></input>
 
-		<div class="bloom-container" style="top: 25%; left: 25%"><div id="bloom1"></div></div>
-		<div class="bloom-container" style="top: 60%; left: 80%"><div id="bloom2"></div></div>
-		<div class="bloom-container" style="top: 70%; left: 10%"><div id="bloom3"></div></div>
-		<div class="bloom-container" style="top: 15%; left: 70%"><div id="bloom4"></div></div>
+		<div class="bloom-container" style="top: 25%; left: 25%"><div class="bloom" id="bloom1"></div></div>
+		<div class="bloom-container" style="top: 60%; left: 80%"><div class="bloom" id="bloom2"></div></div>
+		<div class="bloom-container" style="top: 70%; left: 10%"><div class="bloom" id="bloom3"></div></div>
+		<div class="bloom-container" style="top: 15%; left: 70%"><div class="bloom" id="bloom4"></div></div>
 
-		<div id="score-container"><div id="banner"></div><div id="score"></div></div>
-		<div id="message"></div>
+		<div id="score-container">
+			<div id="spinner"></div>
+			<div id="banner"></div>
+			<div id="score">39</div>
+			<div class="bloom" id="bloom0"></div>
+		</div>
+
+		<div id="message">WEEEE</div>
+
 		<div id="start-button-container" class="button-container" onclick="getMicAudio()">
 			<div id="start-button" class="button">Start Recording</div>
 		</div>
+
 		<div id="finish-button-container" class="button-container" onclick="finish()" style="display: none">
 			<div id="finish-button" class="button">Stop Recording</div>
 		</div>

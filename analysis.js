@@ -159,7 +159,7 @@ async function finish() {
 
 	// Randomize between modified score and 100
 	// BECAUSE THAT'S HOW KARAOKE WORKS
-	const radomizedScore = Math.floor(Math.random() * (100 - modifiedScore + 1)) + modifiedScore
+	const randomizedScore = Math.floor(Math.random() * (100 - modifiedScore + 1)) + modifiedScore
 
 	console.log('='.repeat(20))
 	console.log('SCORE DATA')
@@ -169,55 +169,11 @@ async function finish() {
 	console.log('Root Mean Square:', (scores.reduce((a, b) => a + b*b, 0)/scores.length)**0.5)
 	console.log('Chosen Score:', chosenScore)
 	console.log('Modified Score:', modifiedScore)
-	console.log('Randomized Score:', radomizedScore)
+	console.log('Randomized Score:', randomizedScore)
 	console.log(scores)
-
-	const finalScore = radomizedScore
-
-	const effect1 = finalScore < 50
-	const effect2 = finalScore >= 50
-	const effect3 = finalScore >= 80
-	const effect4 = finalScore >= 90
-	const effect5 = finalScore >= 95
-	const effect6 = finalScore >= 100
-
-	message =
-		finalScore < 50 ? chooseRandom("Oh no", "Just a little more practice", "Practice makes perfect", "Tagay na pre") :
-		finalScore < 60 ? chooseRandom("Good warmup", "It's okay"):
-		finalScore < 70 ? "Put more effort into it" :
-		finalScore < 80 ? chooseRandom("You can do it!", "I'm rooting for you!") :
-		finalScore < 90 ? chooseRandom("Like a professional!", "Very good singing!") :
-		finalScore < 95 ? chooseRandom("You go girl!", "A Diva in the making!") :
-		finalScore < 99 ? chooseRandom("WOOOOOOO!", "Hell yeah go brag about it") :
-		finalScore < 100 ? chooseRandom("NOOOO YOU CHOKED IT", "Reach for the stars!") :
-		chooseRandom("OHHH MY GHDAWDAHDJASDHAJGWL HASDLHA", "You're a great singer!", "Mahal kita", "ITZA PERFECT")
-		
-	document.getElementById('show-score').checked = true
-	document.getElementById('message').innerText = chooseRandom(":O", "(╭ರ_•́)", "(ﾟヘﾟ)", ":D", "♪┏(˶⎚-⎚˶)┛♪", "٩(⸝⸝ᵕᴗᵕ⸝⸝)و*̣̩⋆̩*", "(„• ֊ •„)੭", "(ㅅ´ ˘ `)", "(  ˃̣̣̥ ꒳ ˂̣̣̥)ㅅ", "ヾ(´〇`)ﾉ🎙️ ♪🎶♪ ♪", "♪( ´θ｀)ノ", "♬ ♪ ٩(ˊᗜˋ*)و", "✨-(°▽°)-~♪") 
 	
-	clearInterval(animationInterval)
-	animationInterval = setInterval(() => {
-		document.getElementById('score').innerText = Math.floor(Math.random()*100)
-	}, 33)
-
-	clearTimeout(animationTimeout)
-	animationTimeout = setTimeout(() => {
-		clearInterval(animationInterval)
-		document.getElementById('score').innerText = finalScore
-		document.getElementById('message').innerText = message
-		document.getElementById('effect1').checked = effect1
-		document.getElementById('effect2').checked = effect2
-		document.getElementById('effect3').checked = effect3
-		document.getElementById('effect4').checked = effect4
-		document.getElementById('effect5').checked = effect5
-		document.getElementById('effect6').checked = effect6
-	}, 5000)
+	startEndAnimation(randomizedScore)
 
 	resetVariables()
 
-}
-
-
-function chooseRandom(...choices) {
-	return choices[Math.floor(Math.random() * choices.length)]
 }

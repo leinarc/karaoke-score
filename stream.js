@@ -19,9 +19,6 @@ var fftAnalyser
 var tdInterval
 var fftInterval
 
-var animationInterval
-var animationTimeout
-
 var analyse2RAF
 
 if (!window.requestAnimationFrame) {
@@ -71,11 +68,11 @@ async function getStreamAudio(audioStream) {
 
 		await clearAudio()
 
+		audioContext = new AudioContext()
+
 		stream = audioStream
 
 		connectStream()
-
-		audioContext = new AudioContext()
 
 	} catch (err) {
 
@@ -113,22 +110,11 @@ async function clearAudio() {
 
 	clearInterval(fftInterval)
 	clearInterval(tdInterval)
-	clearInterval(animationInterval)
-	clearTimeout(animationTimeout)
+
+	stopEndAnimation()
 
 	document.getElementById('start-button-container').style.display = 'flex'
 	document.getElementById('finish-button-container').style.display = 'none'
-
-	document.getElementById('show-score').checked = false
-	document.getElementById('effect1').checked = false
-	document.getElementById('effect2').checked = false
-	document.getElementById('effect3').checked = false
-	document.getElementById('effect4').checked = false
-	document.getElementById('effect5').checked = false
-	document.getElementById('effect6').checked = false
-
-	document.getElementById('score').innerText = ''
-	document.getElementById('message').innerText = ''
 
 	fftAnalyser?.disconnect();
 	tdAnalyser?.disconnect();
