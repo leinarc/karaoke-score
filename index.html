@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Karaoke Score - Record you singing and get a score</title>
+		<script src="stream.js"></script>
+		<script src="analysis.js"></script>
+		<script src="melody.js"></script>
+		<script src="key.js"></script>
+		<script src="key-probabilities.js"></script>
+		<script src="score.js"></script>
+		<link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+		<input id="show-score" type="checkbox" style="display: none"></input>
+		<input id="effect1" type="checkbox" style="display: none"></input>
+		<input id="effect2" type="checkbox" style="display: none"></input>
+		<input id="effect3" type="checkbox" style="display: none"></input>
+		<input id="effect4" type="checkbox" style="display: none"></input>
+		<input id="effect5" type="checkbox" style="display: none"></input>
+		<input id="effect6" type="checkbox" style="display: none"></input>
+
+		<div class="bloom-container" style="top: 25%; left: 25%"><div id="bloom1"></div></div>
+		<div class="bloom-container" style="top: 60%; left: 80%"><div id="bloom2"></div></div>
+		<div class="bloom-container" style="top: 70%; left: 10%"><div id="bloom3"></div></div>
+		<div class="bloom-container" style="top: 15%; left: 70%"><div id="bloom4"></div></div>
+
+		<div id="score-container"><div id="banner"></div><div id="score"></div></div>
+		<div id="message"></div>
+		<div id="start-button-container" class="button-container" onclick="getMicAudio()">
+			<div id="start-button" class="button">Start Karaoke!</div>
+		</div>
+		<div id="finish-button-container" class="button-container" onclick="finish()" style="display: none">
+			<div id="finish-button" class="button">Finish!</div>
+		</div>
+	</body>
+</html>
