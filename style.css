@@ -61,6 +61,26 @@ body {
 
 
 
+#background {
+	position: absolute;
+	display: block;
+
+	width: 100vw;
+	height: 100vh;
+
+	background-image: none;
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center;
+
+	opacity: 20%;
+
+	z-index: -1;
+
+}
+
+
+
 .button-container {
 	display: flex;
 	flex-direction: column;
@@ -117,36 +137,13 @@ body {
 	outline-width: 0;
 	outline-offset: 0.5em;
 
-	box-shadow: 0 0 0 var(--fg);
-
 	transition: all 0.2s ease-out, outline-width 0.01s linear, box-shadow 0.01s linear;
 }
 
 .button-container:hover .button {
 	font-weight: 900;
 	font-size: 1.05em;
-	box-shadow: 0px 0px 0.2em;
 	text-shadow: 0px 0px 1px var(--fg);
-}
-
-.button-container:active .button {
-	transition: all 0.4s ease-out;
-}
-
-.button-container:hover #start-button {
-	box-shadow: 0px 0px 0.2em var(--accent-dark) inset;
-}
-
-.button-container:active #start-button {
-	box-shadow: 0px 0px 0.5em var(--accent-dark) inset;
-}
-
-.button-container:hover #finish-button {
-	box-shadow: 0px 0px 0.2em var(--accent2-dark) inset;
-}
-
-.button-container:active #finish-button {
-	box-shadow: 0px 0px 0.5em var(--accent2-dark) inset;
 }
 
 .button-container::before {
@@ -163,6 +160,30 @@ body {
 	transition: all 0.2s ease-out;
 	
 	pointer-events: none;
+}
+
+#start-button-container::before {
+	box-shadow: 0 0 0.5em -0.1em var(--bg), 0 0 0.25em -0.05em var(--bg) inset;
+}
+
+#finish-button-container::before {
+	box-shadow: 0 0 0.5em -0.1em var(--bg), 0 0 0.25em -0.05em var(--bg) inset;
+}
+
+#start-button-container:hover::before {
+	box-shadow: 0 0 0.5em var(--bg), 0 0 0.25em var(--bg) inset;
+}
+
+#finish-button-container:hover::before {
+	box-shadow: 0 0 0.5em var(--bg), 0 0 0.25em var(--bg) inset;
+}
+
+#start-button-container:active::before {
+	box-shadow: 0 0 0.2em 0.05em var(--bg), 0 0 0.1em 0.025em var(--bg) inset;
+}
+
+#finish-button-container:active::before {
+	box-shadow: 0 0 0.2em 0.05em var(--bg), 0 0 0.1em 0.025em var(--bg) inset;
 }
 
 .button-container:hover::before {
@@ -198,6 +219,7 @@ body {
 	text-align: center;
 	word-wrap: anywhere;
 
+	height: 0;
 	font-size: 0;
 	font-weight: 900;
 	line-height: 1;
@@ -207,10 +229,16 @@ body {
 	
 	outline-style: solid;
 	outline-color: transparent;
+	outline-width: 0;
+	outline-offset: 0;
+	
+	text-shadow: 0px 0px 0.05em var(--bg);
+
+	transition: height 0.5s ease-out, font-size 0.5s ease-out, margin 0.5s ease-out;
 }
 
 #score {
-	margin-top: 0.1em;
+	/*! margin-top: 0.1em; */
 }
 
 #banner {
@@ -218,12 +246,13 @@ body {
 	display: block;
 	opacity: 0;
 
+	box-shadow: 0px 0px 0.1em 0.005em var(--bg);
+	
 	height: 1em;
 	width: 0;
 
 	z-index: -1;
 	pointer-events: none;
-	
 }
 
 
@@ -316,77 +345,14 @@ input {
 #show-score:checked ~ #score-container {
 	font-size: 10em;
 	margin: 0.2em 0;
-
-	transition: font-size 5s ease-out, margin 5s ease-out;
-}
-
-
-
-
-
-#effect2:checked ~ * #bloom0 {
-	animation: bloom0 1.4s ease-out;
-}
-
-#effect2:checked ~ * #bloom1 {
-	animation: bloom1 1.4s ease-out;
-}
-
-#effect2:checked ~ * #bloom2 {
-	animation: bloom2 1.4s ease-out;
-}
-
-#effect2:checked ~ * #bloom3 {
-	animation: bloom3 1.4s ease-out;
-}
-
-#effect2:checked ~ * #bloom4 {
-	animation: bloom4 1.4s ease-out;
-}
-
-#effect2:checked ~ #effect4:checked ~ * #bloom1 {
-	animation: bloom1 2.6s ease-out;
-}
-
-#effect2:checked ~ #effect4:checked ~ * #bloom2 {
-	animation: bloom2 2.6s ease-out;
-}
-
-#effect2:checked ~ #effect4:checked ~ * #bloom3 {
-	animation: bloom3 2.6s ease-out;
-}
-
-#effect2:checked ~ #effect4:checked ~ * #bloom4 {
-	animation: bloom4 2.6s ease-out;
-}
-
-
-
-
-
-#effect3:checked ~ #score-container {
-	text-shadow: 0px 0px 0.02em var(--accent-very-light);
-	color: var(--bg);
-}
-
-#effect3:checked ~ * #banner {
-	width: 100%;
-	opacity: 100%;
-
-	background-color: var(--fg);
-
-	transition: all 0.2s cubic-bezier(0.5, 0, 0, 0.52) !important;
-}
-
-#effect4:checked ~ * #spinner {
-	width: min(2em, 70vw, 70vh);
-  	height: min(2em, 70vw, 70vh);
-	opacity: 20%;
+	height: 1em;
 	
-	border-width: 0.04em;
-
-	transition: all 0.4s cubic-bezier(0, 0.25, 0.75, 1);
-	animation: rotating 10s linear infinite;
+	transition:
+		height 5s ease-out,
+		font-size 5s ease-out,
+		margin 5s ease-out,
+		outline-offset 0.1s ease-out,
+		outline-width 0.05s ease-out;
 }
 
 
@@ -395,12 +361,10 @@ input {
 
 #effect1:checked ~ #score-container {
 	color: var(--accent2);
-	text-shadow: 0px 0px 0.02em var(--bg);
 }
 
 #effect1:checked ~ #message {
 	color: var(--accent2);
-	text-shadow: 0px 0px 0.01em var(--bg);
 }
 
 #effect1:checked ~ * .bloom {
@@ -411,26 +375,124 @@ input {
 
 
 
+#effect2:checked ~ * #bloom0 {
+	animation: bloom0 1.4s ease-in-out;
+}
+
+#effect2:checked ~ * #bloom1 {
+	animation: bloom1 1.4s ease-in-out;
+}
+
+#effect2:checked ~ * #bloom2 {
+	animation: bloom2 1.4s ease-in-out;
+}
+
+#effect2:checked ~ * #bloom3 {
+	animation: bloom3 1.4s ease-in-out;
+}
+
+#effect2:checked ~ * #bloom4 {
+	animation: bloom4 1.4s ease-in-out;
+}
+
+#effect2:checked ~ #effect4:checked ~ * #bloom0 {
+	animation: bloom0 2.6s ease-in-out;
+}
+
+#effect2:checked ~ #effect4:checked ~ * #bloom1 {
+	animation: bloom1 2.6s ease-in-out;
+}
+
+#effect2:checked ~ #effect4:checked ~ * #bloom2 {
+	animation: bloom2 2.6s ease-out;
+}
+
+#effect2:checked ~ #effect4:checked ~ * #bloom3 {
+	animation: bloom3 2.6s ease-in-out;
+}
+
+#effect2:checked ~ #effect4:checked ~ * #bloom4 {
+	animation: bloom4 2.6s ease-in-out;
+}
+
+#effect2:checked ~ #effect6:checked ~ * #bloom0 {
+	animation: bloom00 2.6s ease-in-out;
+}
+
+
+
+
+
+#effect3:checked ~ #score-container {
+	color: var(--bg);
+	
+	text-shadow: none;
+}
+
+#effect3:checked ~ * #banner {
+	width: 100%;
+	opacity: 100%;
+
+	background-color: var(--fg);
+
+	transition:
+		width 0.2s cubic-bezier(0.5, 0, 0.5, 1),
+		opacity 0.4s ease-out,
+		border-width 0.4s ease-out;
+}
+
+
+
+
+
+#effect4:checked ~ #score-container {
+	color: var(--accent);
+	
+	text-shadow: 0px 0px 0.01em var(--bg);
+}
+
+#effect4:checked ~ #message {
+	color: var(--accent-very-light);
+}
+
+#effect4:checked ~ * #spinner {
+	width: min(2em, 70vw, 70vh);
+  height: min(2em, 70vw, 70vh);
+	opacity: 20%;
+	
+	border-width: 0.04em;
+
+	transition:
+		width 0.4s cubic-bezier(0, 0.25, 0.75, 1),
+		height 0.4s cubic-bezier(0, 0.25, 0.75, 1),
+		opacity 0.4s ease-in-out;
+	
+	animation: rotating 10s linear infinite;
+}
+
+
+
+
+
 #effect5:checked ~ #score-container {
-	text-shadow: 0px 0px 0.02em var(--fg);
 	color: var(--accent3-dark);
 	
 	outline-style: solid;
 	outline-width: 0.05em;
 	outline-color: var(--fg);
-	outline-offset: 0em;
+	outline-offset: 0.05em;
 }
 
 #effect5:checked ~ #message {
-	text-shadow: 0px 0px 0.2em var(--accent3);
-}
-
-#effect5:checked ~ * .bloom {
-	outline-color: var(--accent3-light);
+	color: var(--accent3-very-light);
 }
 
 #effect5:checked ~ * #spinner {
 	background-color: var(--fg);
+}
+
+#effect5:checked ~ * .bloom {
+	outline-color: var(--accent3-light);
 }
 
 
@@ -438,22 +500,22 @@ input {
 
 
 #effect6:checked ~ #score-container {
-	text-shadow: 0px 0px 0.05em var(--bg);
 	color: var(--fg);
+	
+	text-shadow: 0px 0px 0.05em var(--bg);
 	
 	outline-style: dashed;
 	outline-width: 0.025em;
 	outline-color: var(--accent3-dark);
-	outline-offset: 0.025em;
+	outline-offset: 0.125em;
 }
 
 #effect6:checked ~ * #score {
-	margin-bottom: 0.2em;
+	margin-bottom: 0.1em;
 }
 
 #effect6:checked ~ * #banner {
 	background-color: var(--accent3);
-	box-shadow: 0px 0px 0.2em var(--bg);
 	
 	/*border-top-style: solid;
 	border-top-width: 0.1em;
@@ -464,13 +526,12 @@ input {
 }
 
 #effect6:checked ~ #message {
-	font-weight: 700;
+	color: var(--fg);
+	
 	text-shadow: 0px 0px 0.2em var(--accent3);
+	
+	font-weight: 700;
 	text-decoration: underline;
-}
-
-#effect6:checked ~ * .bloom {
-	outline-color: var(--accent3-light);
 }
 
 #effect6:checked ~ * #spinner {
@@ -486,6 +547,53 @@ input {
 	}
 	to {
 		transform: rotate(360deg);
+	}
+}
+
+@keyframes bloom00 {
+	0% {
+		outline-style: solid;
+		outline-offset: 0;
+		outline-width: 0;
+		opacity: 100%;
+	}
+	10% {
+		outline-style: solid;
+		outline-offset: 50vh;
+		outline-width: 10vh;
+		opacity: 0;
+	}
+	15% {
+		outline-style: dashed;
+		outline-offset: 1em;
+		outline-width: 0.05em;
+		opacity: 0;
+		transform: rotate(-50deg);
+	}
+	30% {
+		outline-style: dashed;
+		outline-offset: 1em;
+		outline-width: 0.05em;
+		opacity: 100%;
+		transform: rotate(0deg);
+	}
+	80% {
+		outline-style: dashed;
+		outline-offset: 1em;
+		outline-width: 0.05em;
+		opacity: 100%;
+		transform: rotate(-100deg);
+	}
+	90% {
+		outline-style: dashed;
+		outline-offset: 1em;
+		outline-width: 0.05em;
+		opacity: 0;
+		transform: rotate(-75deg);
+	}
+	100% {
+		outline-style: solid;
+		opacity: 0;
 	}
 }
 

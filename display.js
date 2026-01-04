@@ -12,6 +12,8 @@ function startEndAnimation(score) {
 	const effect4 = score >= 90
 	const effect5 = score >= 95
 	const effect6 = score >= 100
+
+	const gif = getGIF(score)
 		
 	document.getElementById('show-score').checked = true
 	document.getElementById('message').innerText = emoji
@@ -34,6 +36,8 @@ function startEndAnimation(score) {
 		document.getElementById('effect4').checked = effect4
 		document.getElementById('effect5').checked = effect5
 		document.getElementById('effect6').checked = effect6
+
+		document.getElementById('background').style.backgroundImage = `url("${gif}")`
 
 		getEndingAudio(score).play()
 	}, 5000)
@@ -62,18 +66,11 @@ function stopEndAnimation() {
 
 	document.getElementById('score').innerText = ''
 	document.getElementById('message').innerText = ''
+
+	document.getElementById('background').style.backgroundImage = 'none'
 }
 
 
-
-function getEndingAudio(score) {
-	const audioID =
-		score < 50 ? 'bad-ending' :
-		score < 90 ? 'normal-ending' :
-		'good-ending' 
-
-	return document.getElementById(audioID)
-}
 
 function generateMessage(score) {
 	const messages =
@@ -160,8 +157,6 @@ function displayLoudness(loudness) {
 		}
 	}
 
-	console.log('loudness')
-
 	document.getElementById('finish-button').style.outlineWidth = Math.log10(loudness + 1) * 8 + "em"
 	document.getElementById('finish-button').style.boxShadow = `0 0 ${loudness + 0.5}em var(--fg)`;
 
@@ -180,4 +175,32 @@ function displayQuality(quality) {
 	} else {
 		document.getElementById('finish-button-container').style.outlineColor = "#ffffff77"
 	}
+}
+
+
+
+function getEndingAudio(score) {
+	const audioID =
+		score < 50 ? 'bad-ending' :
+		score < 90 ? 'normal-ending' :
+		'good-ending' 
+
+	return document.getElementById(audioID)
+}
+
+const gifCount = {
+	bad: 7,
+	normal: 7,
+	good: 19
+}
+
+function getGIF(score) {
+	const rating =
+		score < 50 ? 'bad' :
+		score < 90 ? 'normal':
+		'good'
+
+	const gifID = Math.floor(Math.random() * gifCount[rating]) + 1
+
+	return 'gifs/' + rating + gifID + '.gif'
 }

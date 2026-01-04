@@ -104,10 +104,6 @@ function getMelodyFreq(buf) {
 
 	const quality = 1 - 4 * (1-frac) * frac
 
-	console.log(freq)
-	console.log(frac)
-	console.log(quality)
-
 	displayQuality(quality)
 
 	return freq
