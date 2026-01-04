@@ -178,6 +178,7 @@ body {
 	align-items: center;
 	justify-content: center;
 	text-align: center;
+	word-wrap: anywhere;
 
 	font-family: 'Comic Sans MS', 'Comic Sans', cursive;
 	font-size: 0;
@@ -274,6 +275,7 @@ body {
 	font-size: 0;
 	text-shadow: 0px 0px 0.1em var(--bg);
 	text-align: center;
+	word-wrap: anywhere;
 	padding: 0 0.5em;
 }
 
@@ -307,23 +309,39 @@ input {
 
 
 #effect2:checked ~ * #bloom0 {
-	animation: bloom0 1.3s ease-out forwards;
+	animation: bloom0 1.4s ease-out;
 }
 
 #effect2:checked ~ * #bloom1 {
-	animation: bloom1 1.3s ease-out forwards;
+	animation: bloom1 1.4s ease-out;
 }
 
 #effect2:checked ~ * #bloom2 {
-	animation: bloom2 1.3s ease-out forwards;
+	animation: bloom2 1.4s ease-out;
 }
 
 #effect2:checked ~ * #bloom3 {
-	animation: bloom3 1.3s ease-out forwards;
+	animation: bloom3 1.4s ease-out;
 }
 
 #effect2:checked ~ * #bloom4 {
-	animation: bloom4 1.3s ease-out forwards;
+	animation: bloom4 1.4s ease-out;
+}
+
+#effect2:checked ~ #effect5:checked ~ * #bloom1 {
+	animation: bloom1 2.6s ease-out;
+}
+
+#effect2:checked ~ #effect5:checked ~ * #bloom2 {
+	animation: bloom2 2.6s ease-out;
+}
+
+#effect2:checked ~ #effect5:checked ~ * #bloom3 {
+	animation: bloom3 2.6s ease-out;
+}
+
+#effect2:checked ~ #effect5:checked ~ * #bloom4 {
+	animation: bloom4 2.6s ease-out;
 }
 
 

@@ -16,6 +16,8 @@ function startEndAnimation(score) {
 	document.getElementById('show-score').checked = true
 	document.getElementById('message').innerText = emoji
 
+	document.getElementById('drum-roll').play()
+
 	clearInterval(animationInterval)
 	animationInterval = setInterval(() => {
 		document.getElementById('score').innerText = Math.floor(Math.random()*100)
@@ -32,12 +34,23 @@ function startEndAnimation(score) {
 		document.getElementById('effect4').checked = effect4
 		document.getElementById('effect5').checked = effect5
 		document.getElementById('effect6').checked = effect6
+
+		getEndingAudio(score).play()
 	}, 5000)
 }
 
 function stopEndAnimation() {
 	clearInterval(animationInterval)
 	clearTimeout(animationTimeout)
+	
+	document.getElementById('drum-roll').pause()
+	document.getElementById('good-ending').pause()
+	document.getElementById('normal-ending').pause()
+	document.getElementById('bad-ending').pause()
+	document.getElementById('drum-roll').currentTime = 0
+	document.getElementById('good-ending').currentTime = 0
+	document.getElementById('normal-ending').currentTime = 0
+	document.getElementById('bad-ending').currentTime = 0
 
 	document.getElementById('show-score').checked = false
 	document.getElementById('effect1').checked = false
@@ -52,6 +65,15 @@ function stopEndAnimation() {
 }
 
 
+
+function getEndingAudio(score) {
+	const audioID =
+		score < 50 ? 'bad-ending' :
+		score < 90 ? 'normal-ending' :
+		'good-ending' 
+
+	return document.getElementById(audioID)
+}
 
 function generateMessage(score) {
 	const messages =
