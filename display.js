@@ -120,3 +120,42 @@ function generateEmoji() {
 function chooseRandom(choices) {
 	return choices[Math.floor(Math.random() * choices.length)]
 }
+
+const maxLoudnessDecay = 0.001
+var lastLoudnessDisplayDate
+
+var prevLoudness
+
+function displayLoudness(loudness) {
+
+	const date = Date.now()
+
+	const maxDifference = (date - lastLoudnessDisplayDate) * maxLoudnessDecay
+	
+	if (prevLoudness !== undefined) {
+		if (prevLoudness - loudness > maxDifference) {
+			loudness = prevLoudness - maxDifference
+		}
+	}
+
+	console.log('loudness')
+
+	document.getElementById('finish-button').style.outlineWidth = Math.log10(loudness + 1) * 8 + "em"
+	document.getElementById('finish-button').style.boxShadow = `0 0 ${loudness + 0.5}em var(--fg)`;
+
+	prevLoudness = loudness
+
+	lastLoudnessDisplayDate = date
+
+}
+
+function displayQuality(quality) {
+	document.getElementById('finish-button-container').style.outlineWidth = quality + "em"
+	document.getElementById('finish-button-container').style.outlineOffset = (1 - quality) * 0.5 - 0.25 + "em"
+
+	if (quality > 0.5) {
+		document.getElementById('finish-button-container').style.outlineColor = "white"
+	} else {
+		document.getElementById('finish-button-container').style.outlineColor = "#ffffff77"
+	}
+}

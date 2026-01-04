@@ -20,10 +20,9 @@ function getMelodyFreq(buf) {
 	rms = Math.sqrt(rms / size);
 
 	if (rms < 0.01) { // not enough signal
+		displayQuality(0)
 		return -1
 	}
-
-
 
 	// Reduce buffer to a smaller length
 	var r1 = 0
@@ -44,8 +43,6 @@ function getMelodyFreq(buf) {
 		}
 	}
 
-
-
 	// Get correlation per lag
 	buf = buf.slice(r1,r2)
 	size = buf.length
@@ -57,30 +54,13 @@ function getMelodyFreq(buf) {
 		}
 	}
 
-
-
-	// (I just added this)
-	// Use gaussian to limit frequencies to vocal range
 	const sampleRate = audioContext.sampleRate
-
-	const minLag = sampleRate / maxVocalFreq
-	const maxLag = sampleRate / minVocalFreq
-	const center = (minLag + maxLag) / 2;
-	const sigma = (maxLag - minLag) / 6;
-	for (var i = 0; i < size; i++) {
-		const distance = i - center
-		c[i] *= Math.exp(- (distance**2) / (2 * sigma**2))
-	}
-
-
 
 	// Discard dip from the lowest frequency 
 	var d=1
 	while (c[d] > c[d+1]) {
 		d++
 	}
-
-
 
 	// Get the lag with the highest correlation
 	const valthres = 1
@@ -91,17 +71,13 @@ function getMelodyFreq(buf) {
 		const freq = sampleRate / i
 		
 		// Limit to vocal range
-		// if (freq < minVocalFreq/2) continue
-		// if (freq > maxVocalFreq*2) break
+		// if (freq < minVocalFreq/2) { break }
+		// if (freq > maxVocalFreq*2) { continue }
 
 		if (c[i] > maxval && c[i] > valthres) {
 			maxval = c[i]
 			maxpos = i
 		}
-	}
-
-	if (maxpos <= 0) {
-		return -1
 	}
 
 	// Interpolate and get the peak
@@ -116,26 +92,24 @@ function getMelodyFreq(buf) {
 		T0 = T0 - b / (2*a)
 	}
 
-	return sampleRate / T0
-
-}
-
-const maxLoudnessDecay = 0.001
-const maxLoudnessDifference = tdIntervalTime * maxLoudnessDecay
-
-var prevLoudness
-
-function displayLoudness(loudness) {
-	
-	if (prevLoudness !== undefined) {
-		if (prevLoudness - loudness > maxLoudnessDifference) {
-			loudness = prevLoudness - maxLoudnessDifference
-		}
+	// Bad frequency
+	if (T0 <= 0) {
+		displayQuality(0)
+		return -1
 	}
 
-	document.getElementById('finish-button').style.outlineWidth = Math.log10(loudness + 1) * 8 + "em"
-	document.getElementById('finish-button').style.boxShadow = `0 0 ${loudness + 0.5}em var(--fg)`;
+	const freq = sampleRate / T0
 
-	prevLoudness = loudness
+	const frac = (12 * Math.log2(freq / 440) % 1 + 1) % 1
+
+	const quality = 1 - 4 * (1-frac) * frac
+
+	console.log(freq)
+	console.log(frac)
+	console.log(quality)
+
+	displayQuality(quality)
+
+	return freq
 
 }

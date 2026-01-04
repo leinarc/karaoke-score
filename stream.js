@@ -4,7 +4,7 @@
 const tdSize = 2048 // for td
 const fftSize = 8192 // for fft
 
-const tdIntervalTime = 10 // for td
+const tdIntervalTime = 20 // for td
 const fftIntervalTime = 500 // for fft
 
 var tdBuffer
