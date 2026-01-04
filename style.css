@@ -75,6 +75,17 @@ body {
 	transition: all 0.2s ease-out;
 }
 
+#finish-button {
+	outline-style: solid;
+	outline-color: #ffffff22;
+	outline-width: 0;
+	outline-offset: 0.5em;
+
+	box-shadow: 0 0 0 var(--fg);
+
+	transition: all 0.2s ease-out, outline-width 0.01s linear, box-shadow 0.01s linear;
+}
+
 .button-container:hover .button {
 	font-weight: 900;
 	font-size: 1.05em;
@@ -186,33 +197,6 @@ body {
 	transition: all 0.2s cubic-bezier(0.5, 0, 0, 0.52) !important;
 }
 
-#score-container::after {
-	position: absolute;
-	display: block;
-	content: '';
-
-	width: 0;
-	height: 0;
-
-	border-style: solid;
-	border-width: 0;
-	border-color: var(--accent);
-	border-radius: 50%;
-	opacity: 100%;
-
-	box-sizing: border-box;
-}
-
-#effect2:checked ~ #score-container::after {
-	width: 150vh;
-	height: 150vh;
-	
-	border-width: 10vh;
-	opacity: 0;
-
-	transition: all 0.15s cubic-bezier(0, 0.25, 0.25, 1);
-}
-
 .bloom-container {
 	position: absolute;
 	display: flex;
@@ -225,6 +209,11 @@ body {
 	overflow: visible;
 }
 
+#score-container::after {
+	content: '';
+}
+
+#score-container::after,
 .bloom-container > * {
 	position: absolute;
 	display: block;
@@ -237,7 +226,19 @@ body {
 	border-color: var(--accent);
 	border-radius: 50%;
 
+	box-shadow: 0 0 5em var(--accent-light);
+
 	box-sizing: border-box;
+}
+
+#effect2:checked ~ #score-container::after {
+	width: 150vh;
+	height: 150vh;
+	
+	border-width: 10vh;
+	opacity: 0;
+
+	transition: all 0.15s cubic-bezier(0, 0.25, 0.25, 1);
 }
 
 #effect2:checked ~ * #bloom1 {
@@ -314,12 +315,10 @@ input {
 }
 
 
-#effect1:checked ~ #score-container::after {
-	border-color: var(--accent2-light);
-}
-
+#effect1:checked ~ #score-container::after,
 #effect1:checked ~ .bloom-container > * {
 	border-color: var(--accent2-light);
+	box-shadow: 0 0 5em var(--accent2-very-light);
 }
 
 #effect5:checked ~ #score-container {
@@ -333,7 +332,9 @@ input {
 
 #effect5:checked ~ #score-container::after,
 #effect5:checked ~ .bloom-container > * {
-	border-color: var(--accent3-light);
+	border-color: var(--accent3);
+
+	box-shadow: 0 0 5em var(--accent3-very-light);
 }
 
 #effect5:checked ~ #score-container::before {
@@ -363,9 +364,10 @@ input {
 #effect6:checked ~ #score-container::after,
 #effect6:checked ~ .bloom-container > * {
 	border-color: var(--accent3-light);
+	box-shadow: 0 0 5em var(--accent3-very-light);
 }
 
-#effect6:checked ~ #score-container-container::before {
+#effect6:checked ~ #score-container::before {
 	outline-color: var(--accent3-light);
 	background-color: var(--accent3-light);
 	outline-offset: 0.12em;

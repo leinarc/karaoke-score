@@ -1,7 +1,13 @@
 # karaoke-score
 
-Records frequencies from the audio, determines the key, and computes scores.
+Record a karaoke session and get a score, just like in parties! Although, I don't think this is how videoke machines actually work.
 
-### Note
+Anyway, it:
 
-Score computation at the end is VERY dependent in randomness. However, singing to the key helps in securing more chances to score higher. Probably.
+1. Records frequencies from the audio,
+2. Determines the key,
+3. Computes scores based on how fitting each frequency is to the key,
+4. Applies randomness by choosing one score (higher scores have higher chances of being chosen), and
+5. Picks one number between the chosen score and 100 (inclusive).
+
+Thus, score computation at the end is random. However, singing to the key helps in securing more chances to score higher. Probably. That's the fun part of karaoke!

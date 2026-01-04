@@ -6,6 +6,10 @@ function getMelodyFreq(buf) {
 	// Reference 1 says something about ACF2+, idk what that is
 	// Oh ok I get it now, this is detecting the frequency at which the audio wave aligns with itself
 	var size = buf.length
+
+	displayLoudness(buf.reduce((a, b) => Math.max(a, Math.abs(b)), 0))
+
+	// Compute RMS
 	var rms = 0
 
 	for (var i = 0; i < size; i++) {
@@ -87,8 +91,8 @@ function getMelodyFreq(buf) {
 		const freq = sampleRate / i
 		
 		// Limit to vocal range
-		if (freq < minVocalFreq/2) continue
-		if (freq > maxVocalFreq*2) break
+		// if (freq < minVocalFreq/2) continue
+		// if (freq > maxVocalFreq*2) break
 
 		if (c[i] > maxval && c[i] > valthres) {
 			maxval = c[i]
@@ -113,5 +117,25 @@ function getMelodyFreq(buf) {
 	}
 
 	return sampleRate / T0
+
+}
+
+const maxLoudnessDecay = 0.001
+const maxLoudnessDifference = tdIntervalTime * maxLoudnessDecay
+
+var prevLoudness
+
+function displayLoudness(loudness) {
+	
+	if (prevLoudness !== undefined) {
+		if (prevLoudness - loudness > maxLoudnessDifference) {
+			loudness = prevLoudness - maxLoudnessDifference
+		}
+	}
+
+	document.getElementById('finish-button').style.outlineWidth = Math.log10(loudness + 1) * 8 + "em"
+	document.getElementById('finish-button').style.boxShadow = `0 0 ${loudness + 0.5}em var(--fg)`;
+
+	prevLoudness = loudness
 
 }

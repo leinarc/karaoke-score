@@ -40,45 +40,19 @@ function removeSegment() {
 
 
 
-function analyseAudio() {
+function analyseMelody() {
 	
 	try {
 
-		analyser.getFloatTimeDomainData(tdBuffer)
-		analyser.getFloatFrequencyData(fftBuffer)
+		tdAnalyser.getFloatTimeDomainData(tdBuffer)
 
-		if (lastMelodyData.length <= 0) {
+		if (!lastMelodyData.length || !lastKeyData.length) {
 			lastSegmentDate = Date.now()
 		}
 
 		lastMelodyData.push(getMelodyFreq(tdBuffer))
 
-		const notes = getKeyNotes(fftBuffer)
-		notes.forEach((note, i) => {
-			if (note) lastKeyData[i] = 1
-		})
-
-		if (
-			lastMelodyData.length &&
-			lastKeyData.length &&
-			Date.now() >= lastSegmentDate + segmentInterval
-		) {
-			if (segmentCount >= segmentLimit) {
-				const key = getKey(lastSegmentKey, nextKeyData)
-				const newScores = getScores(key, nextMelodyData)
-				scores.push(...newScores)
-
-				lastSegmentKey = key
-
-				removeSegment()
-
-				console.log('Detected key:', keyNames[key])
-			} else {
-				segmentCount++
-			}
-
-			addSegment()
-		}
+		analyseAudio()
 
 	} catch (err) {
 
@@ -86,6 +60,62 @@ function analyseAudio() {
 		console.error(err)
 		alert('Failed to analyze audio.')
 
+	}
+
+}
+
+
+
+function analyseKey() {
+	
+	try {
+
+		fftAnalyser.getFloatFrequencyData(fftBuffer)
+
+		const notes = getKeyNotes(fftBuffer)
+		notes.forEach((note, i) => {
+			if (note) lastKeyData[i] = 1
+		})
+
+		if (!lastMelodyData.length || !lastKeyData.length) {
+			lastSegmentDate = Date.now()
+		}
+
+		analyseAudio()
+
+	} catch (err) {
+
+		clearAudio()
+		console.error(err)
+		alert('Failed to analyze audio.')
+
+	}
+}
+
+
+
+function analyseAudio() {
+
+	if (
+		lastMelodyData.length &&
+		lastKeyData.length &&
+		Date.now() >= lastSegmentDate + segmentInterval
+	) {
+		if (segmentCount >= segmentLimit) {
+			const key = getKey(lastSegmentKey, nextKeyData)
+			const newScores = getScores(key, nextMelodyData)
+			scores.push(...newScores)
+
+			lastSegmentKey = key
+
+			removeSegment()
+
+			console.log('Detected key:', keyNames[key])
+		} else {
+			segmentCount++
+		}
+
+		addSegment()
 	}
 
 }
@@ -152,15 +182,15 @@ async function finish() {
 	const effect6 = finalScore >= 100
 
 	message =
-		finalScore < 50 ? chooseRandom("Oh no", "Just a little more practice") :
-		finalScore < 60 ? "Good warmup" :
+		finalScore < 50 ? chooseRandom("Oh no", "Just a little more practice", "Practice makes perfect", "Tagay na pre") :
+		finalScore < 60 ? chooseRandom("Good warmup", "It's okay"):
 		finalScore < 70 ? "Put more effort into it" :
-		finalScore < 80 ? chooseRandom("You can do it!", "Good enough") :
-		finalScore < 90 ? chooseRandom("So close!", "Very good singing!") :
+		finalScore < 80 ? chooseRandom("You can do it!", "I'm rooting for you!") :
+		finalScore < 90 ? chooseRandom("Like a professional!", "Very good singing!") :
 		finalScore < 95 ? chooseRandom("You go girl!", "A Diva in the making!") :
 		finalScore < 99 ? chooseRandom("WOOOOOOO!", "Hell yeah go brag about it") :
 		finalScore < 100 ? chooseRandom("NOOOO YOU CHOKED IT", "Reach for the stars!") :
-		chooseRandom("OHHH MY GHDAWDAHDJASDHAJGWL HASDLHA", "You're a great singer!", "Mahal kita")
+		chooseRandom("OHHH MY GHDAWDAHDJASDHAJGWL HASDLHA", "You're a great singer!", "Mahal kita", "ITZA PERFECT")
 		
 	document.getElementById('show-score').checked = true
 	document.getElementById('message').innerText = chooseRandom(":O", "(╭ರ_•́)", "(ﾟヘﾟ)", ":D", "♪┏(˶⎚-⎚˶)┛♪", "٩(⸝⸝ᵕᴗᵕ⸝⸝)و*̣̩⋆̩*", "(„• ֊ •„)੭", "(ㅅ´ ˘ `)", "(  ˃̣̣̥ ꒳ ˂̣̣̥)ㅅ", "ヾ(´〇`)ﾉ🎙️ ♪🎶♪ ♪", "♪( ´θ｀)ノ", "♬ ♪ ٩(ˊᗜˋ*)و", "✨-(°▽°)-~♪") 

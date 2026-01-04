@@ -1,21 +1,32 @@
 // Reference 1: https://whatnoteisthis.com/
 // Reference 2: https://davidtemperley.com/wp-content/uploads/2015/12/temperley-ms04.pdf
 
-const fftSize = 8192
+const tdSize = 2048 // for td
+const fftSize = 8192 // for fft
 
-const analyseIntervalTime = 500
+const tdIntervalTime = 10 // for td
+const fftIntervalTime = 500 // for fft
 
 var tdBuffer
 var fftBuffer
 
+var	audioContext
 var stream
 var source
-var	audioContext
-var analyser
-var analyseInterval
+var tdAnalyser
+var fftAnalyser
+
+var tdInterval
+var fftInterval
 
 var animationInterval
 var animationTimeout
+
+var analyse2RAF
+
+if (!window.requestAnimationFrame) {
+	window.requestAnimationFrame = window.webkitRequestAnimationFrame;
+}
 
 async function getMicAudio() {
 
@@ -80,13 +91,18 @@ function connectStream() {
 
 	source = audioContext.createMediaStreamSource(stream)
 
-	analyser = audioContext.createAnalyser()
-	analyser.fftSize = fftSize;
-	tdBuffer = new Float32Array(analyser.fftSize)
-	fftBuffer = new Float32Array(analyser.frequencyBinCount)
-	source.connect(analyser)
+	tdAnalyser = audioContext.createAnalyser()
+	tdAnalyser.fftSize = tdSize;
+	tdBuffer = new Float32Array(tdAnalyser.fftSize)
+	source.connect(tdAnalyser)
 
-	analyseInterval = setInterval(analyseAudio, analyseIntervalTime)
+	fftAnalyser = audioContext.createAnalyser()
+	fftAnalyser.fftSize = fftSize;
+	fftBuffer = new Float32Array(fftAnalyser.frequencyBinCount)
+	source.connect(fftAnalyser)
+
+	tdInterval = setInterval(analyseMelody, tdIntervalTime)
+	fftInterval = setInterval(analyseKey, fftIntervalTime)
 
 	document.getElementById('start-button-container').style.display = 'none'
 	document.getElementById('finish-button-container').style.display = 'flex'
@@ -95,7 +111,8 @@ function connectStream() {
 
 async function clearAudio() {
 
-	clearInterval(analyseInterval)
+	clearInterval(fftInterval)
+	clearInterval(tdInterval)
 	clearInterval(animationInterval)
 	clearTimeout(animationTimeout)
 
@@ -113,12 +130,14 @@ async function clearAudio() {
 	document.getElementById('score').innerText = ''
 	document.getElementById('message').innerText = ''
 
-	analyser?.disconnect();
+	fftAnalyser?.disconnect();
+	tdAnalyser?.disconnect();
 	source?.disconnect();
 	stream?.getTracks().forEach(t => t.stop());
 	await audioContext?.close();
 
-	analyser = undefined
+	fftAnalyser = undefined
+	tdAnalyser = undefined
 	source = undefined
 	stream = undefined
 	audioContext = undefined
