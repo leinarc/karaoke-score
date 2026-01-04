@@ -246,8 +246,8 @@ body {
 	display: block;
 	content: '';
 
-	width: 1.9em;
-	height: 1.9em;
+	width: min(1.9em, 65vw, 65vh);
+  	height: min(1.9em, 65vw, 65vh);
 
 	outline-style: dashed;
 	outline-width: 0.04em;
@@ -336,8 +336,8 @@ input {
 }
 
 #effect4:checked ~ * #spinner {
-	width: 2em;
-	height: 2em;
+	width: min(2em, 70vw, 70vh);
+  	height: min(2em, 70vw, 70vh);
 	opacity: 20%;
 	
 	border-width: 0.04em;
