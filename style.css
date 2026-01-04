@@ -35,7 +35,6 @@ body {
 	max-height: 100vh;
 	color: var(--fg);
 	background-color: var(--bg);
-	font-family: Monospace;
 
 	overflow: hidden;
 }
@@ -180,7 +179,24 @@ body {
 	text-align: center;
 	word-wrap: anywhere;
 
-	font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+	font-family:
+		"Chalkboard SE", 
+		"Comic Neue",
+		"Comic Sans MS",
+		"Comic Sans",
+		"Segoe Print",
+		"Candara",
+		"Komika Text",
+		"Bradley Hand",
+		"Trebuchet MS",
+		"Dosis",
+		"GT Maru",
+		"Documan",
+		"Pangram Sans Rounded",
+		"G2 Kiamos",
+		"Maax Rounded",
+		"Andika",
+		cursive;
 	font-size: 0;
 	font-weight: 900;
 	line-height: 1;
