@@ -11,7 +11,7 @@ for input in ./original-gifs/*.gif; do
     ffmpeg \
 		-n \
 		-i "$input" \
-		-filter_complex "[0,v] fps=15,scale='min(128,iw)':'min(72,ih)':force_original_aspect_ratio=decrease:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=32[p];[s1][p]paletteuse=dither=bayer" \
+		-filter_complex "[0,v] fps=15,scale='min(128,iw)':'min(72,ih)':force_original_aspect_ratio=increase:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=32[p];[s1][p]paletteuse=dither=bayer" \
 		"$output"
 
 done
