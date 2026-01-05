@@ -14,6 +14,10 @@
 	--accent3: #651983;
 	--accent3-light: #915ca7;
 	--accent3-very-light: #caacd6;
+	--miku-dark: #0a444d;
+	--miku: #197583;
+	--miku-light: #53a5b1;
+	--miku-very-light: #cbeaef;
 }
 
 
@@ -575,6 +579,30 @@ body {
 	background-color: var(--accent3);
 	outline-offset: 0.12em;
 }
+
+
+
+
+
+#effect39:checked ~ #background {
+	background-color: var(--miku-dark);
+}
+
+#effect39:checked ~ #score-container {
+	color: var(--miku);
+}
+
+#effect39:checked ~ #message {
+	color: var(--miku);
+}
+
+#effect39:checked ~ * .bloom {
+	outline-color: var(--miku-light);
+}
+
+
+
+
 
 
 @keyframes rotating {

@@ -12,6 +12,7 @@ function startEndAnimation(score) {
 	const effect4 = score >= 90
 	const effect5 = score >= 95
 	const effect6 = score >= 100
+	const effect39 = score == 39
 
 	//const gif = getGIF(score)
 		
@@ -38,6 +39,7 @@ function startEndAnimation(score) {
 		document.getElementById('effect4').checked = effect4
 		document.getElementById('effect5').checked = effect5
 		document.getElementById('effect6').checked = effect6
+		document.getElementById('effect39').checked = effect39
 
 		document.getElementById('score').innerText = score
 		document.getElementById('message').innerText = message
@@ -67,6 +69,7 @@ function stopEndAnimation() {
 	document.getElementById('effect4').checked = false
 	document.getElementById('effect5').checked = false
 	document.getElementById('effect6').checked = false
+	document.getElementById('effect39').checked = false
 
 	document.getElementById('score').innerText = ''
 	document.getElementById('message').innerText = ''
