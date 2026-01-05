@@ -227,6 +227,7 @@ function toggleFullscreen() {
 	const wasFullscreen = document.fullscreenElement
 	const isFullscreen = !wasFullscreen
 
+	document.getElementById('showing-score').checked = false
 	document.getElementById('is-fullscreen').checked = isFullscreen
 	document.getElementById('fullscreen-text').innerText = isFullscreen ? "Disable Fullscreen" : "Enable Fullscreen"
 
@@ -240,6 +241,7 @@ function toggleFullscreen() {
 function checkFullscreen() {
 	const isFullscreen = document.fullscreenElement
 
+	document.getElementById('showing-score').checked = false
 	document.getElementById('is-fullscreen').checked = isFullscreen
 	document.getElementById('fullscreen-text').innerText = isFullscreen ? "Disable Fullscreen" : "Enable Fullscreen"
 }
