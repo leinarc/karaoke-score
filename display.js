@@ -224,8 +224,8 @@ function getGIF(score) {
 addEventListener("fullscreenchange", checkFullscreen)
 
 function toggleFullscreen() {
-	const wasFullscreen = document.fullscreenElement
-	const isFullscreen = !wasFullscreen
+	//const wasFullscreen = !!document.fullscreenElement
+	const isFullscreen = !document.fullscreenElement
 
 	document.getElementById('showing-score').checked = false
 	document.getElementById('is-fullscreen').checked = isFullscreen
@@ -239,7 +239,7 @@ function toggleFullscreen() {
 }
 
 function checkFullscreen() {
-	const isFullscreen = document.fullscreenElement
+	const isFullscreen = !!document.fullscreenElement
 
 	document.getElementById('showing-score').checked = false
 	document.getElementById('is-fullscreen').checked = isFullscreen
