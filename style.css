@@ -161,7 +161,7 @@ body {
 	background-color: var(--fg);
 	color: var(--bg);
 
-	box-shadow: 0 0 0.25em -0.1em var(--bg);
+	box-shadow: 0 0 0.25em -0.1em var(--bg-extreme);
 
 	transition: background-color 0.2s ease-out, color 0.2s ease-out, box-shadow 0.2s ease-out, font-size 0.2s ease-out;
 
@@ -175,14 +175,14 @@ body {
 	background-color: var(--fg-extreme);
 	color: var(--bg-tame);
 
-	box-shadow: 0 0 0.5em 0 var(--bg);
+	box-shadow: 0 0 0.5em 0 var(--bg-extreme);
 }
 
 #fullscreen-button:active {
 	background-color: var(--fg-tame);
 	color: var(--bg-extreme);
 
-	box-shadow: 0 0 0.1em 0.052em var(--bg), 0 0 0.5em var(--fg-extreme) inset;
+	box-shadow: 0 0 0.1em 0.052em var(--bg-extreme), 0 0 0.5em var(--fg-extreme) inset;
 }
 
 #is-fullscreen:checked ~ #fullscreen-button {
@@ -191,21 +191,21 @@ body {
 	background-color: var(--bg);
 	color: var(--fg);
 
-	box-shadow: 0 0 0.25em -0.1em var(--fg);
+	box-shadow: 0 0 0.25em -0.1em var(--fg-extreme);
 }
 
 #is-fullscreen:checked ~ #fullscreen-button:hover {
 	background-color: var(--bg-extreme);
 	color: var(--fg-tame);
 
-	box-shadow: 0 0 0.5em 0 var(--fg);
+	box-shadow: 0 0 0.5em 0 var(--fg-extreme);
 }
 
 #is-fullscreen:checked ~ #fullscreen-button:active {
 	background-color: var(--bg-tame);
 	color: var(--fg-extreme);
 
-	box-shadow: 0 0 0.1em 0.052em var(--fg), 0 0 0.5em var(--bg-extreme) inset;
+	box-shadow: 0 0 0.1em 0.052em var(--fg-extreme), 0 0 0.5em var(--bg-extreme) inset;
 }
 
 #fullscreen-icon {
@@ -378,27 +378,27 @@ body {
 }
 
 #start-button-container::before {
-	box-shadow: 0 0 0.5em -0.1em var(--bg), 0 0 0.25em -0.05em var(--bg) inset;
+	box-shadow: 0 0 0.5em -0.1em var(--bg-extreme), 0 0 0.25em -0.05em var(--bg-extreme) inset;
 }
 
 #finish-button-container::before {
-	box-shadow: 0 0 0.5em -0.1em var(--bg), 0 0 0.25em -0.05em var(--bg) inset;
+	box-shadow: 0 0 0.5em -0.1em var(--bg-extreme), 0 0 0.25em -0.05em var(--bg-extreme) inset;
 }
 
 #start-button-container:hover::before {
-	box-shadow: 0 0 0.5em var(--bg), 0 0 0.25em var(--bg) inset;
+	box-shadow: 0 0 0.5em var(--bg-extreme), 0 0 0.25em var(--bg-extreme) inset;
 }
 
 #finish-button-container:hover::before {
-	box-shadow: 0 0 0.5em var(--bg), 0 0 0.25em var(--bg) inset;
+	box-shadow: 0 0 0.5em var(--bg-extreme), 0 0 0.25em var(--bg-extreme) inset;
 }
 
 #start-button-container:active::before {
-	box-shadow: 0 0 0.2em 0.05em var(--bg), 0 0 0.1em 0.025em var(--bg) inset;
+	box-shadow: 0 0 0.2em 0.05em var(--bg-extreme), 0 0 0.1em 0.025em var(--bg-extreme) inset;
 }
 
 #finish-button-container:active::before {
-	box-shadow: 0 0 0.2em 0.05em var(--bg), 0 0 0.1em 0.025em var(--bg) inset;
+	box-shadow: 0 0 0.2em 0.05em var(--bg-extreme), 0 0 0.1em 0.025em var(--bg-extreme) inset;
 }
 
 .button-container:hover::before {
@@ -446,8 +446,8 @@ body {
 	outline-color: transparent;
 	outline-width: 0;
 	outline-offset: 0;
-	
-	text-shadow: 0px 0px 0.05em var(--bg);
+
+	text-shadow: 0px 0px 0.05em var(--bg-extreme);
 
 	transition: height 0.5s ease-out, font-size 0.5s ease-out, margin 0.5s ease-out;
 }
@@ -457,7 +457,7 @@ body {
 	display: block;
 	opacity: 0;
 
-	box-shadow: 0px 0px 0.1em 0.005em var(--bg);
+	box-shadow: 0px 0px 0.3em var(--bg-extreme);
 	
 	height: 1em;
 	width: 0;
@@ -531,7 +531,7 @@ body {
 
 #message {
 	font-size: 0;
-	text-shadow: 0px 0px 0.1em var(--bg);
+	text-shadow: 0px 0px 0.2em var(--bg-extreme);
 	text-align: center;
 	word-wrap: anywhere;
 	padding: 0 0.5em;
@@ -707,7 +707,7 @@ body {
 #effect4:checked ~ * #spinner {
 	width: min(2em, 70dvw, 70dvh);
 	height: min(2em, 70dvw, 70dvh);
-	
+
 	opacity: 20%;
 
 	transition:
