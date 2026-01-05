@@ -232,7 +232,7 @@ function toggleFullscreen() {
 	document.getElementById('fullscreen-text').innerText = isFullscreen ? "Disable Fullscreen" : "Enable Fullscreen"
 
 	if(isFullscreen) {
-		document.body.requestFullscreen()
+		document.documentElement.requestFullscreen()
 	} else {
 		document.exitFullscreen()
 	}
