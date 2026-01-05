@@ -122,45 +122,50 @@ function getSurfaceProb(keys, notesIndexes) {
 }
 
 function getStructureChoices(lastKey, notesIndexes) {
-	const usedKeys = []
+
 	const takenKeys = {}
 
 	var keyStructures = []
 
-	const newKeys = noteBestKeys[notesIndexes[0]]
-
-	for (const newKey of newKeys) {
-		keyStructures.push([newKey])
-		usedKeys.push(newKey)
-		takenKeys[newKey] = true
-	}
-
-	if (lastKey && !takenKeys[lastKey]) {
+	if (lastKey) {
 		keyStructures.push([lastKey])
-		usedKeys.push(lastKey)
 		takenKeys[lastKey] = true
 	}
 
+	const newKeys = noteBestKeys[notesIndexes[0]].filter(bestKey => bestKey !== lastKey)
+
+	for (const newKey of newKeys) {
+		if (!takenKeys[newKey]) {
+			keyStructures.push([newKey])
+			takenKeys[newKey] = true
+		}
+	}
+
 	for (var i = 1; i < notesIndexes.length; i++) {
+
+		const takenKeys = {}
+		
 		const notesIndex = notesIndexes[i]
-		const newKeys = noteBestKeys[notesIndex].filter(bestKey => !takenKeys[bestKey])
+		const newKeys = noteBestKeys[notesIndex]
 		
 		const newStructures = []
 
 		for (const structure of keyStructures) {
 
-			for (const usedKey of usedKeys) {
-				newStructures.push([...structure, usedKey])
-			}
+			const lastKey = structure[structure.length - 1]
+
+			newStructures.push([...structure, lastKey])
+			takenKeys[lastKey] = true
 			
 			for (const newKey of newKeys) {
-				for (var j = 0; j <= structure.length; j++) {
-					const oldHalf = structure.slice(0,j)
-					const newHalf = new Array(structure.length - j).fill(newKey)
-					newStructures.push([...oldHalf, ...newHalf, newKey])
+				if (!takenKeys[newKey]) {
+					for (var j = 0; j <= structure.length; j++) {
+						const oldHalf = structure.slice(0,structure.length - j)
+						const newHalf = new Array(j).fill(newKey)
+						newStructures.push([...oldHalf, ...newHalf, newKey])
+					}
+					takenKeys[newKey] = true
 				}
-				usedKeys.push(newKey)
-				takenKeys[newKey] = true
 			}
 		}
 
