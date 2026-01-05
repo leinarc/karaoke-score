@@ -28,6 +28,8 @@ input {
 
 
 
+
+
 .button {
 	font-family: "Noto Sans", sans-serif;
 }
@@ -79,10 +81,6 @@ body {
 	height: 100vh;
 
 	background-color: var(--bg);
-	background-image: none;
-	background-repeat: no-repeat;
-	background-size: cover;
-	background-position: center;
 
 	opacity: 0;
 
@@ -90,6 +88,46 @@ body {
 
 	transition: 
 		background-color 0.2s ease-in-out,
+		opacity 0.2s ease-in-out;
+}
+
+#gif-container {
+	position: absolute;
+	display: block;
+
+	width: 100vw;
+	height: 100vh;
+
+	mask-image: radial-gradient(circle, #000 0%, #0000 100%);
+  	mask-composite: add;
+	mask-size: cover;
+
+	z-index: -1;
+	/*! filter: blur(0.05em); */
+}
+
+#gif {
+	display: block;
+
+	width: 100vw;
+	height: 100vh;
+
+	background-image: url('gifs/good1.gif');
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center;
+	
+	mix-blend-mode: color-dodge;
+
+	mask-image: radial-gradient(circle, #000 33%, #0000 33%);
+	mask-repeat: repeat;
+	mask-position: center;
+	mask-size: 0.75em 0.75em;
+	mask-type: alpha;
+
+	opacity: 0;
+
+	transition:
 		opacity 0.2s ease-in-out;
 }
 
@@ -252,10 +290,6 @@ body {
 	transition: height 0.5s ease-out, font-size 0.5s ease-out, margin 0.5s ease-out;
 }
 
-#score {
-	/*! margin-top: 0.1em; */
-}
-
 #banner {
 	position: absolute;
 	display: block;
@@ -344,6 +378,10 @@ body {
 
 
 #show-background:checked ~ #background {
+	opacity: 10%;
+}
+
+#show-background:checked ~ * #gif {
 	opacity: 20%;
 }
 

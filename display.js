@@ -14,7 +14,7 @@ function startEndAnimation(score) {
 	const effect6 = score >= 100
 	const effect39 = score == 39
 
-	//const gif = getGIF(score)
+	const gif = getGIF(score)
 		
 	document.getElementById('show-score').checked = true
 	document.getElementById('message').innerText = emoji
@@ -31,7 +31,7 @@ function startEndAnimation(score) {
 		clearInterval(animationInterval)
 
 		document.getElementById('show-background').checked = true
-		//document.getElementById('background').style.backgroundImage = `url("${gif}")`
+		document.getElementById('gif').style.backgroundImage = `url("${gif}")`
 
 		document.getElementById('effect1').checked = effect1
 		document.getElementById('effect2').checked = effect2
@@ -195,8 +195,8 @@ function getEndingAudio(score) {
 
 const gifCount = {
 	bad: 7,
-	normal: 7,
-	good: 19
+	normal: 8,
+	good: 18
 }
 
 function getGIF(score) {
