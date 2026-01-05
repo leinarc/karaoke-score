@@ -103,6 +103,8 @@ function connectStream() {
 
 	document.getElementById('start-button-container').style.display = 'none'
 	document.getElementById('finish-button-container').style.display = 'flex'
+		
+	stopEndAnimation()
 
 }
 
@@ -110,8 +112,6 @@ async function clearAudio() {
 
 	clearInterval(fftInterval)
 	clearInterval(tdInterval)
-
-	stopEndAnimation()
 
 	document.getElementById('start-button-container').style.display = 'flex'
 	document.getElementById('finish-button-container').style.display = 'none'
