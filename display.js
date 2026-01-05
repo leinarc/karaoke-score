@@ -16,6 +16,9 @@ function startEndAnimation(score) {
 
 	const gif = getGIF(score)
 		
+
+	
+	document.getElementById('showing-score').checked = true
 	document.getElementById('show-score').checked = true
 	document.getElementById('message').innerText = emoji
 
@@ -30,6 +33,7 @@ function startEndAnimation(score) {
 	animationTimeout = setTimeout(() => {
 		clearInterval(animationInterval)
 
+		document.getElementById('showing-score').checked = false
 		document.getElementById('show-background').checked = true
 		document.getElementById('gif').style.backgroundImage = `url("${gif}")`
 
@@ -62,6 +66,7 @@ function stopEndAnimation() {
 	document.getElementById('bad-ending').currentTime = 0
 
 	document.getElementById('show-background').checked = false
+	document.getElementById('showing-score').checked = false
 	document.getElementById('show-score').checked = false
 	document.getElementById('effect1').checked = false
 	document.getElementById('effect2').checked = false
@@ -210,4 +215,31 @@ function getGIF(score) {
 	const gifID = Math.floor(Math.random() * gifCount[rating]) + 1
 
 	return 'gifs/' + rating + gifID + '.gif'
+}
+
+
+
+
+
+addEventListener("fullscreenchange", checkFullscreen)
+
+function toggleFullscreen() {
+	const wasFullscreen = document.fullscreenElement
+	const isFullscreen = !wasFullscreen
+
+	document.getElementById('is-fullscreen').checked = isFullscreen
+	document.getElementById('fullscreen-text').innerText = isFullscreen ? "Disable Fullscreen" : "Enable Fullscreen"
+
+	if(isFullscreen) {
+		document.body.requestFullscreen()
+	} else {
+		document.exitFullscreen()
+	}
+}
+
+function checkFullscreen() {
+	const isFullscreen = document.fullscreenElement
+
+	document.getElementById('is-fullscreen').checked = isFullscreen
+	document.getElementById('fullscreen-text').innerText = isFullscreen ? "Disable Fullscreen" : "Enable Fullscreen"
 }

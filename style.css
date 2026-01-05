@@ -2,6 +2,10 @@
 	--gray: #778;
 	--fg: #eee;
 	--bg: #111;
+	--fg-extreme: #fff;
+	--bg-extreme: #000;
+	--fg-tame: #ccc;
+	--bg-tame: #333;
 	--accent-dark: #0a4941;
 	--accent: #198375;
 	--accent-light: #70e7d7;
@@ -30,6 +34,7 @@ input {
 
 
 
+#fullscreen-button,
 .button {
 	font-family: "Noto Sans", sans-serif;
 }
@@ -136,6 +141,160 @@ body {
 
 
 
+#fullscreen-button {
+	position: absolute;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	font-weight: 500;
+
+	top: 1em;
+	left: 1em;
+
+	padding: 0.25em 1em;
+	height: 1.5em;
+	border-style: solid;
+	border-width: 0.1em;
+	border-radius: 1.25em;
+
+	background-color: var(--fg);
+	color: var(--bg);
+
+	box-shadow: 0 0 0.25em -0.1em var(--bg);
+
+	transition: background-color 0.2s ease-out, color 0.2s ease-out, box-shadow 0.2s ease-out, font-size 0.2s ease-out;
+
+	z-index: 2;
+
+	cursor: pointer;
+	user-select: none;
+}
+
+#fullscreen-button:hover {
+	background-color: var(--fg-extreme);
+	color: var(--bg-tame);
+
+	box-shadow: 0 0 0.5em 0 var(--bg);
+}
+
+#fullscreen-button:active {
+	background-color: var(--fg-tame);
+	color: var(--bg-extreme);
+
+	box-shadow: 0 0 0.1em 0.052em var(--bg), 0 0 0.5em var(--fg-extreme) inset;
+}
+
+#is-fullscreen:checked ~ #fullscreen-button {
+	font-size: 0.9em;
+
+	background-color: var(--bg);
+	color: var(--fg);
+
+	box-shadow: 0 0 0.25em -0.1em var(--fg);
+}
+
+#is-fullscreen:checked ~ #fullscreen-button:hover {
+	background-color: var(--bg-extreme);
+	color: var(--fg-tame);
+
+	box-shadow: 0 0 0.5em 0 var(--fg);
+}
+
+#is-fullscreen:checked ~ #fullscreen-button:active {
+	background-color: var(--bg-tame);
+	color: var(--fg-extreme);
+
+	box-shadow: 0 0 0.1em 0.052em var(--fg), 0 0 0.5em var(--bg-extreme) inset;
+}
+
+#fullscreen-icon {
+	position: relative;
+	display: flex;
+	
+	width: 1em;
+	height: 1em;
+
+	margin-right: 0.5em;
+
+	transition: rotate 0.2s ease-out;
+}
+
+#fullscreen-icon::before,
+#fullscreen-icon::after {
+	display: block;
+	content: '';
+
+	width: 0.4em;
+	height: 0.4em;
+
+	box-sizing: border-box;
+
+	background-color: transparent;
+
+	border-style: solid;
+	border-width: 0;
+
+	transition: rotate 0.2s ease-out;
+}
+
+#fullscreen-icon::before {
+	position: absolute;
+	border-top-width: 0.15em;
+	border-left-width: 0.15em;
+
+	top: 0;
+	left: 0;
+}
+
+#fullscreen-icon::after {
+	position: absolute;
+	border-bottom-width: 0.15em;
+	border-right-width: 0.15em;
+
+	bottom: 0;
+	right: 0;
+}
+
+#fullscreen-icon,
+#fullscreen-icon::before,
+#fullscreen-icon::after {
+	rotate: 0;
+}
+
+#fullscreen-button:hover #fullscreen-icon,
+#fullscreen-button:hover #fullscreen-icon::before,
+#fullscreen-button:hover #fullscreen-icon::after {
+	rotate: -10deg;
+}
+
+#fullscreen-button:active #fullscreen-icon,
+#fullscreen-button:active #fullscreen-icon::before,
+#fullscreen-button:active #fullscreen-icon::after {
+	rotate: 10deg;
+}
+
+#is-fullscreen:checked ~ * #fullscreen-icon,
+#is-fullscreen:checked ~ * #fullscreen-icon::before,
+#is-fullscreen:checked ~ * #fullscreen-icon::after {
+	rotate: 180deg;
+}
+
+#is-fullscreen:checked ~ #fullscreen-button:hover #fullscreen-icon,
+#is-fullscreen:checked ~ #fullscreen-button:hover #fullscreen-icon::before,
+#is-fullscreen:checked ~ #fullscreen-button:hover #fullscreen-icon::after {
+	rotate: 170deg;
+}
+
+#is-fullscreen:checked ~ #fullscreen-button:active #fullscreen-icon
+#is-fullscreen:checked ~ #fullscreen-button:active #fullscreen-icon::before,
+#is-fullscreen:checked ~ #fullscreen-button:active #fullscreen-icon::after {
+	rotate: 190deg;
+}
+
+
+
+
 .button-container {
 	display: flex;
 	flex-direction: column;
@@ -151,6 +310,7 @@ body {
 	margin: 1em;
 
 	cursor: pointer;
+	user-select: none;
 }
 
 #start-button-container {
@@ -399,7 +559,9 @@ body {
 	font-size: 10em;
 	margin: 0.2em 0;
 	height: 1em;
-	
+}
+
+#showing-score:checked ~ #score-container {	
 	transition:
 		height 5s ease-out,
 		font-size 5s ease-out,
@@ -410,7 +572,9 @@ body {
 
 #show-score:checked ~ #message {
 	font-size: 2em;
+}
 
+#showing-score:checked ~ #message {
 	transition: font-size 5s ease-out;
 }
 
