@@ -18,6 +18,12 @@
 
 
 
+input {
+	z-index: 10000;
+}
+
+
+
 .button {
 	font-family: "Noto Sans", sans-serif;
 }
@@ -68,16 +74,21 @@ body {
 	width: 100vw;
 	height: 100vh;
 
+	background-color: var(--bg);
 	background-image: none;
 	background-repeat: no-repeat;
 	background-size: cover;
 	background-position: center;
 
-	opacity: 20%;
+	opacity: 0;
 
 	z-index: -1;
 
+	transition: 
+		background-color 0.2s ease-in-out,
+		opacity 0.2s ease-in-out;
 }
+
 
 
 
@@ -285,7 +296,7 @@ body {
 
 	outline-style: solid;
 	outline-width: 0;
-	outline-color: var(--accent-light);
+	outline-color: var(--fg);
 	outline-offset: 0;
 
 	pointer-events: none;
@@ -324,18 +335,16 @@ body {
 	padding: 0 0.5em;
 }
 
-#show-score:checked ~ #message {
-	font-size: 2em;
 
-	transition: font-size 5s ease-out;
+
+
+
+#show-background:checked ~ #background {
+	opacity: 20%;
 }
 
-
-
-
-
-input {
-	z-index: 10000;
+#show-background:checked ~ #show-score:not(:checked) ~ #background {
+	background-color: var(--accent-dark);
 }
 
 
@@ -355,9 +364,19 @@ input {
 		outline-width 0.05s ease-out;
 }
 
+#show-score:checked ~ #message {
+	font-size: 2em;
+
+	transition: font-size 5s ease-out;
+}
 
 
 
+
+
+#effect1:checked ~ #background {
+	background-color: var(--accent2-dark);
+}
 
 #effect1:checked ~ #score-container {
 	color: var(--accent2);
@@ -422,6 +441,9 @@ input {
 
 
 
+#effect3:checked ~ #background {
+	background-color: var(--fg);
+}
 
 #effect3:checked ~ #score-container {
 	color: var(--bg);
@@ -444,6 +466,10 @@ input {
 
 
 
+
+#effect4:checked ~ #background {
+	background-color: var(--accent-dark);
+}
 
 #effect4:checked ~ #score-container {
 	color: var(--accent);
@@ -470,9 +496,17 @@ input {
 	animation: rotating 10s linear infinite;
 }
 
+#effect4:checked ~ * .bloom {
+	outline-color: var(--accent-light);
+}
 
 
 
+
+
+#effect5:checked ~ #background {
+	background-color: var(--accent3-dark);
+}
 
 #effect5:checked ~ #score-container {
 	color: var(--accent3-dark);
@@ -512,6 +546,8 @@ input {
 
 #effect6:checked ~ * #score {
 	margin-bottom: 0.1em;
+	
+	transition: margin 0.4s ease-out;
 }
 
 #effect6:checked ~ * #banner {

@@ -13,7 +13,7 @@ function startEndAnimation(score) {
 	const effect5 = score >= 95
 	const effect6 = score >= 100
 
-	const gif = getGIF(score)
+	//const gif = getGIF(score)
 		
 	document.getElementById('show-score').checked = true
 	document.getElementById('message').innerText = emoji
@@ -28,8 +28,10 @@ function startEndAnimation(score) {
 	clearTimeout(animationTimeout)
 	animationTimeout = setTimeout(() => {
 		clearInterval(animationInterval)
-		document.getElementById('score').innerText = score
-		document.getElementById('message').innerText = message
+
+		document.getElementById('show-background').checked = true
+		//document.getElementById('background').style.backgroundImage = `url("${gif}")`
+
 		document.getElementById('effect1').checked = effect1
 		document.getElementById('effect2').checked = effect2
 		document.getElementById('effect3').checked = effect3
@@ -37,7 +39,8 @@ function startEndAnimation(score) {
 		document.getElementById('effect5').checked = effect5
 		document.getElementById('effect6').checked = effect6
 
-		document.getElementById('background').style.backgroundImage = `url("${gif}")`
+		document.getElementById('score').innerText = score
+		document.getElementById('message').innerText = message
 
 		getEndingAudio(score).play()
 	}, 5000)
@@ -56,6 +59,7 @@ function stopEndAnimation() {
 	document.getElementById('normal-ending').currentTime = 0
 	document.getElementById('bad-ending').currentTime = 0
 
+	document.getElementById('show-background').checked = false
 	document.getElementById('show-score').checked = false
 	document.getElementById('effect1').checked = false
 	document.getElementById('effect2').checked = false
@@ -66,8 +70,6 @@ function stopEndAnimation() {
 
 	document.getElementById('score').innerText = ''
 	document.getElementById('message').innerText = ''
-
-	document.getElementById('background').style.backgroundImage = 'none'
 }
 
 
