@@ -21,6 +21,8 @@ var fftInterval
 
 var analyse2RAF
 
+var analyzing
+
 if (!window.requestAnimationFrame) {
 	window.requestAnimationFrame = window.webkitRequestAnimationFrame;
 }
@@ -106,9 +108,13 @@ function connectStream() {
 		
 	stopEndAnimation()
 
+	analyzing = true
+
 }
 
 async function clearAudio() {
+
+	analyzing = false
 
 	clearInterval(fftInterval)
 	clearInterval(tdInterval)

@@ -51,6 +51,10 @@ function removeSegment() {
 
 
 function analyseMelody() {
+
+	if (!analyzing) {
+		return
+	}
 	
 	try {
 
@@ -67,7 +71,7 @@ function analyseMelody() {
 	} catch (err) {
 
 		console.error(err)
-		alert('Failed to analyze audio.')
+		alert('Failed to analyze audio melody.')
 		clearAudio()
 
 	}
@@ -77,6 +81,10 @@ function analyseMelody() {
 
 
 function analyseKey() {
+
+	if (!analyzing) {
+		return
+	}
 	
 	try {
 
@@ -96,7 +104,7 @@ function analyseKey() {
 	} catch (err) {
 
 		console.error(err)
-		alert('Failed to analyze audio.')
+		alert('Failed to analyze audio key.')
 		clearAudio()
 
 	}
@@ -140,6 +148,10 @@ function analyseAudio() {
 
 
 async function finish() {
+
+	if (!analyzing) {
+		return
+	}
 
 	await clearAudio()
 
@@ -199,7 +211,6 @@ async function finish() {
 
 		console.error(err)
 		alert('Failed to analyze audio at the end.')
-		clearAudio()
 
 	}
 
