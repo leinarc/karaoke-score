@@ -1,4 +1,5 @@
 :root {
+	--controls-display: none;
 	--gray: #778;
 	--fg: #eee;
 	--bg: #111;
@@ -6,19 +7,19 @@
 	--bg-extreme: #000;
 	--fg-tame: #ccc;
 	--bg-tame: #333;
-	--accent-dark: #0a4941;
+	--accent-dark: #004d42;
 	--accent: #198375;
 	--accent-light: #70e7d7;
 	--accent-very-light: #d7fffa;
-	--accent2-dark: #4d2a0f;
+	--accent2-dark: #522300;
 	--accent2: #834919;
 	--accent2-light: #e9c7ab;
-	--accent2-very-light: #834919;
-	--accent3-dark: #410e55;
+	--accent2-very-light: #eecdb2;
+	--accent3-dark: #390150;
 	--accent3: #651983;
 	--accent3-light: #915ca7;
 	--accent3-very-light: #caacd6;
-	--miku-dark: #0a444d;
+	--miku-dark: #01444e;
 	--miku: #197583;
 	--miku-light: #53a5b1;
 	--miku-very-light: #cbeaef;
@@ -136,6 +137,36 @@ body {
 
 	transition:
 		opacity 0.2s ease-in-out;
+}
+
+#gif::before {
+	display: block;
+	content: '';
+
+	width: 100dvw;
+	height: 100dvh;
+
+	background-color: var(--accent2-dark);
+	
+	mix-blend-mode: screen;
+
+	opacity: 20%;
+}
+
+#flash {
+	position: absolute;
+	display: block;
+
+	width: 100dvw;
+	height: 100dvh;
+
+	mix-blend-mode: color-dodge;
+
+	background-color: var(--fg-extreme);
+
+	opacity: 0;
+
+	z-index: -98;
 }
 
 
@@ -493,10 +524,12 @@ body {
 	height: 1px;
 	width: 1px;
 	border-radius: 50%;
+	
+	mix-blend-mode: screen;
 
 	outline-style: solid;
 	outline-width: 0;
-	outline-color: var(--fg);
+	outline-color: var(--fg-extreme);
 	outline-offset: 0;
 
 	pointer-events: none;
@@ -609,48 +642,56 @@ body {
 
 
 
+#effect2:checked ~ #flash {
+	animation: flash 1.4s cubic-bezier(0.5, 0, 1, 0.5);
+}
+
 #effect2:checked ~ * #bloom0 {
-	animation: bloom0 1.4s ease-in-out;
+	animation: bloom0 1.4s cubic-bezier(0, 0.5, 0.5, 1);
 }
 
 #effect2:checked ~ * #bloom1 {
-	animation: bloom1 1.4s ease-in-out;
+	animation: bloom1 1.4s cubic-bezier(0, 0.5, 0.5, 1);
 }
 
 #effect2:checked ~ * #bloom2 {
-	animation: bloom2 1.4s ease-in-out;
+	animation: bloom2 1.4s cubic-bezier(0, 0.5, 0.5, 1);
 }
 
 #effect2:checked ~ * #bloom3 {
-	animation: bloom3 1.4s ease-in-out;
+	animation: bloom3 1.4s cubic-bezier(0, 0.5, 0.5, 1);
 }
 
 #effect2:checked ~ * #bloom4 {
-	animation: bloom4 1.4s ease-in-out;
+	animation: bloom4 1.4s cubic-bezier(0, 0.5, 0.5, 1);
+}
+
+#effect2:checked ~ #effect4:checked ~ #flash {
+	animation: flash 2.6s cubic-bezier(0.5, 0, 1, 0.5);
 }
 
 #effect2:checked ~ #effect4:checked ~ * #bloom0 {
-	animation: bloom0 2.6s ease-in-out;
+	animation: bloom0 2.6s cubic-bezier(0, 0.5, 0.5, 1);
 }
 
 #effect2:checked ~ #effect4:checked ~ * #bloom1 {
-	animation: bloom1 2.6s ease-in-out;
+	animation: bloom1 2.6s cubic-bezier(0, 0.5, 0.5, 1);
 }
 
 #effect2:checked ~ #effect4:checked ~ * #bloom2 {
-	animation: bloom2 2.6s ease-out;
+	animation: bloom2 2.6s cubic-bezier(0, 0.5, 0.5, 1);
 }
 
 #effect2:checked ~ #effect4:checked ~ * #bloom3 {
-	animation: bloom3 2.6s ease-in-out;
+	animation: bloom3 2.6s cubic-bezier(0, 0.5, 0.5, 1);
 }
 
 #effect2:checked ~ #effect4:checked ~ * #bloom4 {
-	animation: bloom4 2.6s ease-in-out;
+	animation: bloom4 2.6s cubic-bezier(0, 0.5, 0.5, 1);
 }
 
 #effect2:checked ~ #effect6:checked ~ * #bloom0 {
-	animation: bloom00 2.6s ease-in-out;
+	animation: bloom00 2.6s cubic-bezier(0, 0.5, 0.5, 1);
 }
 
 
@@ -844,15 +885,22 @@ body {
 
 @keyframes bloom00 {
 	0% {
-		outline-style: solid;
 		outline-offset: 0;
 		outline-width: 0;
 		opacity: 100%;
 	}
-	10% {
-		outline-style: solid;
+	1% {
+		outline-width: 20dvh;
+	}
+	12.5% {
 		outline-offset: 50dvh;
-		outline-width: 10dvh;
+		outline-width: 0;
+		opacity: 50%;
+	}
+	14% {
+		outline-style: solid;
+		outline-offset: 0;
+		outline-width: 0;
 		opacity: 0;
 	}
 	15% {
@@ -860,32 +908,26 @@ body {
 		outline-offset: 1em;
 		outline-width: 0.05em;
 		opacity: 0;
-		transform: rotate(-50deg);
+		transform: rotate(0deg);
 	}
 	30% {
 		outline-style: dashed;
 		outline-offset: 1em;
 		outline-width: 0.05em;
 		opacity: 100%;
-		transform: rotate(0deg);
 	}
 	80% {
 		outline-style: dashed;
 		outline-offset: 1em;
 		outline-width: 0.05em;
 		opacity: 100%;
-		transform: rotate(-100deg);
 	}
 	90% {
 		outline-style: dashed;
 		outline-offset: 1em;
 		outline-width: 0.05em;
 		opacity: 0;
-		transform: rotate(-75deg);
-	}
-	100% {
-		outline-style: solid;
-		opacity: 0;
+		transform: rotate(-180deg);
 	}
 }
 
@@ -895,13 +937,13 @@ body {
 		outline-width: 0;
 		opacity: 100%;
 	}
-	10% {		
-		outline-offset: 50dvh;
-		outline-width: 10dvh;
-		opacity: 0;
+	0% {
+		outline-width: 20dvh;
 	}
-	100% {
-		opacity: 0;
+	12.5% {		
+		outline-offset: 50dvh;
+		outline-width: 0;
+		opacity: 50%;
 	}
 }
 
@@ -911,13 +953,13 @@ body {
 		outline-width: 0;
 		opacity: 100%;
 	}
-	60% {
-		outline-offset: 50dvh;
+	51% {
 		outline-width: 10dvh;
-		opacity: 0;
 	}
-	100% {
-		opacity: 0;
+	62.5% {
+		outline-offset: 30dvh;
+		outline-width: 0;
+		opacity: 50%;
 	}
 }
 
@@ -927,13 +969,13 @@ body {
 		outline-width: 0;
 		opacity: 100%;
 	}
-	72.5% {
-		outline-offset: 50dvh;
+	63.5% {
 		outline-width: 10dvh;
-		opacity: 0;
 	}
-	100% {
-		opacity: 0;
+	75% {
+		outline-offset: 30dvh;
+		outline-width: 0;
+		opacity: 50%;
 	}
 }
 
@@ -943,13 +985,13 @@ body {
 		outline-width: 0;
 		opacity: 100%;
 	}
-	85% {
-		outline-offset: 50dvh;
+	76% {
 		outline-width: 10dvh;
-		opacity: 0;
 	}
-	100% {
-		opacity: 0;
+	87.5% {
+		outline-offset: 30dvh;
+		outline-width: 0;
+		opacity: 50%;
 	}
 }
 
@@ -959,10 +1001,46 @@ body {
 		outline-width: 0;
 		opacity: 100%;
 	}
-	97.5% {
-		outline-offset: 50dvh;
+	88.5% {
 		outline-width: 10dvh;
+	}
+	100% {
+		outline-offset: 30dvh;
+		outline-width: 0;
+		opacity: 50%;
+	}
+}
+
+@keyframes flash {
+	0% {
+		opacity: 0%;
+	}
+	1% {
+		opacity: 5%;
+	}
+	50% {
 		opacity: 0;
+	}
+	51% {
+		opacity: 5%;
+	}
+	62.5% {
+		opacity: 0;
+	}
+	63.5% {
+		opacity: 5%;
+	}
+	75% {
+		opacity: 0;
+	}
+	76% {
+		opacity: 5%;
+	}
+	87.5% {
+		opacity: 0;
+	}
+	88.5% {
+		opacity: 5%;
 	}
 	100% {
 		opacity: 0;

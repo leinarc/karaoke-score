@@ -18,25 +18,26 @@
 		<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Comic+Relief:wght@400;700&family=Noto+Sans+JP:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Sour+Gummy:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 	</head>
 	<body>
-		<audio id="drum-roll" src="sounds/karaoke-roll.ogg" style="display: none;"></audio>
-		<audio id="good-ending" src="sounds/karaoke-good.ogg" style="display: none;"></audio>
-		<audio id="normal-ending" src="sounds/karaoke-normal.ogg" style="display: none;"></audio>
-		<audio id="bad-ending" src="sounds/karaoke-bad.ogg" style="display: none;"></audio>
+		<audio id="drum-roll" src="sounds/karaoke-roll.ogg" style="display: var(--controls-display);"></audio>
+		<audio id="good-ending" src="sounds/karaoke-good.ogg" style="display: var(--controls-display);"></audio>
+		<audio id="normal-ending" src="sounds/karaoke-normal.ogg" style="display: var(--controls-display);"></audio>
+		<audio id="bad-ending" src="sounds/karaoke-bad.ogg" style="display: var(--controls-display);"></audio>
 
-		<input id="is-fullscreen" type="checkbox" autocomplete="off" style="display: none"></input>
-		<input id="show-background" type="checkbox" autocomplete="off" style="display: none" checked></input>
-		<input id="showing-score" type="checkbox" autocomplete="off" style="display: none"></input>
-		<input id="show-score" type="checkbox" autocomplete="off" style="display: none"></input>
-		<input id="effect1" type="checkbox" autocomplete="off" style="display: none"></input>
-		<input id="effect2" type="checkbox" autocomplete="off" style="display: none"></input>
-		<input id="effect3" type="checkbox" autocomplete="off" style="display: none"></input>
-		<input id="effect4" type="checkbox" autocomplete="off" style="display: none"></input>
-		<input id="effect5" type="checkbox" autocomplete="off" style="display: none"></input>
-		<input id="effect6" type="checkbox" autocomplete="off" style="display: none"></input>
-		<input id="effect39" type="checkbox" autocomplete="off" style="display: none"></input>
+		<input id="is-fullscreen" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
+		<input id="show-background" type="checkbox" autocomplete="off" style="display: var(--controls-display)" checked></input>
+		<input id="showing-score" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
+		<input id="show-score" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
+		<input id="effect1" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
+		<input id="effect2" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
+		<input id="effect3" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
+		<input id="effect4" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
+		<input id="effect5" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
+		<input id="effect6" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
+		<input id="effect39" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
 
 		<div id="background"></div>
 		<div id="gif-container"><div id="gif"></div></div>
+		<div id="flash"></div>
 
 		<div id="fullscreen-button" onclick="toggleFullscreen()"><div id="fullscreen-icon"></div><div id="fullscreen-text">Enable Fullscreen</div></div>
 
