@@ -52,7 +52,7 @@ function removeSegment() {
 
 function analyseMelody() {
 
-	if (!analyzing) {
+	if (!tdAnalyser) {
 		return
 	}
 	
@@ -72,7 +72,7 @@ function analyseMelody() {
 
 		console.error(err)
 		alert('Failed to analyze audio melody.')
-		clearAudio()
+		disconnectAnalyser()
 
 	}
 
@@ -82,7 +82,7 @@ function analyseMelody() {
 
 function analyseKey() {
 
-	if (!analyzing) {
+	if (!fftAnalyser) {
 		return
 	}
 	
@@ -105,7 +105,7 @@ function analyseKey() {
 
 		console.error(err)
 		alert('Failed to analyze audio key.')
-		clearAudio()
+		disconnectAnalyser()
 
 	}
 }
@@ -147,120 +147,101 @@ function analyseAudio() {
 
 
 
-async function finish() {
-
-	if (!analyzing) {
-		return
-	}
-
-	await clearAudio()
-
-	try {
-
-		if (nextMelodyData.length && nextKeyData.length) {
-
-			const keys = getKeys(lastSegmentKey, nextKeyData)
-			console.log('Detected keys:', keys.map(key => keyNames[key]).join('\t'))
-
-			var melodyData = nextMelodyData
-
-			for (const key of keys) {
-				const newScores = getScores(key, melodyData)
-				scores.push(...newScores)
-				melodyData = melodyData.next
-			}
-
-		}
-
-		// Add zero if scores array is empty
-		if (!scores.length) {
-			scores = [0]
-		}
-
-		console.log('='.repeat(20))
-		console.log('SCORE DATA')
-		console.log('='.repeat(20))
-		console.log(scores)
-		console.log('Max:', Math.max(...scores) * 100)
-		console.log('Average:', scores.reduce((a, b) => a + b, 0)/scores.length * 100) 
-		console.log('Root Mean Square:', (scores.reduce((a, b) => a + b*b, 0)/scores.length)**0.5 * 100)
-
-
-
-		const calculationName = calculationNames[calculation]
-
-		var score
-
-		if (calculationName == "Weighted Probability Selection") {
-
-			// Choose a random score wherein higher scores have higher chances of being chosen
-			const totalScore = scores.reduce((a, b) => a + b, 0)
-			var chosen = Math.random() * totalScore
-			var i = 0
-
-			scores.sort((a, b) => b[0] - a[0])
-
-			while (chosen >= 0 && i < scores.length) {
-				chosen -= scores[i]
-				score = scores[i]
-				i++
-			}
-
-		} else if (calculationName == "Equal Probability Selection") {
-
-			// Choose a random score
-			score = scores[Math.floor(Math.random() * scores.length)]
-
-		} else if (calculationName == "Root Mean Square") {
-
-			// Compute RMS
-			score = (scores.reduce((a, b) => a + b*b, 0)/scores.length)**0.5
-
-		} else {
-
-			// Compute average
-			score = scores.reduce((a, b) => a + b, 0)/scores.length
-
-		}
-
-		console.log('Calculated Score:', score * 100)
-
-
-
-		const randomizationName = randomizationNames[randomization]
-		if (randomizationName == "Calculated score to 100") {
-
-			// Randomize between calculated score and 1
-			score = Math.random() * (1 - score) + score
-
-		} else if (randomizationName == "0 to calculated score") {
-
-			// Randomize between 0 and calculated score
-			score = Math.random() * score
-			
-		}
-
-		console.log('Randomized Score:', score * 100)
-
-
-
-		// Round to 0-100
-		score = Math.min(100, Math.max(0, Math.floor(score * 101)))
-
-		console.log('Final Score:', score)
-
-
-
-		startEndAnimation(score)
+function getFinalScore() {
 	
-	} catch (err) {
+	if (nextMelodyData.length && nextKeyData.length) {
 
-		console.error(err)
-		alert('Failed to analyze audio at the end.')
+		const keys = getKeys(lastSegmentKey, nextKeyData)
+		console.log('Detected keys:', keys.map(key => keyNames[key]).join('\t'))
+
+		var melodyData = nextMelodyData
+
+		for (const key of keys) {
+			const newScores = getScores(key, melodyData)
+			scores.push(...newScores)
+			melodyData = melodyData.next
+		}
 
 	}
 
-	resetVariables()
+	// Add zero if scores array is empty
+	if (!scores.length) {
+		scores = [0]
+	}
+
+	console.log('='.repeat(20))
+	console.log('SCORE DATA')
+	console.log('='.repeat(20))
+	console.log(scores)
+	console.log('Max:', Math.max(...scores) * 100)
+	console.log('Average:', scores.reduce((a, b) => a + b, 0)/scores.length * 100) 
+	console.log('Root Mean Square:', (scores.reduce((a, b) => a + b*b, 0)/scores.length)**0.5 * 100)
+
+
+
+	const calculationName = calculationNames[calculation]
+
+	var score
+
+	if (calculationName == "Weighted Probability Selection") {
+
+		// Choose a random score wherein higher scores have higher chances of being chosen
+		const totalScore = scores.reduce((a, b) => a + b, 0)
+		var chosen = Math.random() * totalScore
+		var i = 0
+
+		scores.sort((a, b) => b[0] - a[0])
+
+		while (chosen >= 0 && i < scores.length) {
+			chosen -= scores[i]
+			score = scores[i]
+			i++
+		}
+
+	} else if (calculationName == "Equal Probability Selection") {
+
+		// Choose a random score
+		score = scores[Math.floor(Math.random() * scores.length)]
+
+	} else if (calculationName == "Root Mean Square") {
+
+		// Compute RMS
+		score = (scores.reduce((a, b) => a + b*b, 0)/scores.length)**0.5
+
+	} else {
+
+		// Compute average
+		score = scores.reduce((a, b) => a + b, 0)/scores.length
+
+	}
+
+	console.log('Calculated Score:', score * 100)
+
+
+
+	const randomizationName = randomizationNames[randomization]
+	if (randomizationName == "Calculated score to 100") {
+
+		// Randomize between calculated score and 1
+		score = Math.random() * (1 - score) + score
+
+	} else if (randomizationName == "0 to calculated score") {
+
+		// Randomize between 0 and calculated score
+		score = Math.random() * score
+		
+	}
+
+	console.log('Randomized Score:', score * 100)
+
+
+
+	// Round to 0-100
+	score = Math.min(100, Math.max(0, Math.floor(score * 101)))
+
+	console.log('Final Score:', score)
+
+	return score
 
 }
 

@@ -33,8 +33,8 @@
 		"Chewy",
 		"Comic Sans MS",
 		"Comic Sans",
-		"Noto Sans JP",
 		"Noto Sans",
+		"Noto Sans JP",
 		"Segoe Print",
 		"Candara",
 		sans-serif;
@@ -95,6 +95,52 @@ input[type="button"]:active {
 	background-color: var(--fg-tame);
 	color: var(--bg-extreme);
 }
+
+input[type="button"].button1 {
+	background-color: var(--accent2-dim);
+	color: var(--fg);
+}
+
+input[type="button"].button1:hover {
+	background-color: var(--accent2);
+	color: var(--fg-extreme);
+}
+
+input[type="button"].button1:active {
+	background-color: var(--accent2-dark);
+	color: var(--fg-tame);
+}
+
+input[type="button"].button2 {
+	background-color: var(--accent2-dim);
+	color: var(--fg);
+}
+
+input[type="button"].button2:hover {
+	background-color: var(--accent2);
+	color: var(--fg-extreme);
+}
+
+input[type="button"].button2:active {
+	background-color: var(--accent2-dark);
+	color: var(--fg-tame);
+}
+
+input[type="button"].button3 {
+	background-color: var(--accent3-dim);
+	color: var(--fg);
+}
+
+input[type="button"].button3:hover {
+	background-color: var(--accent3);
+	color: var(--fg-extreme);
+}
+
+input[type="button"].button3:active {
+	background-color: var(--accent3-dark);
+	color: var(--fg-tame);
+}
+
 
 input[type="text"] {
 	cursor: pointer;
@@ -291,7 +337,7 @@ body {
 	margin-bottom: 1.5em;
 }
 
-#settings-title {
+.settings-title {
 	text-align: center;
 
 	font-weight: 700;
@@ -331,24 +377,8 @@ body {
 	flex-shrink: 1;
 }
 
-#settings input {
-}
-
 #settings > table input[type="button"] {
 	width: 15em;
-
-	background-color: var(--accent3-dim);
-	color: var(--fg);
-}
-
-#settings > table input[type="button"]:hover {
-	background-color: var(--accent3);
-	color: var(--fg-extreme);
-}
-
-#settings > table input[type="button"]:active {
-	background-color: var(--accent3-dark);
-	color: var(--fg-tame);
 }
 
 #settings > table input[type="text"] {
@@ -919,7 +949,7 @@ body {
 }
 
 #show-background:checked ~ #effect1:checked ~ #background {
-	opacity: 20%;
+	opacity: 15%;
 }
 
 #show-background:checked ~ #effect1:checked ~ * #gif {

@@ -260,17 +260,23 @@ function closeSettings() {
 function displaySettings() {
 	const settings = exportSettings()
 
-	for (const setting in settings) {
-		const value = settings[setting]
+	console.log(settings)
 
-		setInputValue(setting + '-input', value)
-		setInputValue(setting + '-slider', value)
+	for (const setting in settings) {
+		const state = settings[setting]
+
+		setInput(setting + '-input', state)
+		setInput(setting + '-slider', state)
+		setInput(setting + '-button', state)
 	}
 
-	function setInputValue(inputName, value) {
+	function setInput(inputName, state) {
 		const input = document.getElementById(inputName)
 		if (input) {
-			input.value = value
+			input.value = state.value
+			if (state.className !== undefined) {
+				input.className = state.className
+			}
 		}
 	}
 }

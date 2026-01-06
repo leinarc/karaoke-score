@@ -116,11 +116,11 @@
 
 		<div id="message">OO EE OO</div>
 
-		<div id="start-button-container" class="button-container" onclick="getMicAudio()">
+		<div id="start-button-container" class="button-container" onclick="startKaraoke()">
 			<div id="start-button" class="button">Start Recording</div>
 		</div>
 
-		<div id="finish-button-container" class="button-container" onclick="finish()" style="display: none">
+		<div id="finish-button-container" class="button-container" onclick="finishKaraoke()" style="display: none">
 			<div id="finish-button" class="button">Stop Recording</div>
 		</div>
 
@@ -143,7 +143,9 @@
 		</div>
 
 		<div id="settings">
-			<div id="settings-title">Settings</div>
+
+			<div class="settings-title">Settings</div>
+
 			<table>
 				<tbody>
 					<tr>
@@ -175,7 +177,7 @@
 							<input
 								type="button"
 								id="calculation-input"
-								class="cycler"
+								class="button3"
 								onclick="this.value = cycleCalculation()"
 							>
 						</div></td>
@@ -188,7 +190,7 @@
 							<input
 								type="button"
 								id="randomization-input"
-								class="cycler"
+								class="button3"
 								onclick="this.value = cycleRandomization()"
 								value="test"
 							>
@@ -196,8 +198,12 @@
 					</tr>
 				</tbody>
 			</table>
+
+			<input type="button" id="test-microphone-button" value="Test Microphone" onclick="toggleLoopback(this)">
+
 			<input type="button" id="settings-reset-button" value="Reset to Default" onclick="resetSettings()">
-			<input type="button" id="settings-ok-button" value="OK" onclick="closeSettings()">
+			<input type="button" id="settings-ok-button" value="OK" class="button1" onclick="closeSettings()">
+
 		</div>
 
 		<div class="bloom-container" style="top: 25%; left: 25%"><div class="bloom" id="bloom1"></div></div>
