@@ -57,7 +57,7 @@ const noteKeyProbs = new Array(24 * 2**12)
 const noteBestKeys = new Array(2**12)
 
 for (var i = 0; i < 2**12; i++) {
-	var maxProb = 0
+	var maxProb = -1
 	for (var key = 0; key < 24; key++) {
 		const keyProfile = keyProfiles[key]
 		var prob = 1
@@ -127,7 +127,7 @@ function getStructureChoices(lastKey, notesIndexes) {
 
 	var keyStructures = []
 
-	if (lastKey) {
+	if (lastKey !== undefined) {
 		keyStructures.push([lastKey])
 		takenKeys[lastKey] = true
 	}
