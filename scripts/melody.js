@@ -109,3 +109,5 @@ function getMelodyFreq(buf) {
 	return freq
 
 }
+
+onScriptLoad()

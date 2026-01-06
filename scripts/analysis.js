@@ -263,3 +263,5 @@ async function finish() {
 	resetVariables()
 
 }
+
+onScriptLoad()

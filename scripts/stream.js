@@ -135,3 +135,5 @@ async function clearAudio() {
 	audioContext = undefined
 
 }
+
+onScriptLoad()

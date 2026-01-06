@@ -274,3 +274,5 @@ function displaySettings() {
 		}
 	}
 }
+
+onScriptLoad()

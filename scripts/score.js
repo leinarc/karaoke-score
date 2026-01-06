@@ -34,3 +34,5 @@ function getScores(key, melodyData) {
 	return scores
 
 }
+
+onScriptLoad()

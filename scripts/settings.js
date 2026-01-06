@@ -59,3 +59,5 @@ function exportSettings() {
 		randomization: randomizationNames[randomization]
 	}
 }
+
+onScriptLoad()

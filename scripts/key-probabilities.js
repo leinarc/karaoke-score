@@ -176,3 +176,5 @@ function getStructureChoices(lastKey, notesIndexes) {
 	return keyStructures
 
 }
+
+onScriptLoad()

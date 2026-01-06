@@ -96,3 +96,5 @@ function getKey(...args) {
 
 	return key
 }
+
+onScriptLoad()

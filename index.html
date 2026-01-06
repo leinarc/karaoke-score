@@ -3,41 +3,105 @@
 <html>
 	<head>
 		<title>Karaoke Score - Record your singing and get a score</title>
-		<script src="stream.js"></script>
-		<script src="analysis.js"></script>
-		<script src="melody.js"></script>
-		<script src="key.js"></script>
-		<script src="key-probabilities.js"></script>
-		<script src="score.js"></script>
-		<script src="display.js"></script>
-		<script src="settings.js"></script>
 		<link rel="stylesheet" href="style.css">
 
 		<!-- OH NO EXTERNAL LINKS!!! RUNNNNNNNN!!! -->
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Comic+Relief:wght@400;700&family=Noto+Sans+JP:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Sour+Gummy:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Noto+Sans+JP:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 	</head>
-	<body>
+	<body
+		style="
+			font-family: 'Noto Sans', sans-serif;
+
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			
+			box-sizing: border-box;
+
+			width: 100dvw;
+			height: 100dvh;
+			max-width: 100dvw;
+			max-height: 100dvh;
+			min-width: 100dvw;
+			min-height: 100dvh;
+
+			margin: 0;
+
+			overflow: hidden;
+		"
+	>	
+		<input type="checkbox" id="is-done-loading" autocomplete="off" style="display: none;">
+		<div
+			id="loading-cover"
+			style="
+				font-size: min(6svw, 2.5svh);
+
+				position: absolute;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+
+				background-color: #111;
+				color: #eee;
+
+				width: 100lvw;
+				height: 100lvh;
+				z-index: 1000;
+			"
+		>
+			<div
+				id="loading-circle"
+				style="
+					font-size: 1.8em;
+
+					position: absolute;
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					justify-content: center;
+
+					border-style: solid;
+					border-width: 0.1em;
+					border-radius: 50%;
+
+					outline-style: solid;
+					outline-offset: min(4svw, 4svh);
+					outline-width: 0;
+					outline-color: rgba(255, 255, 255, 0);
+
+					width: min(40svw, 40svh);
+					height: min(40svw, 40svh);
+
+					transition: all 1s cubic-bezier(0, 0.5, 0.5, 1);
+				"
+			>
+				<div style="font-weight: 700; margin-bottom: 0.5em;">Loading...</div>
+				<div id="loading-percent" style="font-size: 0.75em">0%</div>
+			</div>
+		</div>
+
 		<audio id="drum-roll" src="sounds/karaoke-roll.ogg" style="display: none;"></audio>
 		<audio id="good-ending" src="sounds/karaoke-good.ogg" style="display: none;"></audio>
 		<audio id="normal-ending" src="sounds/karaoke-normal.ogg" style="display: none;"></audio>
 		<audio id="bad-ending" src="sounds/karaoke-bad.ogg" style="display: none;"></audio>
 		<audio id="sound-test" src="sounds/karaoke-test.ogg" style="display: none;"></audio>
 
-		<input id="is-fullscreen" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
-		<input id="is-settings-open" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
-		<input id="is-settings-closed" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
-		<input id="show-background" type="checkbox" autocomplete="off" style="display: var(--controls-display)" checked></input>
-		<input id="showing-score" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
-		<input id="show-score" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
-		<input id="effect1" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
-		<input id="effect2" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
-		<input id="effect3" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
-		<input id="effect4" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
-		<input id="effect5" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
-		<input id="effect6" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
-		<input id="effect39" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
+		<input id="is-fullscreen" type="checkbox" autocomplete="off" style="display: var(--controls-display)">
+		<input id="is-settings-open" type="checkbox" autocomplete="off" style="display: var(--controls-display)">
+		<input id="is-settings-closed" type="checkbox" autocomplete="off" style="display: var(--controls-display)">
+		<input id="show-background" type="checkbox" autocomplete="off" style="display: var(--controls-display)" checked>
+		<input id="showing-score" type="checkbox" autocomplete="off" style="display: var(--controls-display)">
+		<input id="show-score" type="checkbox" autocomplete="off" style="display: var(--controls-display)">
+		<input id="effect1" type="checkbox" autocomplete="off" style="display: var(--controls-display)">
+		<input id="effect2" type="checkbox" autocomplete="off" style="display: var(--controls-display)">
+		<input id="effect3" type="checkbox" autocomplete="off" style="display: var(--controls-display)">
+		<input id="effect4" type="checkbox" autocomplete="off" style="display: var(--controls-display)">
+		<input id="effect5" type="checkbox" autocomplete="off" style="display: var(--controls-display)">
+		<input id="effect6" type="checkbox" autocomplete="off" style="display: var(--controls-display)">
+		<input id="effect39" type="checkbox" autocomplete="off" style="display: var(--controls-display)">
 
 		<div id="background"></div>
 		<div id="gif-container"><div id="gif"></div></div>
@@ -99,7 +163,7 @@
 								id="volume-input" 
 								size="3"
 								oninput="this.value = this.value.replace(/[^0-9\.]/g, '').replace(/(\..*)\./g, '$1')"
-								onchange="document.getElementById('volume-slider').value = setVolume(this)"
+								onchange="document.getElementById('volume-slider').value = setVolume(this); this.value = volume"
 							>%
 						</div></td>
 					</tr>
@@ -140,5 +204,37 @@
 		<div class="bloom-container" style="top: 60%; left: 80%"><div class="bloom" id="bloom2"></div></div>
 		<div class="bloom-container" style="top: 70%; left: 10%"><div class="bloom" id="bloom3"></div></div>
 		<div class="bloom-container" style="top: 15%; left: 70%"><div class="bloom" id="bloom4"></div></div>
+
+		<script>
+			const totalScripts = 8
+			var loadedScripts = 0
+
+			function onScriptLoad() {
+				loadedScripts++
+
+				const progress = loadedScripts/totalScripts
+				const percent = Math.floor(progress * 100)
+
+				document.getElementById("loading-percent").innerText = percent + '%'
+				document.getElementById("loading-circle").style.outlineOffset = `min(${4 - 4 * progress}svw, ${4 - 4 * progress}svh)`
+				document.getElementById("loading-circle").style.outlineWidth = `min(${5 * progress}svw, ${5 * progress}svh)`
+				document.getElementById("loading-circle").style.outlineColor = `rgba(255, 255, 255, ${progress})`
+
+				if (loadedScripts >= totalScripts) {
+					document.getElementById('is-done-loading').checked = true
+				} 
+			}
+
+
+		</script>
+
+		<script src="scripts/stream.js"></script>
+		<script src="scripts/analysis.js"></script>
+		<script src="scripts/melody.js"></script>
+		<script src="scripts/key.js"></script>
+		<script src="scripts/key-probabilities.js"></script>
+		<script src="scripts/score.js"></script>
+		<script src="scripts/display.js"></script>
+		<script src="scripts/settings.js"></script>
 	</body>
 </html>

@@ -31,8 +31,6 @@
 #score, #message {
 	font-family:
 		"Chewy",
-		"Comic Relief",
-		"Sour Gummy",
 		"Comic Sans MS",
 		"Comic Sans",
 		"Noto Sans JP",
@@ -44,6 +42,25 @@
 
 body {	
 	font-family: "Noto Sans", sans-serif;
+}
+
+html{
+	font-size: min(6svw, 2.5svh, max(min(2.3svh, 4svw), 0.5em));
+}
+
+#is-done-loading:checked ~ #loading-cover {
+	animation: remove-loading-cover 0.2s ease-in forwards;
+}
+
+@keyframes remove-loading-cover {
+	0% {
+		visibility: visible;
+		opacity: 100%;
+	}
+	100% {
+		opacity: 0;
+		visibility: hidden;
+	}
 }
 
 
@@ -99,23 +116,23 @@ input[type="text"] {
 
 
 
-html{
-	font-size: min(6svw, 2.5svh, max(min(2.3svh, 4svw), 0.5em));
-}
-
 body {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
 
-	margin: 0;
+	box-sizing: border-box;
+
 	width: 100dvw;
 	height: 100dvh;
 	min-width: 100dvw;
 	max-width: 100dvw;
 	min-height: 100dvh;
 	max-height: 100dvh;
+	
+	margin: 0;
+
 	color: var(--fg);
 	background-color: var(--bg);
 
