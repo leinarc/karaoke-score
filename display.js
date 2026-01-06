@@ -201,7 +201,7 @@ function getEndingAudio(score) {
 const gifCount = {
 	bad: 7,
 	normal: 8,
-	good: 18,
+	good: 17,
 	miku: 29
 }
 
