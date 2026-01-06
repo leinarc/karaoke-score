@@ -8,14 +8,17 @@
 	--fg-tame: #ccc;
 	--bg-tame: #333;
 	--accent-dark: #003830;
+	--accent-dim: #055e50;
 	--accent: #198375;
 	--accent-light: #70e7d7;
 	--accent-very-light: #d7fffa;
 	--accent2-dark: #522300;
+	--accent2-dim: #60320d;
 	--accent2: #834919;
 	--accent2-light: #e9c7ab;
 	--accent2-very-light: #eecdb2;
 	--accent3-dark: #390150;
+	--accent3-dim: #500c6a;
 	--accent3: #651983;
 	--accent3-light: #915ca7;
 	--accent3-very-light: #caacd6;
@@ -23,21 +26,6 @@
 	--miku: #197583;
 	--miku-light: #53a5b1;
 	--miku-very-light: #cbeaef;
-}
-
-
-
-input {
-	z-index: 10000;
-}
-
-
-
-
-
-#fullscreen-button,
-.button {
-	font-family: "Noto Sans", sans-serif;
 }
 
 #score, #message {
@@ -52,6 +40,61 @@ input {
 		"Segoe Print",
 		"Candara",
 		sans-serif;
+}
+
+body {	
+	font-family: "Noto Sans", sans-serif;
+}
+
+
+
+input {
+	font-size: 0.9em;
+	z-index: 10000;
+}
+
+input[type="button"] {
+	cursor: pointer;
+
+	border-style: solid;
+	border-color: inherit;
+	border-width: 0.1em;
+	border-radius: 0.75em;
+
+	padding: 0.25em 0.5em;
+
+	line-height: 1em;
+
+	background-color: var(--fg);
+	color: var(--bg);
+}
+
+input[type="button"]:hover {
+	background-color: var(--fg-extreme);
+	color: var(--bg-tame);
+}
+
+input[type="button"]:active {
+	background-color: var(--fg-tame);
+	color: var(--bg-extreme);
+}
+
+input[type="range"] {
+	width: 5em;
+}
+
+input[type="text"] {
+	cursor: pointer;
+
+	border-style: solid;
+	border-color: inherit;
+	border-width: 0.1em;
+	border-radius: 0.75em;
+
+	padding: 0.25em 0.5em;
+
+	background-color: var(--fg);
+	color: var(--bg);
 }
 
 
@@ -154,10 +197,167 @@ body {
 	z-index: -98;
 }
 
+#settings {
+	position: absolute;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: flex-start;
+
+	top: 0;
+	left: 0;
+
+	font-size: 0.9em;
+
+	padding: 0 max(1em, (100dvw - 35em) / 2);
+
+	width: 100dvw;
+	height: 0;
+
+	box-sizing: border-box;
+
+	background-color: var(--bg);
+
+	overflow: hidden;
+	visibility: hidden;
+
+	z-index: 3;
+}
+
+@keyframes open-settings {
+	0% {
+		padding: 0 max(1em, (100dvw - 35em) / 2);
+
+		height: 0;
+
+		overflow: auto;
+		visibility: visible;
+	}
+	100% {
+		padding: 2em max(1em, (100dvw - 35em) / 2);
+
+		height: 100dvh;
+
+		overflow: auto;
+		visibility: visible;
+	}
+}
+
+@keyframes close-settings {
+	0% {		
+		padding: 2em max(1em, (100dvw - 35em) / 2);
+
+		height: 100dvh;
+
+		overflow: hidden;
+		visibility: visible;
+	}
+	99% {
+		padding: 0 max(1em, (100dvw - 35em) / 2);
+
+		height: 0;
+	}
+	100% {
+		overflow: hidden;
+		visibility: hidden;
+	}
+}
+
+#is-settings-open:checked ~ #settings {
+	animation: open-settings 0.2s cubic-bezier(0, 0.5, 0.5, 1) forwards;
+}
+
+#is-settings-closed:checked ~ #settings {
+	animation: close-settings 0.2s cubic-bezier(0, 0.5, 0.5, 1) forwards;
+}
+
+#settings > * {
+	margin-bottom: 1.5em;
+}
+
+#settings-title {
+	text-align: center;
+
+	font-weight: 700;
+	font-size: 1.5em;
+}
+
+#settings table {
+  	border-collapse: collapse;
+
+	max-width: 35em;
+}
+
+#settings td {
+	border-style: solid;
+	border-top-width: 0.05em;
+	border-bottom-width: 0.05em;
+	border-left-width: 0;
+	border-right-width: 0;
+	border-color:var(--fg-tame);
+
+	padding: 1em 0.5em 1.5em;
+}
+
+#settings td > div {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+#settings td > div > * {
+	margin-left: 0.5em;
+	flex-grow: 1;
+	flex-shrink: 1;
+}
+
+#settings input {
+	min-width: 0;
+}
+
+#settings > input {
+	margin-left: 10em;
+	margin-right: 10em;
+	
+	border-radius: 0.5em;
+	padding: 0.5em 1em;
+}
+
+#settings > table input[type="button"] {
+	width: 15em;
+
+	background-color: var(--accent3-dim);
+	color: var(--fg);
+}
+
+#settings > table input[type="button"]:hover {
+	background-color: var(--accent3);
+	color: var(--fg-extreme);
+}
+
+#settings > table input[type="button"]:active {
+	background-color: var(--accent3-dark);
+	color: var(--fg-tame);
+}
+
+#settings-ok-button {
+	background-color: var(--accent-dim);
+	color: var(--fg);
+}
+
+#settings-ok-button:hover {
+	background-color: var(--accent);
+	color: var(--fg-extreme);
+}
+
+#settings-ok-button:active {
+	background-color: var(--accent-dark);
+	color: var(--fg-tame);
+}
 
 
 
-#fullscreen-button {
+.extra-button {
 	position: absolute;
 	display: flex;
 	align-items: center;
@@ -165,11 +365,7 @@ body {
 
 	font-weight: 500;
 
-	top: 1em;
-	left: 1em;
-
-	padding: 0.25em 1em;
-	height: 1.5em;
+	padding: 0.6em;
 	border-style: solid;
 	border-width: 0.1em;
 	border-radius: 1.25em;
@@ -179,61 +375,68 @@ body {
 
 	box-shadow: 0 0 0.25em -0.1em var(--bg-extreme);
 
-	transition: background-color 0.2s ease-out, color 0.2s ease-out, box-shadow 0.2s ease-out, font-size 0.2s ease-out;
-
 	z-index: 2;
+
+	transition: background-color 0.2s ease-out, color 0.2s ease-out, box-shadow 0.2s ease-out, font-size 0.2s ease-out;
 
 	cursor: pointer;
 	user-select: none;
 }
 
-#fullscreen-button:hover {
+.extra-button:hover {
 	background-color: var(--fg-extreme);
 	color: var(--bg-tame);
 
 	box-shadow: 0 0 0.5em 0 var(--bg-extreme);
 }
 
-#fullscreen-button:active {
+.extra-button:active {
 	background-color: var(--fg-tame);
 	color: var(--bg-extreme);
 
 	box-shadow: 0 0 0.1em 0.052em var(--bg-extreme), 0 0 0.5em var(--fg-extreme) inset;
 }
 
-#is-fullscreen:checked ~ #fullscreen-button {
-	font-size: 0.9em;
-
-	background-color: var(--bg);
-	color: var(--fg);
-
-	box-shadow: 0 0 0.25em -0.1em var(--fg-extreme);
-}
-
-#is-fullscreen:checked ~ #fullscreen-button:hover {
-	background-color: var(--bg-extreme);
-	color: var(--fg-tame);
-
-	box-shadow: 0 0 0.5em 0 var(--fg-extreme);
-}
-
-#is-fullscreen:checked ~ #fullscreen-button:active {
-	background-color: var(--bg-tame);
-	color: var(--fg-extreme);
-
-	box-shadow: 0 0 0.1em 0.052em var(--fg-extreme), 0 0 0.5em var(--bg-extreme) inset;
-}
-
-#fullscreen-icon {
-	position: relative;
+.icon-flipper {
 	display: flex;
+	align-items: center;
+	justify-content: center;
 	
 	width: 1em;
 	height: 1em;
 
-	margin-right: 0.5em;
+	transition: rotate 0.2s ease-out;
+}
+
+.icon {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	
+	width: 1em;
+	height: 1em;
 
 	transition: rotate 0.2s ease-out;
+}
+
+.icon {
+	rotate: 0deg;
+}
+
+.extra-button:hover .icon {
+	rotate: -10deg;
+}
+
+.extra-button:active .icon {
+	rotate: 10deg;
+}
+
+
+
+#fullscreen-button {
+	top: 1em;
+	right: 4em;
 }
 
 #fullscreen-icon::before,
@@ -272,40 +475,104 @@ body {
 	right: 0;
 }
 
-#fullscreen-icon,
-#fullscreen-icon::before,
-#fullscreen-icon::after {
-	rotate: 0;
+#fullscreen-text {
+	margin-left: 0.5em;
+	font-size: 0.8em;
+	line-height: 1em;
+	display: none;
 }
 
-#fullscreen-button:hover #fullscreen-icon,
-#fullscreen-button:hover #fullscreen-icon::before,
-#fullscreen-button:hover #fullscreen-icon::after {
-	rotate: -10deg;
+
+
+#is-fullscreen:checked ~ #fullscreen-button {
+	background-color: var(--bg);
+	color: var(--fg);
+
+	box-shadow: 0 0 0.25em -0.1em var(--fg-extreme);
 }
 
-#fullscreen-button:active #fullscreen-icon,
-#fullscreen-button:active #fullscreen-icon::before,
-#fullscreen-button:active #fullscreen-icon::after {
-	rotate: 10deg;
+#is-fullscreen:checked ~ #fullscreen-button:hover {
+	background-color: var(--bg-extreme);
+	color: var(--fg-tame);
+
+	box-shadow: 0 0 0.5em 0 var(--fg-extreme);
 }
 
-#is-fullscreen:checked ~ * #fullscreen-icon,
-#is-fullscreen:checked ~ * #fullscreen-icon::before,
-#is-fullscreen:checked ~ * #fullscreen-icon::after {
+#is-fullscreen:checked ~ #fullscreen-button:active {
+	background-color: var(--bg-tame);
+	color: var(--fg-extreme);
+
+	box-shadow: 0 0 0.1em 0.052em var(--fg-extreme), 0 0 0.5em var(--bg-extreme) inset;
+}
+
+#is-fullscreen:checked ~ #fullscreen-button .icon-flipper {
 	rotate: 180deg;
 }
 
-#is-fullscreen:checked ~ #fullscreen-button:hover #fullscreen-icon,
-#is-fullscreen:checked ~ #fullscreen-button:hover #fullscreen-icon::before,
-#is-fullscreen:checked ~ #fullscreen-button:hover #fullscreen-icon::after {
-	rotate: 170deg;
+#is-fullscreen:checked ~ #fullscreen-button .icon::before,
+#is-fullscreen:checked ~ #fullscreen-button .icon::after {
+	rotate: 180deg;
 }
 
-#is-fullscreen:checked ~ #fullscreen-button:active #fullscreen-icon
-#is-fullscreen:checked ~ #fullscreen-button:active #fullscreen-icon::before,
-#is-fullscreen:checked ~ #fullscreen-button:active #fullscreen-icon::after {
-	rotate: 190deg;
+#is-fullscreen:checked ~ * #fullscreen-text {
+	display: inline;
+}
+
+
+
+#settings-button {
+	top: 1em;
+	right: 1em;
+}
+
+#settings-icon::before {
+	position: absolute;
+	content: '';
+
+	width: 0.3em;
+	height: 0.3em;
+
+	border-style: solid;
+	border-width: 0.3em;
+	border-radius: 50%;
+}
+
+#settings-icon > * {
+	position: absolute;
+
+	width: 0.2em;
+	height: 0.3em;
+
+	border-style: solid;
+	border-top-width: 0.45em;
+	border-bottom-width: 0.45em;
+	border-left-width: 0;
+	border-right-width: 0;
+}
+
+#settings-icon > *:nth-child(1) {
+	rotate: 22.5deg;
+}
+
+#settings-icon > *:nth-child(2) {
+	rotate: 67.5deg;
+}
+
+#settings-icon > *:nth-child(3) {
+	rotate: 112.5deg;
+}
+
+#settings-icon > *:nth-child(4) {
+	rotate: 157.5deg;
+}
+
+#is-settings-open:checked ~ #settings-button .icon-flipper {
+	rotate: 180deg;
+}
+
+#is-settings-open:checked ~ #fullscreen-button .icon::before,
+#is-settings-open:checked ~ #fullscreen-button .icon::after {
+	rotate: 180deg;
 }
 
 

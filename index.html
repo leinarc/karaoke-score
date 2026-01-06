@@ -10,6 +10,7 @@
 		<script src="key-probabilities.js"></script>
 		<script src="score.js"></script>
 		<script src="display.js"></script>
+		<script src="settings.js"></script>
 		<link rel="stylesheet" href="style.css">
 
 		<!-- OH NO EXTERNAL LINKS!!! RUNNNNNNNN!!! -->
@@ -18,12 +19,15 @@
 		<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Comic+Relief:wght@400;700&family=Noto+Sans+JP:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Sour+Gummy:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 	</head>
 	<body>
-		<audio id="drum-roll" src="sounds/karaoke-roll.ogg" style="display: var(--controls-display);"></audio>
-		<audio id="good-ending" src="sounds/karaoke-good.ogg" style="display: var(--controls-display);"></audio>
-		<audio id="normal-ending" src="sounds/karaoke-normal.ogg" style="display: var(--controls-display);"></audio>
-		<audio id="bad-ending" src="sounds/karaoke-bad.ogg" style="display: var(--controls-display);"></audio>
+		<audio id="drum-roll" src="sounds/karaoke-roll.ogg" style="display: none;"></audio>
+		<audio id="good-ending" src="sounds/karaoke-good.ogg" style="display: none;"></audio>
+		<audio id="normal-ending" src="sounds/karaoke-normal.ogg" style="display: none;"></audio>
+		<audio id="bad-ending" src="sounds/karaoke-bad.ogg" style="display: none;"></audio>
+		<audio id="sound-test" src="sounds/karaoke-test.ogg" style="display: none;"></audio>
 
 		<input id="is-fullscreen" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
+		<input id="is-settings-open" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
+		<input id="is-settings-closed" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
 		<input id="show-background" type="checkbox" autocomplete="off" style="display: var(--controls-display)" checked></input>
 		<input id="showing-score" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
 		<input id="show-score" type="checkbox" autocomplete="off" style="display: var(--controls-display)"></input>
@@ -56,7 +60,81 @@
 			<div id="finish-button" class="button">Stop Recording</div>
 		</div>
 
-		<div id="fullscreen-button" onclick="toggleFullscreen()"><div id="fullscreen-icon"></div><div id="fullscreen-text">Enable Fullscreen</div></div>
+		<div id="fullscreen-button" onclick="toggleFullscreen()" class="extra-button">
+			<div class="icon-flipper">
+				<div id="fullscreen-icon" class="icon"></div>
+			</div>
+			<div id="fullscreen-text">Enter Fullscreen</div>
+		</div>
+
+		<div id="settings-button" onclick="openSettings()" class="extra-button">
+			<div class="icon-flipper">
+				<div id="settings-icon" class="icon">
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+				</div>
+			</div>
+		</div>
+
+		<div id="settings">
+			<div id="settings-title">Settings</div>
+			<table>
+				<tbody>
+					<tr>
+						<td><div>
+							<label for="volume-input">Volume</label>
+						</div></td>
+						<td><div>
+							<input 
+								type="range"
+								id="volume-slider"
+								min="0"
+								max="100"
+								oninput="document.getElementById('volume-input').value = setVolume(this)"
+							>
+							<input 
+								type="text"
+								id="volume-input" 
+								size="3"
+								oninput="this.value = this.value.replace(/[^0-9\.]/g, '').replace(/(\..*)\./g, '$1')"
+								onchange="document.getElementById('volume-slider').value = setVolume(this)"
+							>%
+						</div></td>
+					</tr>
+					<tr>
+						<td><div>
+							<label for="calculation-input">Score Calculation</label>
+						</div></td>
+						<td><div>
+							<input
+								type="button"
+								id="calculation-input"
+								class="cycler"
+								onclick="this.value = cycleCalculation()"
+							>
+						</div></td>
+					</tr>
+					<tr>
+						<td><div>
+							<label for="randomization-input">Final Score Randomization</label>
+						</div></td>
+						<td><div>
+							<input
+								type="button"
+								id="randomization-input"
+								class="cycler"
+								onclick="this.value = cycleRandomization()"
+								value="test"
+							>
+						</div></td>
+					</tr>
+				</tbody>
+			</table>
+			<input type="button" id="settings-reset-button" value="Reset to Default" onclick="resetSettings()">
+			<input type="button" id="settings-ok-button" value="OK" onclick="closeSettings()">
+		</div>
 
 		<div class="bloom-container" style="top: 25%; left: 25%"><div class="bloom" id="bloom1"></div></div>
 		<div class="bloom-container" style="top: 60%; left: 80%"><div class="bloom" id="bloom2"></div></div>

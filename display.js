@@ -239,5 +239,38 @@ function checkFullscreen() {
 
 	document.getElementById('showing-score').checked = false
 	document.getElementById('is-fullscreen').checked = isFullscreen
-	document.getElementById('fullscreen-text').innerText = isFullscreen ? "Disable Fullscreen" : "Enable Fullscreen"
+	document.getElementById('fullscreen-text').innerText = isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"
+}
+
+
+
+function openSettings() {
+	document.getElementById('is-settings-open').checked = true
+	document.getElementById('is-settings-closed').checked = false
+	document.getElementById('settings').scrollTo(0, 0)
+
+	displaySettings()
+}
+
+function closeSettings() {
+	document.getElementById('is-settings-open').checked = false
+	document.getElementById('is-settings-closed').checked = true
+}
+
+function displaySettings() {
+	const settings = exportSettings()
+
+	for (const setting in settings) {
+		const value = settings[setting]
+
+		setInputValue(setting + '-input', value)
+		setInputValue(setting + '-slider', value)
+	}
+
+	function setInputValue(inputName, value) {
+		const input = document.getElementById(inputName)
+		if (input) {
+			input.value = value
+		}
+	}
 }

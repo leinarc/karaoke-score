@@ -172,40 +172,86 @@ async function finish() {
 
 		}
 
-		// Choose a random score wherein higher scores have higher chances of being chosen
-		const totalScore = scores.reduce((a, b) => a + b, 0)
-		var chosen = Math.random() * totalScore
-		var chosenScore = 0
-		var i = 0
-
-		scores.sort((a, b) => b[0] - a[0])
-
-		while (chosen > 0 && i <= scores.length) {
-			const score = scores[i]
-			chosen -= score
-			chosenScore = score
-			i++
+		// Add zero if scores array is empty
+		if (!scores.length) {
+			scores = [0]
 		}
-
-		// Turn to percent
-		const modifiedScore = Math.min(100, Math.floor(chosenScore * 100))
-
-		// Randomize between modified score and 100
-		// BECAUSE THAT'S HOW KARAOKE WORKS
-		const randomizedScore = Math.floor(Math.random() * (100 - modifiedScore + 1)) + modifiedScore
 
 		console.log('='.repeat(20))
 		console.log('SCORE DATA')
 		console.log('='.repeat(20))
-		console.log('Max:', Math.max(...scores))
-		console.log('Average:', scores.reduce((a, b) => a + b, 0)/scores.length)
-		console.log('Root Mean Square:', (scores.reduce((a, b) => a + b*b, 0)/scores.length)**0.5)
-		console.log('Chosen Score:', chosenScore)
-		console.log('Modified Score:', modifiedScore)
-		console.log('Randomized Score:', randomizedScore)
 		console.log(scores)
-		
-		startEndAnimation(randomizedScore)
+		console.log('Max:', Math.max(...scores) * 100)
+		console.log('Average:', scores.reduce((a, b) => a + b, 0)/scores.length * 100) 
+		console.log('Root Mean Square:', (scores.reduce((a, b) => a + b*b, 0)/scores.length)**0.5 * 100)
+
+
+
+		const calculationName = calculationNames[calculation]
+
+		var score
+
+		if (calculationName == "Weighted Probability Selection") {
+
+			// Choose a random score wherein higher scores have higher chances of being chosen
+			const totalScore = scores.reduce((a, b) => a + b, 0)
+			var chosen = Math.random() * totalScore
+			var i = 0
+
+			scores.sort((a, b) => b[0] - a[0])
+
+			while (chosen >= 0 && i < scores.length) {
+				chosen -= scores[i]
+				score = scores[i]
+				i++
+			}
+
+		} else if (calculationName == "Equal Probability Selection") {
+
+			// Choose a random score
+			score = scores[Math.floor(Math.random() * scores.length)]
+
+		} else if (calculationName == "Root Mean Square") {
+
+			// Compute RMS
+			score = (scores.reduce((a, b) => a + b*b, 0)/scores.length)**0.5
+
+		} else {
+
+			// Compute average
+			score = scores.reduce((a, b) => a + b, 0)/scores.length
+
+		}
+
+		console.log('Calculated Score:', score * 100)
+
+
+
+		const randomizationName = randomizationNames[randomization]
+		if (randomizationName == "Calculated score to 100") {
+
+			// Randomize between calculated score and 1
+			score = Math.random() * (1 - score) + score
+
+		} else if (randomizationName == "0 to calculated score") {
+
+			// Randomize between 0 and calculated score
+			score = Math.random() * score
+			
+		}
+
+		console.log('Randomized Score:', score * 100)
+
+
+
+		// Round to 0-100
+		score = Math.min(100, Math.max(0, Math.floor(score * 101)))
+
+		console.log('Final Score:', score)
+
+
+
+		startEndAnimation(score)
 	
 	} catch (err) {
 
