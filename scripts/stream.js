@@ -38,7 +38,7 @@ async function getMicAudio() {
 		stream = await navigator.mediaDevices.getUserMedia(
 			{
 				"audio": {
-					/*"echoCancellation": false,
+					"echoCancellation": false,
 					"autoGainControl": false,
 					"noiseSuppression": false,
 					"highpassFilter": false,
@@ -47,7 +47,7 @@ async function getMicAudio() {
 					"googAutoGainControl": false,
 					"googNoiseSuppression": false,
 					"googHighpassFilter": false,
-					"googTypingNoiseDetection": false*/
+					"googTypingNoiseDetection": false
 				},
 			}
 		)
