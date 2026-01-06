@@ -96,10 +96,6 @@ input[type="button"]:active {
 	color: var(--bg-extreme);
 }
 
-input[type="range"] {
-	width: 5em;
-}
-
 input[type="text"] {
 	cursor: pointer;
 
@@ -247,8 +243,11 @@ body {
 
 		height: 0;
 
-		overflow: auto;
+		overflow: hidden;
 		visibility: visible;
+	}
+	99% {
+		overflow: hidden;
 	}
 	100% {
 		padding: 2em max(1em, (100dvw - 35em) / 2);
@@ -316,6 +315,10 @@ body {
 	padding: 1em 0.5em 1.5em;
 }
 
+#settings td:first-child {
+	width: 35%;
+}
+
 #settings td > div {
 	display: flex;
 	justify-content: space-between;
@@ -329,15 +332,6 @@ body {
 }
 
 #settings input {
-	min-width: 0;
-}
-
-#settings > input {
-	margin-left: 10em;
-	margin-right: 10em;
-	
-	border-radius: 0.5em;
-	padding: 0.5em 1em;
 }
 
 #settings > table input[type="button"] {
@@ -355,6 +349,24 @@ body {
 #settings > table input[type="button"]:active {
 	background-color: var(--accent3-dark);
 	color: var(--fg-tame);
+}
+
+#settings > table input[type="text"] {
+	flex-grow: 0;
+}
+
+#volume-input {
+	text-align: right;
+}
+
+#settings > input {
+	min-width: 10em;
+
+	margin-left: 10em;
+	margin-right: 10em;
+	
+	border-radius: 0.5em;
+	padding: 0.5em 1em;
 }
 
 #settings-ok-button {

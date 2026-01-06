@@ -43,20 +43,20 @@ function setVolume(input) {
 function cycleCalculation() {
 	calculation = (calculation + 1) % calculationNames.length
 
-	return calculationNames[calculation]
+	return calculation + ': ' + calculationNames[calculation]
 }
 
 function cycleRandomization() {
 	randomization = (randomization + 1) % randomizationNames.length
 
-	return randomizationNames[randomization]
+	return randomization + ': ' + randomizationNames[randomization]
 }
 
 function exportSettings() {
 	return {
 		volume,
-		calculation: calculationNames[calculation],
-		randomization: randomizationNames[randomization]
+		calculation: calculation + ': ' + calculationNames[calculation],
+		randomization: randomization + ': ' + randomizationNames[randomization]
 	}
 }
 

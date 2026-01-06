@@ -164,7 +164,7 @@
 								size="3"
 								oninput="this.value = this.value.replace(/[^0-9\.]/g, '').replace(/(\..*)\./g, '$1')"
 								onchange="document.getElementById('volume-slider').value = setVolume(this); this.value = volume"
-							>%
+							>
 						</div></td>
 					</tr>
 					<tr>
@@ -224,8 +224,6 @@
 					document.getElementById('is-done-loading').checked = true
 				} 
 			}
-
-
 		</script>
 
 		<script src="scripts/stream.js"></script>
