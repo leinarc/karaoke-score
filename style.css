@@ -7,7 +7,7 @@
 	--bg-extreme: #000;
 	--fg-tame: #ccc;
 	--bg-tame: #333;
-	--accent-dark: #004d42;
+	--accent-dark: #003830;
 	--accent: #198375;
 	--accent-light: #70e7d7;
 	--accent-very-light: #d7fffa;
@@ -107,8 +107,9 @@ body {
 	height: 100dvh;
 
 	mask-image: radial-gradient(circle, #000 0%, #0000 100%);
-  	mask-composite: add;
 	mask-size: cover;
+
+	mix-blend-mode: screen;
 
 	z-index: -99;
 	/*! filter: blur(0.05em); */
@@ -124,8 +125,6 @@ body {
 	background-repeat: no-repeat;
 	background-size: cover;
 	background-position: center;
-	
-	mix-blend-mode: color-dodge;
 
 	mask-image: radial-gradient(circle, #000 33%, #0000 33%);
 	mask-repeat: repeat;
@@ -139,20 +138,6 @@ body {
 		opacity 0.2s ease-in-out;
 }
 
-#gif::before {
-	display: block;
-	content: '';
-
-	width: 100dvw;
-	height: 100dvh;
-
-	background-color: var(--accent2-dark);
-	
-	mix-blend-mode: screen;
-
-	opacity: 20%;
-}
-
 #flash {
 	position: absolute;
 	display: block;
@@ -160,7 +145,7 @@ body {
 	width: 100dvw;
 	height: 100dvh;
 
-	mix-blend-mode: color-dodge;
+	mix-blend-mode: screen;
 
 	background-color: var(--fg-extreme);
 
@@ -579,11 +564,15 @@ body {
 }
 
 #show-background:checked ~ * #gif {
-	opacity: 20%;
+	opacity: 40%;
 }
 
 #show-background:checked ~ #show-score:not(:checked) ~ #background {
 	background-color: var(--accent-dark);
+}
+
+#show-background:checked ~ #show-score:not(:checked) ~ * #gif {
+	opacity: 50%;
 }
 
 
@@ -633,8 +622,12 @@ body {
 	outline-color: var(--accent2-light);
 }
 
+#show-background:checked ~ #effect1:checked ~ #background {
+	opacity: 20%;
+}
+
 #show-background:checked ~ #effect1:checked ~ * #gif {
-	opacity: 40%;
+	opacity: 60%;
 }
 
 
@@ -724,7 +717,7 @@ body {
 }
 
 #show-background:checked ~ #effect3:checked ~ * #gif {
-	opacity: 30%;
+	opacity: 50%;
 }
 
 
@@ -768,7 +761,7 @@ body {
 }
 
 #show-background:checked ~ #effect4:checked ~ * #gif {
-	opacity: 40%;
+	opacity: 50%;
 }
 
 
@@ -847,6 +840,14 @@ body {
 	outline-offset: 0.12em;
 
 	background-color: var(--accent3);
+}
+
+#show-background:checked ~ #effect6:checked ~ #background {
+	opacity: 20%;
+}
+
+#show-background:checked ~ #effect6:checked ~ * #gif {
+	opacity: 60%;
 }
 
 
