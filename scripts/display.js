@@ -260,8 +260,6 @@ function closeSettings() {
 function displaySettings() {
 	const settings = exportSettings()
 
-	console.log(settings)
-
 	for (const setting in settings) {
 		const state = settings[setting]
 
