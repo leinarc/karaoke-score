@@ -36,8 +36,8 @@ function getKeyChroma(buf) {
 
 		const frac = pitchClass - class1
 		
-		chroma[class1] += value * (1 - frac)**3
-		chroma[class2] += value * frac**3
+		chroma[class1] += value * (1 - frac)**2
+		chroma[class2] += value * frac**2
 
 	}
 
@@ -51,17 +51,14 @@ function getKeyNotes(buf) {
 
 	var chroma = getKeyChroma(buf)
 
-	const oldChroma = chroma
-	chroma = chroma.map((x, i) => x - oldChroma[(i+11) % 12] - oldChroma[(i+1) % 12])
-
 	// Normalize
 	const norm = Math.hypot(...chroma)
 
 	chroma = chroma.map(x => x / norm)
 
-	const notes = chroma.map(x => x > 0.01 ? 1 : 0)
+	const notes = chroma.map(x => x > 0.5 ? 1 : 0)
 
-	// console.log(chroma.map(x => x.toFixed(3)).join('\t'))
+	console.log(chroma.map(x => x.toFixed(3)).join('\t'))
 	console.log(notes.join('\t'))
 
 	return notes

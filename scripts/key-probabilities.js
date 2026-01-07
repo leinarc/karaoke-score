@@ -25,9 +25,9 @@ const keyProfiles = []
 for (var mode = 0; mode < modeProfiles.length; mode++) {
 	const modeProfile = modeProfiles[mode]
 
-	for (var tonic = 0; tonic < modeProfile.length; tonic++) {
-		const half1 = modeProfile.slice(modeProfile.length - tonic)
-		const half2 = modeProfile.slice(0, modeProfile.length - tonic)
+	for (var tonic = 0; tonic < 12; tonic++) {
+		const half1 = modeProfile.slice(12 - tonic)
+		const half2 = modeProfile.slice(0, 12 - tonic)
 		const keyProfile = [...half1, ...half2]
 
 		keyProfiles.push(keyProfile)

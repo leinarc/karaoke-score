@@ -1,11 +1,11 @@
 const onKeyNotes = [1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1]
 
-
-
 function getScores(key, melodyData) {
 
-	const offset = (Math.floor(key / 12) * 9 + key)  % 12
-	const profile = onKeyNotes.slice(offset).concat(onKeyNotes.slice(0, offset))
+	const offset = (Math.floor(key / 12) * 3 + key)  % 12
+	const half1 = onKeyNotes.slice(12 - offset)
+	const half2 = onKeyNotes.slice(0, 12 - offset)
+	const profile = half1.concat(half2)
 
 	const scores = []
 
