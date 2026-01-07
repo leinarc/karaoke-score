@@ -1,6 +1,11 @@
 var animationInterval
 var animationTimeout
 
+const soundRoll = new Audio('sounds/karaoke-roll.ogg')
+const soundGood = new Audio('sounds/karaoke-good.ogg')
+const soundNormal = new Audio('sounds/karaoke-normal.ogg')
+const soundBad = new Audio('sounds/karaoke-bad.ogg')
+
 function startEndAnimation(score) {
 
 	const message = generateMessage(score)
@@ -22,7 +27,7 @@ function startEndAnimation(score) {
 	document.getElementById('show-score').checked = true
 	document.getElementById('message').innerText = emoji
 
-	document.getElementById('drum-roll').play()
+	soundRoll.play()
 
 	clearInterval(animationInterval)
 	animationInterval = setInterval(() => {
@@ -56,14 +61,14 @@ function stopEndAnimation() {
 	clearInterval(animationInterval)
 	clearTimeout(animationTimeout)
 	
-	document.getElementById('drum-roll').pause()
-	document.getElementById('good-ending').pause()
-	document.getElementById('normal-ending').pause()
-	document.getElementById('bad-ending').pause()
-	document.getElementById('drum-roll').currentTime = 0
-	document.getElementById('good-ending').currentTime = 0
-	document.getElementById('normal-ending').currentTime = 0
-	document.getElementById('bad-ending').currentTime = 0
+	soundRoll.pause()
+	soundGood.pause()
+	soundNormal.pause()
+	soundBad.pause()
+	soundRoll.currentTime = 0
+	soundBad.currentTime = 0
+	soundNormal.currentTime = 0
+	soundBad.currentTime = 0
 
 	document.getElementById('show-background').checked = false
 	document.getElementById('showing-score').checked = false
@@ -190,12 +195,12 @@ function displayQuality(quality) {
 
 
 function getEndingAudio(score) {
-	const audioID =
-		score < 50 ? 'bad-ending' :
-		score < 90 ? 'normal-ending' :
-		'good-ending' 
+	const audio =
+		score < 50 ? soundBad :
+		score < 90 ? soundNormal :
+		soundGood
 
-	return document.getElementById(audioID)
+	return audio
 }
 
 const gifCount = {

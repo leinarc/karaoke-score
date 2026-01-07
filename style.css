@@ -988,31 +988,31 @@ body {
 }
 
 #effect2:checked ~ #effect4:checked ~ #flash {
-	animation: flash 2.6s cubic-bezier(0.5, 0, 1, 0.5);
+	animation: flash 2.8s cubic-bezier(0.5, 0, 1, 0.5);
 }
 
 #effect2:checked ~ #effect4:checked ~ * #bloom0 {
-	animation: bloom0 2.6s cubic-bezier(0, 0.5, 0.5, 1);
+	animation: bloom0 2.8s cubic-bezier(0, 0.5, 0.5, 1);
 }
 
 #effect2:checked ~ #effect4:checked ~ * #bloom1 {
-	animation: bloom1 2.6s cubic-bezier(0, 0.5, 0.5, 1);
+	animation: bloom1 2.8s cubic-bezier(0, 0.5, 0.5, 1);
 }
 
 #effect2:checked ~ #effect4:checked ~ * #bloom2 {
-	animation: bloom2 2.6s cubic-bezier(0, 0.5, 0.5, 1);
+	animation: bloom2 2.8s cubic-bezier(0, 0.5, 0.5, 1);
 }
 
 #effect2:checked ~ #effect4:checked ~ * #bloom3 {
-	animation: bloom3 2.6s cubic-bezier(0, 0.5, 0.5, 1);
+	animation: bloom3 2.8s cubic-bezier(0, 0.5, 0.5, 1);
 }
 
 #effect2:checked ~ #effect4:checked ~ * #bloom4 {
-	animation: bloom4 2.6s cubic-bezier(0, 0.5, 0.5, 1);
+	animation: bloom4 2.8s cubic-bezier(0, 0.5, 0.5, 1);
 }
 
 #effect2:checked ~ #effect6:checked ~ * #bloom0 {
-	animation: bloom00 2.6s cubic-bezier(0, 0.5, 0.5, 1);
+	animation: bloom00 2.8s cubic-bezier(0, 0.5, 0.5, 1);
 }
 
 

@@ -1,18 +1,36 @@
 var volume
+const soundTestCount = 10
+const soundTests = []
+var currentSoundTest = 0
+var lastSoundTest = 0
+
+for (var i = 1; i <= soundTestCount; i++) {
+	const audio = new Audio('sounds/karaoke-test.ogg')
+	soundTests.push(audio)
+}
 
 function setVolume(input) {
+	const oldVolume = volume
+
 	volume = Math.min(Math.max(Number(input.value) || 0, 0), 100)
 
-	document.getElementById('drum-roll').volume = volume/100
-	document.getElementById('good-ending').volume = volume/100
-	document.getElementById('normal-ending').volume = volume/100
-	document.getElementById('bad-ending').volume = volume/100
+	soundRoll.volume = volume/100
+	soundGood.volume = volume/100
+	soundNormal.volume = volume/100
+	soundBad.volume = volume/100
 
-	document.getElementById('sound-test').volume = volume/100
-	document.getElementById('sound-test').currentTime = 0
-	document.getElementById('sound-test').play()
+	testSound()
 
 	return volume
+}
+
+function testSound() {
+	const audio = soundTests[currentSoundTest]
+	audio.volume = volume/100
+	audio.currentTime = 0.2
+	audio.play()
+
+	currentSoundTest = (currentSoundTest + 1) % soundTests.length
 }
 
 
