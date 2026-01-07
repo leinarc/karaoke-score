@@ -76,10 +76,6 @@ if (validConstraints.length) {
 	const tbody = document.createElement('tbody')
 
 	for (const constraint of validConstraints) {
-
-		// Default on
-		constraints[constraint] = true
-
 		// Add constraint setting
 		const inputID = 'constraint-' + constraint + '-input'
 		const tr = document.createElement('tr')
@@ -103,11 +99,13 @@ if (validConstraints.length) {
 			input.value = constraints[constraint] ? 'On' : 'Off'
 			input.className = constraints[constraint] ? 'button3' : ''
 
-			removeMicAudio()
+			if (audioContext) {
+				removeMicAudio()
 
-			await getMicAudio()
+				await getMicAudio()
 
-			reconnectStreams()
+				reconnectStreams()
+			}
 
 		}
 
@@ -134,6 +132,10 @@ function resetSettings() {
 	volume = 100
 	calculation = 0
 	randomization = 0
+
+	for (const constraint of validConstraints) {
+		constraints[constraint] = true
+	}
 
 	displaySettings()
 }

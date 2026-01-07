@@ -61,15 +61,19 @@ async function finishKaraoke() {
 
 async function toggleLoopback(input) {
 
-	if (!audioContext) {
-		await getMicAudio()
-	}
-
 	if (loopback) {
 
 		disconnectLoopback()
 
 	} else {
+
+		if (!confirm('This may cause a feedback loop if you are using a speaker.\n\nDo you want to continue?')) {
+			return
+		}
+
+		if (!audioContext) {
+			await getMicAudio()
+		}
 
 		await connectLoopback()
 
@@ -109,19 +113,28 @@ async function getMicAudio() {
 async function removeMicAudio() {
 
 	try {
-
 		source.disconnect()
-		stream.getTracks().forEach(track => track.stop())
-
-		source = undefined
-		stream = undefined
-
 	} catch (err) {
-
 		console.error(err)
-		alert('Failed to remove mic audio.')
-
+		console.log('Failed to disconnect source.')
 	}
+
+	try {
+		stream.getTracks().forEach(track => {
+			try {
+				track.stop()
+			} catch (err) {
+				console.error(err)
+				console.log('Failed to stop track.')
+			}
+		})
+	} catch (err) {
+		console.error(err)
+		console.log('Failed to get stream tracks.')
+	}
+
+	source = undefined
+	stream = undefined
 
 }
 
@@ -258,10 +271,6 @@ function disconnectAnalyser() {
 
 
 async function connectLoopback() {
-
-	if (!confirm('This may cause a feedback loop if you are using a speaker.\n\nDo you want to continue?')) {
-		return
-	}
 
 	try {
 

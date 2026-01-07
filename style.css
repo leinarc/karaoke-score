@@ -334,7 +334,7 @@ body {
 }
 
 #settings > * {
-	margin-bottom: 1.5em;
+	margin-bottom: 1em;
 }
 
 .settings-title {
@@ -350,15 +350,17 @@ body {
 	max-width: 35em;
 }
 
-#settings td {
+#settings tr:first-child > td {
 	border-style: solid;
 	border-top-width: 0.05em;
-	border-bottom-width: 0.05em;
+	border-bottom-width: 0;
 	border-left-width: 0;
 	border-right-width: 0;
 	border-color:var(--fg-tame);
+}
 
-	padding: 1em 0.5em 1.5em;
+#settings td {
+	padding: 1em 0.5em;
 }
 
 #settings td:first-child {
