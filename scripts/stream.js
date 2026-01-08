@@ -101,11 +101,21 @@ async function getMicAudio() {
 		audioContext = new AudioContext()
 	}
 
-	stream = await navigator.mediaDevices.getUserMedia(
-		{
-			"audio": constraints,
-		}
-	)
+	try {
+
+		stream = await navigator.mediaDevices.getUserMedia(
+			{
+				"audio": constraints,
+			}
+		)
+
+	} catch (err) {
+
+		alert('Failed to get microphone audio.')
+		throw err
+
+	}
+
 
 	try {
 
@@ -239,7 +249,6 @@ async function connectAnalyser() {
 			console.error(err)
 			console.log('Failed to create worklet melody analyser.')
 			console.log('Falling back to TD analyser...')
-			alert(err)
 
 			createTDMelodyAnalyser()
 
@@ -256,7 +265,6 @@ async function connectAnalyser() {
 				console.error(err)
 				console.log('Processor for worklet melody analyser failed.')
 				console.log('Falling back to FFT analyser...')
-				alert(err)
 
 				source.disconnect(keyAnalyser)
 				createFFTKeyAnalyser()
