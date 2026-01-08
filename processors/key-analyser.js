@@ -4,6 +4,8 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 		super()
 
+		console.log('processor constructed')
+
 		const processor = this
 
 		const processorOptions = options.processorOptions
@@ -30,6 +32,8 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 		).then(module => {
 
 			module = module.instance.exports
+
+			console.log('wasm instantiated')
 		
 			const sinTable = []
 			const cosTable = []			
@@ -81,6 +85,9 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 	async process(inputs, outputs, parameters) {
 
+		console.log('input received')
+		console.log(inputs)
+
 		const error = this.error
 
 		if (error) {
@@ -117,6 +124,8 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 			const outputBins = await module.process_input(fftSize, fftOverlap, noteCount, Math.min(buffer.length, safeBufferSize))
 
+			console.log(outputBuns)
+
 			if (outputBins > 0) {
 				this.port.postMessage(outputBuffer.slice(0, outputBins))
 			}
@@ -126,6 +135,8 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 		} catch (err) {
 
 			this.error = err
+
+			console.error(err)
 
 			throw err
 
