@@ -12,6 +12,7 @@ var lastMelodyData
 var scores
 
 var lastSegmentKey
+var lastSegmentDate
 
 resetVariables()
 
@@ -50,21 +51,29 @@ function removeSegment() {
 
 
 
-function analyseMelody() {
-
-	if (!tdAnalyser) {
-		return
-	}
+function analyseMelody(freq, loudness) {
 	
 	try {
 
-		tdAnalyser.getFloatTimeDomainData(tdBuffer)
+		displayLoudness(loudness)
 
-		if (!lastMelodyData.length || !lastKeyData.length) {
-			lastSegmentDate = Date.now()
+		if (freq > 0) {
+
+			const frac = (12 * Math.log2(freq / 440) % 1 + 1) % 1
+			const quality = 1 - 4 * (1-frac) * frac
+			displayQuality(quality)
+
+			if (!lastMelodyData.length && !lastKeyData.length) {
+				lastSegmentDate = Date.now()
+			}
+
+			lastMelodyData.push(freq)
+
+		} else {
+
+			displayQuality(0)
+
 		}
-
-		lastMelodyData.push(getMelodyFreq(tdBuffer))
 
 		analyseAudio()
 
@@ -80,24 +89,17 @@ function analyseMelody() {
 
 
 
-function analyseKey() {
-
-	if (!fftAnalyser) {
-		return
-	}
+function analyseKey(notes) {
 	
 	try {
 
-		fftAnalyser.getFloatFrequencyData(fftBuffer)
-
-		const notes = getKeyNotes(fftBuffer)
+		if (!lastMelodyData.length && !lastKeyData.length) {
+			lastSegmentDate = Date.now()
+		}
+		
 		notes.forEach((note, i) => {
 			if (note) lastKeyData[i] = 1
 		})
-
-		if (!lastMelodyData.length || !lastKeyData.length) {
-			lastSegmentDate = Date.now()
-		}
 
 		analyseAudio()
 
@@ -123,6 +125,8 @@ function analyseAudio() {
 		expiredSegment
 	) {
 		if (segmentCount >= segmentLimit) {
+
+			console.log(lastKeyData.map((x, i) => x ? noteNames[i] : '').join('\t'))
 
 			const key = getKey(lastSegmentKey, nextKeyData)
 			console.log('Detected key:', keyNames[key])

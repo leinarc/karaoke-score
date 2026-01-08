@@ -7,7 +7,8 @@ function getMelodyFreq(buf) {
 	// Oh ok I get it now, this is detecting the frequency at which the audio wave aligns with itself
 	var size = buf.length
 
-	displayLoudness(buf.reduce((a, b) => Math.max(a, Math.abs(b)), 0))
+	var peak = buf.reduce((a, b) => Math.max(a, Math.abs(b)), 0)
+	var freq = -1
 
 	// Compute RMS
 	var rms = 0
@@ -17,11 +18,10 @@ function getMelodyFreq(buf) {
 		rms += val * val
 	}
 
-	rms = Math.sqrt(rms / size);
+	rms = Math.sqrt(rms / size)
 
 	if (rms < 0.01) { // not enough signal
-		displayQuality(0)
-		return -1
+		return [freq, peak]
 	}
 
 	// Reduce buffer to a smaller length
@@ -47,7 +47,8 @@ function getMelodyFreq(buf) {
 	buf = buf.slice(r1,r2)
 	size = buf.length
 
-	var c = new Array(size).fill(0);
+	var c = new Array(size).fill(0)
+
 	for (var i = 0; i < size; i++) {
 		for (var j = 0; j < size-i; j++) {
 			c[i] = c[i] + buf[j] * buf[j+i]
@@ -68,9 +69,8 @@ function getMelodyFreq(buf) {
 	var maxval = -1
 	var maxpos = -1
 	for (var i = d; i < size; i++) {
-		const freq = sampleRate / i
-		
 		// Limit to vocal range
+		// const freq = sampleRate / i
 		// if (freq < minVocalFreq/2) { break }
 		// if (freq > maxVocalFreq*2) { continue }
 
@@ -81,32 +81,20 @@ function getMelodyFreq(buf) {
 	}
 
 	// Interpolate and get the peak
-	var T0 = maxpos;
-
-	const x1 = c[T0-1]
-	const x2 = c[T0]
-	const x3 = c[T0+1]
+	const x1 = c[maxpos-1]
+	const x2 = c[maxpos]
+	const x3 = c[maxpos+1]
 	const a = (x1 + x3 - 2*x2) / 2
 	const b = (x3 - x1)/2
+
+	var T0 = maxpos
 	if (a) {
 		T0 = T0 - b / (2*a)
 	}
 
-	// Bad frequency
-	if (T0 <= 0) {
-		displayQuality(0)
-		return -1
-	}
+	freq = sampleRate / T0
 
-	const freq = sampleRate / T0
-
-	const frac = (12 * Math.log2(freq / 440) % 1 + 1) % 1
-
-	const quality = 1 - 4 * (1-frac) * frac
-
-	displayQuality(quality)
-
-	return freq
+	return [freq, peak]
 
 }
 

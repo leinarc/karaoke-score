@@ -37,15 +37,15 @@ for (var mode = 0; mode < modeProfiles.length; mode++) {
 
 
 const modeNames = "Major Minor".split(' ')
-const tonicNames = "C C# D D# E F F# G G# A A# B".split(' ')
+const noteNames = "C C# D D# E F F# G G# A A# B".split(' ')
 
 const keyNames = []
 
 for (var mode = 0; mode < modeNames.length; mode++) {
 	const modeName = modeNames[mode]
 
-	for (var tonic = 0; tonic < tonicNames.length; tonic++) {
-		const tonicName = tonicNames[tonic]
+	for (var tonic = 0; tonic < noteNames.length; tonic++) {
+		const tonicName = noteNames[tonic]
 
 		keyNames.push(tonicName + ' ' + modeName)
 	}

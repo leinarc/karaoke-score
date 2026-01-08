@@ -4,8 +4,17 @@
 const tdSize = 2048 // for td
 const fftSize = 8192 // for fft
 
+const tdOverlap = 0 // for fft
+const fftOverlap = 0 // for fft
+
 const tdIntervalTime = 20 // for td
 const fftIntervalTime = 500 // for fft
+
+const startNote = 21 // starting note; 69 = A4
+const noteCount = 88
+
+const safeNoteCount = 120
+const safeBufferSize = 32768
 
 var tdBuffer
 var fftBuffer
@@ -14,8 +23,8 @@ var	audioContext
 var stream
 var source
 var loopback
-var tdAnalyser
-var fftAnalyser
+var melodyAnalyser
+var keyAnalyser
 
 var tdInterval
 var fftInterval
@@ -23,6 +32,9 @@ var fftInterval
 var analyse2RAF
 
 var analyzing
+
+var keyWasm
+var melodyWasm
 
 
 
@@ -145,17 +157,17 @@ async function clearAudio() {
 	const oldContext = audioContext;
 
 	try {
-		fftAnalyser?.disconnect()
+		keyAnalyser?.disconnect()
 	} catch (err) {
 		console.error(err)
-		console.log('Clear Audio: Failed to disconnect fft analyser.')
+		console.log('Clear Audio: Failed to disconnect key analyser.')
 	}
 
 	try {
-		tdAnalyser?.disconnect()
+		melodyAnalyser?.disconnect()
 	} catch (err) {
 		console.error(err)
-		console.log('Clear Audio: Failed to disconnect td analyser.')
+		console.log('Clear Audio: Failed to disconnect melody analyser.')
 	}
 
 	try {
@@ -179,8 +191,8 @@ async function clearAudio() {
 		console.log('Clear Audio: Failed to get stream tracks.')
 	}
 
-	fftAnalyser = undefined
-	tdAnalyser = undefined
+	keyAnalyser = undefined
+	melodyAnalyser = undefined
 	loopback = undefined
 	source = undefined
 	stream = undefined
@@ -202,24 +214,33 @@ async function clearAudio() {
 
 }
 
-
-
-function connectAnalyser() {
+async function connectAnalyser() {
 
 	try {
 
-		tdAnalyser = audioContext.createAnalyser()
-		tdAnalyser.fftSize = tdSize
-		tdBuffer = new Float32Array(tdAnalyser.fftSize)
-		source.connect(tdAnalyser)
+		try {
+			await createWorkletMelodyAnalyser()
+		} catch (err) {
+			console.error(err)
+			console.log('Failed to create worklet melody analyser.')
 
-		fftAnalyser = audioContext.createAnalyser()
-		fftAnalyser.fftSize = fftSize
-		fftBuffer = new Float32Array(fftAnalyser.frequencyBinCount)
-		source.connect(fftAnalyser)
+			createTDMelodyAnalyser()
+		}
 
-		tdInterval = setInterval(analyseMelody, tdIntervalTime)
-		fftInterval = setInterval(analyseKey, fftIntervalTime)
+		source.connect(melodyAnalyser)
+
+		try {
+			await createWorkletKeyAnalyser()
+		} catch (err) {
+			console.error(err)
+			console.log('Failed to create worklet key analyser.')
+
+			createFFTKeyAnalyser()
+		}
+
+		source.connect(keyAnalyser)
+
+		//tdInterval = setInterval(analyseMelody, tdIntervalTime)
 
 		document.getElementById('start-button-container').style.display = 'none'
 		document.getElementById('finish-button-container').style.display = 'flex'
@@ -234,20 +255,138 @@ function connectAnalyser() {
 
 }
 
+async function createWorkletKeyAnalyser() {
+
+	if (!keyWasm) {
+		const response = await fetch('processors/key-analyser.wasm')
+		keyWasm = await response.arrayBuffer();
+	}
+
+	const sampleRate = audioContext.sampleRate
+
+	await audioContext.audioWorklet.addModule('processors/key-analyser.js')
+
+	keyAnalyser = new AudioWorkletNode(
+		audioContext,
+		'key-analyser',
+		{ 
+			processorOptions: {
+				fftSize,
+				fftOverlap,
+				startNote,
+				noteCount,
+				keyWasm,
+				sampleRate,
+				safeNoteCount,
+				safeBufferSize
+			} 
+		}
+	)
+
+	keyAnalyser.port.onmessage = (message) => {
+
+		var chroma = new Array(12).fill(0)
+
+		message.data.forEach((mag_sqr, i) => {
+			const j = (startNote + i) % 12
+			chroma[j] += mag_sqr ** 0.5 * 2 / fftSize
+		})
+
+		const norm = Math.hypot(...chroma) || 1
+
+		chroma = chroma.map(x => x / norm)
+
+		// console.log(chroma.map(x => x.toFixed(3)).join('\t'))
+
+		const notes = chroma.map(x => x > 0.5 ? 1 : 0)
+
+		analyseKey(notes)
+
+	}
+
+}
+
+async function createFFTKeyAnalyser() {
+
+	keyAnalyser = audioContext.createAnalyser()
+	keyAnalyser.fftSize = fftSize
+	fftBuffer = new Float32Array(keyAnalyser.frequencyBinCount)
+
+	fftInterval = setInterval( () => {
+
+		keyAnalyser.getFloatFrequencyData(fftBuffer)
+
+		const notes = getKeyNotes(fftBuffer)
+
+		analyseKey(notes)
+
+	}, fftIntervalTime)
+
+}
+
+async function createWorkletMelodyAnalyser() {
+
+	if (!melodyWasm) {
+		const response = await fetch('processors/melody-analyser.wasm')
+		melodyWasm = await response.arrayBuffer();
+	}
+
+	const sampleRate = audioContext.sampleRate
+
+	await audioContext.audioWorklet.addModule('processors/melody-analyser.js')
+
+	melodyAnalyser = new AudioWorkletNode(
+		audioContext,
+		'melody-analyser',
+		{ 
+			processorOptions: {
+				tdSize,
+				sampleRate,
+				melodyWasm,
+				safeNoteCount,
+				safeBufferSize
+			}
+		}
+	)
+
+	melodyAnalyser.port.onmessage = (message) => {
+
+		analyseMelody(...message.data)
+
+	}
+
+}
+
+async function createTDMelodyAnalyser() {
+
+	melodyAnalyser = audioContext.createAnalyser()
+	melodyAnalyser.fftSize = tdSize
+	tdBuffer = new Float32Array(melodyAnalyser.fftSize)
+
+	tdInterval = setInterval( () => {
+
+		melodyAnalyser.getFloatTimeDomainData(tdBuffer)
+
+		analyseMelody(...getMelodyFreq(tdBuffer))
+
+	}, tdIntervalTime)
+
+}
+
 function disconnectAnalyser() {
 
 	try {
 
-		if (fftAnalyser) {
+		if (keyAnalyser) {
 			clearInterval(fftInterval)
-			source.disconnect(fftAnalyser)
-			fftAnalyser = undefined
+			source.disconnect(keyAnalyser)
+			keyAnalyser = undefined
 		}
 
-		if (tdAnalyser) {
+		if (melodyAnalyser) {
 			clearInterval(tdInterval)
-			source.disconnect(tdAnalyser)
-			tdAnalyser = undefined
+			source.disconnect(melodyAnalyser)
+			melodyAnalyser = undefined
 		}
 
 		document.getElementById('start-button-container').style.display = 'flex'
@@ -304,7 +443,7 @@ function disconnectLoopback(input) {
 		loopbackButton.value = 'Test Microphone'
 		loopbackButton.className = ''
 
-		if (!tdAnalyser && !fftAnalyser) {
+		if (!melodyAnalyser && !keyAnalyser) {
 			clearAudio()
 		}
 
@@ -326,12 +465,12 @@ async function reconnectStreams() {
 			return
 		}
 
-		if (tdAnalyser) {
-			source.connect(tdAnalyser)
+		if (melodyAnalyser) {
+			source.connect(melodyAnalyser)
 		}
 		
-		if (fftAnalyser) {
-			source.connect(fftAnalyser)
+		if (keyAnalyser) {
+			source.connect(keyAnalyser)
 		}
 		
 		if (loopback) {

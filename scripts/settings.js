@@ -1,3 +1,4 @@
+
 var volume
 const soundTestCount = 10
 const soundTests = []
@@ -76,9 +77,9 @@ const audioConstraints = [
 	"highpassFilter",
 ]
 
-const supportedConstraints = navigator.mediaDevices.getSupportedConstraints()
+const supportedConstraints = navigator?.mediaDevices?.getSupportedConstraints()
 
-const validConstraints = audioConstraints.filter(constraint => supportedConstraints[constraint])
+const validConstraints = audioConstraints.filter(constraint => supportedConstraints?.[constraint])
 
 const constraints = {}
 
