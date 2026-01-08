@@ -100,7 +100,7 @@ async function getMicAudio() {
 	if (!audioContext) {
 		audioContext = new AudioContext()
 	}
-
+	
 	try {
 
 		stream = await navigator.mediaDevices.getUserMedia(
@@ -299,6 +299,68 @@ async function connectAnalyser() {
 
 }
 
+async function createWorkletMelodyAnalyser() {
+
+	if (!melodyWasm) {
+		const response = await fetch('processors/melody-analyser.wasm')
+		melodyWasm = await response.arrayBuffer();
+	}
+
+	const response = await fetch('processors/melody-analyser.js')
+	const text = await response.text()
+	const blob = new Blob([text], { type: 'application/javascript; charset=utf-8' });
+	const objectUrl = URL.createObjectURL(blob);
+
+	await audioContext.audioWorklet.addModule(objectUrl)
+	URL.revokeObjectURL(objectUrl)
+
+	const sampleRate = audioContext.sampleRate
+
+	melodyAnalyser = new AudioWorkletNode(
+		audioContext,
+		'melody-analyser',
+		{ 
+			processorOptions: {
+				tdSize,
+				sampleRate,
+				melodyWasm,
+				safeNoteCount,
+				safeBufferSize
+			}
+		}
+	)
+
+	melodyAnalyser.port.onmessage = (message) => {
+
+		const data = message.data
+
+		if (data instanceof Error) {
+			melodyAnalyser.onprocessorerror(data)
+			return
+		}
+
+		analyseMelody(...data)
+
+	}
+
+}
+
+async function createTDMelodyAnalyser() {
+
+	melodyAnalyser = audioContext.createAnalyser()
+	melodyAnalyser.fftSize = tdSize
+	tdBuffer = new Float32Array(melodyAnalyser.fftSize)
+
+	tdInterval = setInterval( () => {
+
+		melodyAnalyser.getFloatTimeDomainData(tdBuffer)
+
+		analyseMelody(...getMelodyFreq(tdBuffer))
+
+	}, tdIntervalTime)
+
+}
+
 async function createWorkletKeyAnalyser() {
 
 	if (!keyWasm) {
@@ -306,9 +368,15 @@ async function createWorkletKeyAnalyser() {
 		keyWasm = await response.arrayBuffer();
 	}
 
-	const sampleRate = audioContext.sampleRate
+	const response = await fetch('processors/key-analyser.js')
+	const text = await response.text()
+	const blob = new Blob([text], { type: 'application/javascript; charset=utf-8' });
+	const objectUrl = URL.createObjectURL(blob);
 
-	await audioContext.audioWorklet.addModule('processors/key-analyser.js')
+	await audioContext.audioWorklet.addModule(objectUrl)
+	URL.revokeObjectURL(objectUrl)
+
+	const sampleRate = audioContext.sampleRate
 
 	keyAnalyser = new AudioWorkletNode(
 		audioContext,
@@ -372,62 +440,6 @@ async function createFFTKeyAnalyser() {
 		analyseKey(notes)
 
 	}, fftIntervalTime)
-
-}
-
-async function createWorkletMelodyAnalyser() {
-
-	if (!melodyWasm) {
-		const response = await fetch('processors/melody-analyser.wasm')
-		melodyWasm = await response.arrayBuffer();
-	}
-
-	const sampleRate = audioContext.sampleRate
-
-	await audioContext.audioWorklet.addModule('processors/melody-analyser.js')
-
-	melodyAnalyser = new AudioWorkletNode(
-		audioContext,
-		'melody-analyser',
-		{ 
-			processorOptions: {
-				tdSize,
-				sampleRate,
-				melodyWasm,
-				safeNoteCount,
-				safeBufferSize
-			}
-		}
-	)
-
-	melodyAnalyser.port.onmessage = (message) => {
-
-		const data = message.data
-
-		if (data instanceof Error) {
-			melodyAnalyser.onprocessorerror(data)
-			return
-		}
-
-		analyseMelody(...data)
-
-	}
-
-}
-
-async function createTDMelodyAnalyser() {
-
-	melodyAnalyser = audioContext.createAnalyser()
-	melodyAnalyser.fftSize = tdSize
-	tdBuffer = new Float32Array(melodyAnalyser.fftSize)
-
-	tdInterval = setInterval( () => {
-
-		melodyAnalyser.getFloatTimeDomainData(tdBuffer)
-
-		analyseMelody(...getMelodyFreq(tdBuffer))
-
-	}, tdIntervalTime)
 
 }
 

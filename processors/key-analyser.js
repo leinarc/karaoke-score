@@ -135,6 +135,4 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 }
 
-console.log('processor defined')
-
 registerProcessor('key-analyser', keyAnalyserProcessor)
