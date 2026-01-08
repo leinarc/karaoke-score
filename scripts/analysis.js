@@ -126,7 +126,7 @@ function analyseAudio() {
 	) {
 		if (segmentCount >= segmentLimit) {
 
-			console.log(lastKeyData.map((x, i) => x ? noteNames[i] : '').join('\t'))
+			console.log('Notes:\t', nextKeyData.map((x, i) => x ? noteNames[i] : '').join('\t'))
 
 			const key = getKey(lastSegmentKey, nextKeyData)
 			console.log('Detected key:', keyNames[key])
@@ -155,10 +155,16 @@ function getFinalScore() {
 	
 	if (nextMelodyData.length && nextKeyData.length) {
 
+		let keyData = nextKeyData
+		while (keyData) {
+			console.log('Notes:\t', keyData.map((x, i) => x ? noteNames[i] : '').join('\t'))
+			keyData = keyData.next
+		}
+
 		const keys = getKeys(lastSegmentKey, nextKeyData)
 		console.log('Detected keys:', keys.map(key => keyNames[key]).join('\t'))
 
-		var melodyData = nextMelodyData
+		let melodyData = nextMelodyData
 
 		for (const key of keys) {
 			const newScores = getScores(key, melodyData)
@@ -185,14 +191,14 @@ function getFinalScore() {
 
 	const calculationName = calculationNames[calculation]
 
-	var score
+	let score
 
 	if (calculationName == "Weighted Probability Selection") {
 
 		// Choose a random score wherein higher scores have higher chances of being chosen
 		const totalScore = scores.reduce((a, b) => a + b, 0)
-		var chosen = Math.random() * totalScore
-		var i = 0
+		let chosen = Math.random() * totalScore
+		let i = 0
 
 		scores.sort((a, b) => b[0] - a[0])
 

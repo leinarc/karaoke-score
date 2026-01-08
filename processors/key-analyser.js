@@ -35,9 +35,9 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 			const cosTable = []			
 			const cutoffs = []
 
-			var m = fftSize - 1
+			let m = fftSize - 1
 
-			for (var f = 0; f < noteCount; f++) {
+			for (let f = 0; f < noteCount; f++) {
 				const note = startNote + f
 				const frequency = 440 * 2**((note - 69) / 12)
 				const cyclesPerSample = frequency / sampleRate
@@ -67,11 +67,15 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 			processor._inputBuffer = new Float64Array(module.memory.buffer, module.input_buffer, safeBufferSize)
 			processor._outputBuffer = new Float64Array(module.memory.buffer, module.output_buffer, noteCount)
 
+			this.port.postMessage()
+
 		}).catch(err => {
 
 			console.error(err)
 			console.log('Failed to import WebAssembly key analyser.')
 			processor.error = err
+
+			processor.port.postMessage(err)
 			
 		})
 
@@ -79,45 +83,55 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 	async process(inputs, outputs, parameters) {
 
+		const error = this.error
+
+		if (error) {
+			return false
+		}
+
 		const module = this._module
 
 		if (!module) {
-			return
+			return true
 		}
 
-		this._processing = true
-		
-		const inputBuffer = this._inputBuffer
-		const outputBuffer = this._outputBuffer
-		const {
-			fftSize,
-			fftOverlap,
-			startNote,
-			noteCount,
-			sampleRate, 
-			keyWasm,
-			safeNoteCount,
-			safeBufferSize,
-			cutoffs
-		} = this.options
+		try {
 
-		const buffer = inputs[0][0]
+			this._processing = true
+			
+			const inputBuffer = this._inputBuffer
+			const outputBuffer = this._outputBuffer
+			const {
+				fftSize,
+				fftOverlap,
+				startNote,
+				noteCount,
+				sampleRate, 
+				keyWasm,
+				safeNoteCount,
+				safeBufferSize,
+				cutoffs
+			} = this.options
 
-		//let c = 0
-		//for (const input of inputs) {
-			//for (const buffer of input) {
-				inputBuffer.set(buffer)
+			const buffer = inputs[0][0]
 
-				const outputBins = await module.process_input(fftSize, fftOverlap, noteCount, Math.min(buffer.length, safeBufferSize))
+			inputBuffer.set(buffer)
 
-				if (outputBins > 0) {
-					this.port.postMessage(outputBuffer.slice(0, outputBins))
-				}
-				//c++
-			//}
- 		//}
+			const outputBins = await module.process_input(fftSize, fftOverlap, noteCount, Math.min(buffer.length, safeBufferSize))
 
-		return !this.err
+			if (outputBins > 0) {
+				this.port.postMessage(outputBuffer.slice(0, outputBins))
+			}
+
+			return true
+
+		} catch (err) {
+
+			this.error = err
+
+			throw err
+
+		}
 
 	}
 

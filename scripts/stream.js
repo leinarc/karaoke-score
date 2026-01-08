@@ -219,23 +219,57 @@ async function connectAnalyser() {
 	try {
 
 		try {
+
 			await createWorkletMelodyAnalyser()
+
+			melodyAnalyser.onprocessorerror = (err) => {
+
+				console.error(err)
+				console.log('Processor for worklet melody analyser failed.')
+				console.log('Falling back to TD analyser...')
+
+				source.disconnect(melodyAnalyser)
+				createTDMelodyAnalyser()
+				source.connect(melodyAnalyser)
+
+			}
+
 		} catch (err) {
+
 			console.error(err)
 			console.log('Failed to create worklet melody analyser.')
+			console.log('Falling back to TD analyser...')
 
 			createTDMelodyAnalyser()
+
 		}
 
 		source.connect(melodyAnalyser)
 
 		try {
+
 			await createWorkletKeyAnalyser()
+
+			keyAnalyser.onprocessorerror = (err) => {
+
+				console.error(err)
+				console.log('Processor for worklet melody analyser failed.')
+				console.log('Falling back to FFT analyser...')
+
+				source.disconnect(keyAnalyser)
+				createFFTKeyAnalyser()
+				source.connect(keyAnalyser)
+
+			}
+
 		} catch (err) {
+
 			console.error(err)
 			console.log('Failed to create worklet key analyser.')
+			console.log('Falling back to FFT analyser...')
 
 			createFFTKeyAnalyser()
+
 		}
 
 		source.connect(keyAnalyser)
@@ -285,9 +319,16 @@ async function createWorkletKeyAnalyser() {
 
 	keyAnalyser.port.onmessage = (message) => {
 
-		var chroma = new Array(12).fill(0)
+		const data = message.data
 
-		message.data.forEach((mag_sqr, i) => {
+		if (data instanceof Error) {
+			keyAnalyser.onprocessorerror(data)
+			return
+		}
+
+		let chroma = new Array(12).fill(0)
+
+		data.forEach((mag_sqr, i) => {
 			const j = (startNote + i) % 12
 			chroma[j] += mag_sqr ** 0.5 * 2 / fftSize
 		})
@@ -351,7 +392,14 @@ async function createWorkletMelodyAnalyser() {
 
 	melodyAnalyser.port.onmessage = (message) => {
 
-		analyseMelody(...message.data)
+		const data = message.data
+
+		if (data instanceof Error) {
+			melodyAnalyser.onprocessorerror(data)
+			return
+		}
+
+		analyseMelody(...data)
 
 	}
 

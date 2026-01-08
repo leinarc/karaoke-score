@@ -9,12 +9,12 @@ function getScores(key, melodyData) {
 
 	const scores = []
 
-	for (var i = 0; i < melodyData.length; i++) {
+	for (let i = 0; i < melodyData.length; i++) {
 		const freq = melodyData[i]
 
 		if (!(freq > 0)) continue
 
-		var pitchClass = (9 + 12 * Math.log2(freq / 440)) % 12
+		let pitchClass = (9 + 12 * Math.log2(freq / 440)) % 12
 
 		while (pitchClass < 0) {
 			pitchClass += 12

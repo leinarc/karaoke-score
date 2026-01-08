@@ -22,10 +22,10 @@ const modeProfiles = [
 
 const keyProfiles = []
 
-for (var mode = 0; mode < modeProfiles.length; mode++) {
+for (let mode = 0; mode < modeProfiles.length; mode++) {
 	const modeProfile = modeProfiles[mode]
 
-	for (var tonic = 0; tonic < 12; tonic++) {
+	for (let tonic = 0; tonic < 12; tonic++) {
 		const half1 = modeProfile.slice(12 - tonic)
 		const half2 = modeProfile.slice(0, 12 - tonic)
 		const keyProfile = [...half1, ...half2]
@@ -41,10 +41,10 @@ const noteNames = "C C# D D# E F F# G G# A A# B".split(' ')
 
 const keyNames = []
 
-for (var mode = 0; mode < modeNames.length; mode++) {
+for (let mode = 0; mode < modeNames.length; mode++) {
 	const modeName = modeNames[mode]
 
-	for (var tonic = 0; tonic < noteNames.length; tonic++) {
+	for (let tonic = 0; tonic < noteNames.length; tonic++) {
 		const tonicName = noteNames[tonic]
 
 		keyNames.push(tonicName + ' ' + modeName)
@@ -56,12 +56,12 @@ for (var mode = 0; mode < modeNames.length; mode++) {
 const noteKeyProbs = new Array(24 * 2**12)
 const noteBestKeys = new Array(2**12)
 
-for (var i = 0; i < 2**12; i++) {
-	var maxProb = -1
-	for (var key = 0; key < 24; key++) {
+for (let i = 0; i < 2**12; i++) {
+	let maxProb = -1
+	for (let key = 0; key < 24; key++) {
 		const keyProfile = keyProfiles[key]
-		var prob = 1
-		for (var note = 0; note < 12; note++) {
+		let prob = 1
+		for (let note = 0; note < 12; note++) {
 			if ((i>>note) % 2) {
 				prob *= keyProfile[note]
 			} else {
@@ -85,11 +85,11 @@ function notesToIndex(notes) {
 }
 
 function getStructureProb(lastKey, keys) {
-	var prob = 1
+	let prob = 1
 
-	var key1 = lastKey
+	let key1 = lastKey
 
-	for (var i = 0; i < keys.length; i++) {
+	for (let i = 0; i < keys.length; i++) {
 		key2 = keys[i]
 
 		if (key1 === undefined) {
@@ -110,9 +110,9 @@ function getStructureProb(lastKey, keys) {
 }
 
 function getSurfaceProb(keys, notesIndexes) {
-	var prob = 1
+	let prob = 1
 
-	for(var i = 0; i < notesIndexes.length; i++) {
+	for(let i = 0; i < notesIndexes.length; i++) {
 		const key = keys[i]
 		const notesIndex = notesIndexes[i]
 		prob *= noteKeyProbs[key * 2**12 + notesIndex]
@@ -125,7 +125,7 @@ function getStructureChoices(lastKey, notesIndexes) {
 
 	const takenKeys = {}
 
-	var keyStructures = []
+	let keyStructures = []
 
 	if (lastKey !== undefined) {
 		keyStructures.push([lastKey])
@@ -141,7 +141,7 @@ function getStructureChoices(lastKey, notesIndexes) {
 		}
 	}
 
-	for (var i = 1; i < notesIndexes.length; i++) {
+	for (let i = 1; i < notesIndexes.length; i++) {
 
 		const takenKeys = {}
 		
@@ -159,7 +159,7 @@ function getStructureChoices(lastKey, notesIndexes) {
 			
 			for (const newKey of newKeys) {
 				if (!takenKeys[newKey]) {
-					for (var j = 0; j <= structure.length; j++) {
+					for (let j = 0; j <= structure.length; j++) {
 						const oldHalf = structure.slice(0,structure.length - j)
 						const newHalf = new Array(j).fill(newKey)
 						newStructures.push([...oldHalf, ...newHalf, newKey])

@@ -5,7 +5,7 @@ const soundTests = []
 var currentSoundTest = 0
 var lastSoundTest = 0
 
-for (var i = 1; i <= soundTestCount; i++) {
+for (let i = 1; i <= soundTestCount; i++) {
 	const audio = new Audio('sounds/karaoke-test.ogg')
 	soundTests.push(audio)
 }

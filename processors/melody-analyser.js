@@ -35,11 +35,15 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 			processor._inputBuffer = new Float64Array(module.memory.buffer, module.input_buffer, safeBufferSize)
 			processor._outputBuffer = new Float64Array(module.memory.buffer, module.output_buffer, safeBufferSize*2)
 
+			throw new Error();
+
 		}).catch(err => {
 
 			console.error(err)
 			console.log('Failed to import WebAssembly melody analyser.')
 			processor.error = err
+
+			processor.port.postMessage(err)
 
 		})
 
@@ -49,37 +53,53 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 
 	async process(inputs, outputs, parameters) {
 
+		const error = this.error
+
+		if (error) {
+			return false
+		}
+
 		const module = this._module
 
 		if (!module) {
 			return
 		}
 
-		this._processing = true
-		
-		const inputBuffer = this._inputBuffer
-		const outputBuffer = this._outputBuffer
-		
-		const {
-			tdSize,
-			tdOverlap,
-			sampleRate, 
-			melodyWasm,
-			safeNoteCount,
-			safeBufferSize
-		} = this.options
+		try {
 
-		const buffer = inputs[0][0]
+			this._processing = true
+			
+			const inputBuffer = this._inputBuffer
+			const outputBuffer = this._outputBuffer
+			
+			const {
+				tdSize,
+				tdOverlap,
+				sampleRate, 
+				melodyWasm,
+				safeNoteCount,
+				safeBufferSize
+			} = this.options
 
-		inputBuffer.set(buffer)
+			const buffer = inputs[0][0]
 
-		const outputCount = await module.process_input(tdSize, tdOverlap, sampleRate, Math.min(buffer.length, safeBufferSize))
+			inputBuffer.set(buffer)
 
-		for (var i = 0; i < outputCount; i++) {
-			this.port.postMessage(outputBuffer.slice(i * 2, (i + 1) * 2))
+			const outputCount = await module.process_input(tdSize, tdOverlap, sampleRate, Math.min(buffer.length, safeBufferSize))
+
+			for (let i = 0; i < outputCount; i++) {
+				this.port.postMessage(outputBuffer.slice(i * 2, (i + 1) * 2))
+			}
+
+			return true
+
+		} catch (err) {
+
+			this.error = err
+
+			throw err
+
 		}
-
-		return !this.err
 
 	}
 

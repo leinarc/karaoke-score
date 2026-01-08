@@ -11,9 +11,9 @@ function getKeyChroma(buf) {
 	const sampleRate = audioContext.sampleRate
 
 	// Bins to notes/pitch class
-	for (var i = 1; i < fftData.length; i++) {
+	for (let i = 1; i < fftData.length; i++) {
 
-		var value = fftData[i]
+		let value = fftData[i]
 
 		const freq = i / (fftData.length - 1) * sampleRate / 2;
 
@@ -25,7 +25,7 @@ function getKeyChroma(buf) {
 		value *= (freq / minInstrFreq)**4 / (1 + (freq / minInstrFreq)**4)
 		value *= 1 / (1 + (freq / maxInstrFreq)**4)
 
-		var pitchClass = (9 + 12 * Math.log2(freq / 440)) % 12
+		let pitchClass = (9 + 12 * Math.log2(freq / 440)) % 12
 
 		while (pitchClass < 0) {
 			pitchClass += 12
@@ -50,7 +50,7 @@ function getKeyChroma(buf) {
 
 function getKeyNotes(buf) {
 
-	var chroma = getKeyChroma(buf)
+	let chroma = getKeyChroma(buf)
 
 	// Normalize
 	const norm = Math.hypot(...chroma)
@@ -65,7 +65,7 @@ function getKeyNotes(buf) {
 function getKeys(lastKey, nextKeyData) {
 
 	const notesIndexes = []
-	var keyData = nextKeyData
+	let keyData = nextKeyData
 	while (keyData && keyData.length) {
 		notesIndexes.push(notesToIndex(keyData))
 		keyData = keyData.next
