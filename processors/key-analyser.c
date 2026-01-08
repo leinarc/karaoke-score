@@ -74,13 +74,13 @@ void process_output (unsigned int note_count, unsigned int m_index) {
 
 }
 
-int process_input (long fft_size, long fft_overlap, unsigned long note_count, unsigned long buffer_size) {
+int process_input (long dft_size, long dft_overlap, unsigned long note_count, unsigned long buffer_size) {
 
 	unsigned int output_bins = note_count;
 
 	int has_output = 0;
 
-	int m_gap = fft_size - fft_overlap;
+	int m_gap = dft_size - dft_overlap;
 
 	min_m += buffer_size;
 
@@ -134,7 +134,7 @@ int process_input (long fft_size, long fft_overlap, unsigned long note_count, un
 
 			m++;
 			
-			if (m >= fft_size) {
+			if (m >= dft_size) {
 
 				has_output = output_bins;
 				

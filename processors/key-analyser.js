@@ -9,7 +9,8 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 		const processorOptions = options.processorOptions
 
 		const {
-			fftSize,
+			dftSize,
+			dftOverlap,
 			startNote,
 			noteCount,
 			sampleRate, 
@@ -35,7 +36,7 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 			const cosTable = []			
 			const cutoffs = []
 
-			let m = fftSize - 1
+			let m = dftSize - 1
 
 			for (let f = 0; f < noteCount; f++) {
 				const note = startNote + f
@@ -81,8 +82,6 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 	process(inputs, outputs, parameters) {
 
-		console.log(inputs)
-
 		const error = this.error
 
 		if (error) {
@@ -102,8 +101,8 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 			const inputBuffer = this._inputBuffer
 			const outputBuffer = this._outputBuffer
 			const {
-				fftSize,
-				fftOverlap,
+				dftSize,
+				dftOverlap,
 				startNote,
 				noteCount,
 				sampleRate, 
@@ -117,7 +116,7 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 			inputBuffer.set(buffer)
 
-			const outputBins = module.process_input(fftSize, fftOverlap, noteCount, Math.min(buffer.length, safeBufferSize))
+			const outputBins = module.process_input(dftSize, dftOverlap, noteCount, Math.min(buffer.length, safeBufferSize))
 
 			if (outputBins > 0) {
 				this.port.postMessage(outputBuffer.slice(0, outputBins))

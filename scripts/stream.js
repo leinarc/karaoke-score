@@ -3,9 +3,11 @@
 
 const tdSize = 2048 // for td
 const fftSize = 8192 // for fft
+const dftSize = 4096 // for dft
 
 const tdOverlap = 0 // for fft
 const fftOverlap = 0 // for fft
+const dftOverlap = 0 // for dft
 
 const tdIntervalTime = 20 // for td
 const fftIntervalTime = 500 // for fft
@@ -406,8 +408,8 @@ async function createWorkletKeyAnalyser() {
 		'key-analyser',
 		{ 
 			processorOptions: {
-				fftSize,
-				fftOverlap,
+				dftSize,
+				dftOverlap,
 				startNote,
 				noteCount,
 				keyWASM,
@@ -431,7 +433,7 @@ async function createWorkletKeyAnalyser() {
 
 		data.forEach((mag_sqr, i) => {
 			const j = (startNote + i) % 12
-			chroma[j] += mag_sqr ** 0.5 * 2 / fftSize
+			chroma[j] += mag_sqr ** 0.5 * 2 / dftSize
 		})
 
 		const norm = Math.hypot(...chroma) || 1
