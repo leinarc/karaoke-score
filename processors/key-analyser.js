@@ -114,6 +114,10 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 			const buffer = inputs[0][0]
 
+			if (!buffer) {
+				return true
+			}
+
 			inputBuffer.set(buffer)
 
 			const outputBins = module.process_input(dftSize, dftOverlap, noteCount, Math.min(buffer.length, safeBufferSize))

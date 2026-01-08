@@ -81,6 +81,10 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 
 			const buffer = inputs[0][0]
 
+			if (!buffer) {
+				return true
+			}
+
 			inputBuffer.set(buffer)
 
 			const outputCount = module.process_input(tdSize, tdOverlap, sampleRate, Math.min(buffer.length, safeBufferSize))
