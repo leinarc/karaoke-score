@@ -95,9 +95,7 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 
 				if (processor.error) return
 
-				const delay = Date.now() - startDate
-
-				if (delay > maxDelay) {
+				if (maxDelay > 0 && Date.now() - startDate > maxDelay) {
 					return
 				}
 

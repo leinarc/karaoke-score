@@ -81,17 +81,17 @@ function analyseMelody(data) {
 
 			const [ freq ] = channel
 
-			if (freq < minMelodyFreq || freq > maxMelodyFreq) return
+			if (freq < minMelodyFreq || freq > maxMelodyFreq) continue
 
 			if (!lastMelodyData.length && !lastKeyData.length) {
 				lastSegmentDate = Date.now()
 			}
 
 			lastMelodyData.push(freq)
-
-			analyseAudio()
 		
 		}
+
+		analyseAudio()
 
 	} catch (err) {
 
@@ -183,9 +183,9 @@ function analyseKey(data) {
 
 			// console.log(log)
 
-			analyseAudio()
-
 		}
+
+		analyseAudio()
 
 	} catch (err) {
 

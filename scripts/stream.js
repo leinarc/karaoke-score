@@ -302,8 +302,6 @@ async function connectAnalyser() {
 
 		source.connect(keyAnalyser)
 
-		//tdInterval = setInterval(analyseMelody, tdIntervalTime)
-
 		document.getElementById('start-button-container').style.display = 'none'
 		document.getElementById('finish-button-container').style.display = 'flex'
 
@@ -453,23 +451,28 @@ async function createWorkletKeyAnalyser() {
 			return
 		}
 
-		const data = message.data
+		let data = message.data
 
 		if (data instanceof Error) {
 			keyAnalyser.onprocessorerror(data)
 			return
 		}
 
-		const fullChroma = []
-		data.forEach((mag_sqr, i) => {
-			const note = startNote + i
-			const frequency = 440 * 2**((note - 69) / 12)
-			const samplesPerCycle = sampleRate / frequency
-			const cutoffSamples = samplesPerCycle * cyclesPerDFT
-			fullChroma[note] =  mag_sqr**0.5 * 2 / Math.min(cutoffSamples, dftSize)
+		data = data.map(channel => {
+			const fullChroma = []
+
+			channel.forEach((mag_sqr, i) => {
+				const note = startNote + i
+				const frequency = 440 * 2**((note - 69) / 12)
+				const samplesPerCycle = sampleRate / frequency
+				const cutoffSamples = samplesPerCycle * cyclesPerDFT
+				fullChroma[note] =  mag_sqr**0.5 * 2 / Math.min(cutoffSamples, dftSize)
+			})
+
+			return fullChroma
 		})
 
-		analyseKey([fullChroma])
+		analyseKey(data)
 
 	}
 
