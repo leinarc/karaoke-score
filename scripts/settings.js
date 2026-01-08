@@ -10,17 +10,17 @@ for (let i = 1; i <= soundTestCount; i++) {
 	soundTests.push(audio)
 }
 
-function setVolume(input) {
+function setVolume(newVolume, noTestSound) {
 	const oldVolume = volume
 
-	volume = Math.min(Math.max(Number(input.value) || 0, 0), 100)
+	volume = Math.min(Math.max(Number(newVolume) || 0, 0), 100)
 
 	soundRoll.volume = volume/100
 	soundGood.volume = volume/100
 	soundNormal.volume = volume/100
 	soundBad.volume = volume/100
 
-	testSound()
+	if (!noTestSound) testSound()
 
 	return volume
 }
@@ -135,7 +135,6 @@ if (validConstraints.length) {
 		tr.appendChild(td1)
 		tr.appendChild(td2)
 		tbody.appendChild(tr)
-
 	}
 
 	table.appendChild(tbody)
@@ -148,7 +147,7 @@ if (validConstraints.length) {
 resetSettings()
 
 function resetSettings() {
-	volume = 100
+	setVolume(50, true)
 	calculation = 0
 	randomization = 0
 

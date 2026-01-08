@@ -153,14 +153,14 @@
 								min="0"
 								step="10"
 								max="100"
-								oninput="document.getElementById('volume-input').value = setVolume(this)"
+								oninput="document.getElementById('volume-input').value = setVolume(this.value)"
 							>
 							<input 
 								type="text"
 								id="volume-input" 
 								size="3"
 								oninput="this.value = this.value.replace(/[^0-9\.]/g, '').replace(/(\..*)\./g, '$1')"
-								onchange="document.getElementById('volume-slider').value = setVolume(this); this.value = volume"
+								onchange="document.getElementById('volume-slider').value = setVolume(this.value); this.value = volume"
 							>
 						</div></td>
 					</tr>
