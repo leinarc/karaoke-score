@@ -35,8 +35,6 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 			processor._inputBuffer = new Float64Array(module.memory.buffer, module.input_buffer, safeBufferSize)
 			processor._outputBuffer = new Float64Array(module.memory.buffer, module.output_buffer, safeBufferSize*2)
 
-			throw new Error();
-
 		}).catch(err => {
 
 			console.error(err)
