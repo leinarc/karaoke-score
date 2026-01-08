@@ -11,6 +11,7 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 		const {
 			tdSize,
 			tdOverlap,
+			tdChannels,
 			sampleRate, 
 			melodyWASM,
 			safeNoteCount,
@@ -19,78 +20,112 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 
 		processor.options = processorOptions
 
-		WebAssembly.instantiate(
-			melodyWASM,
-			{
-				env: {
-					'js_log': console.log
+		const modules = []
+
+		for (let i = 0; i < tdChannels; i++) {
+			modules.push(createWASMModule())
+		}
+
+		processor._modules = modules
+
+		function createWASMModule() {
+
+			return WebAssembly.instantiate(
+				melodyWASM,
+				{
+					env: {
+						'js_log': console.log
+					}
 				}
-			}
-		).then(module => {
+			).then(wa => {
 
-			module = module.instance.exports
+				const exports = wa.instance.exports
+				const inputBuffer = new Float64Array(exports.memory.buffer, exports.input_buffer, safeBufferSize)
+				const outputBuffer = new Float64Array(exports.memory.buffer, exports.output_buffer, safeBufferSize*2)
+				const allTimePeak = new Float64Array(exports.memory.buffer, exports.all_time_peak, 1)
 
-			processor._module = module
+				return {
+					exports,
+					inputBuffer,
+					outputBuffer,
+					allTimePeak
+				}
 
-			processor._inputBuffer = new Float64Array(module.memory.buffer, module.input_buffer, safeBufferSize)
-			processor._outputBuffer = new Float64Array(module.memory.buffer, module.output_buffer, safeBufferSize*2)
+			}).catch(err => {
 
-		}).catch(err => {
+				console.error(err)
+				console.log('Failed to import WebAssembly melody analyser.')
+				processor.error = err
 
-			console.error(err)
-			console.log('Failed to import WebAssembly melody analyser.')
-			processor.error = err
+				processor.port.postMessage(err)
 
-			processor.port.postMessage(err)
+			})
 
-		})
-
-		processor._bufferSize = 0
+		}
 
 	}
 
 	process(inputs, outputs, parameters) {
 
-		const error = this.error
+		const processor = this
 
-		if (error) {
-			return false
-		}
-
-		const module = this._module
-
-		if (!module) {
-			return
-		}
+		if (processor.error) return false
 
 		try {
 
-			this._processing = true
-			
-			const inputBuffer = this._inputBuffer
-			const outputBuffer = this._outputBuffer
+			const modules = processor._modules
 			
 			const {
 				tdSize,
 				tdOverlap,
+				tdChannels,
 				sampleRate, 
 				melodyWASM,
 				safeNoteCount,
 				safeBufferSize
-			} = this.options
+			} = processor.options
 
-			const buffer = inputs[0][0]
+			const buffers = inputs.flat()
 
-			if (!buffer) {
-				return true
-			}
+			for (let i = 0; i < modules.length; i++) {
 
-			inputBuffer.set(buffer)
+				const module = modules[i]
+				const buffer = buffers[i]
 
-			const outputCount = module.process_input(tdSize, tdOverlap, sampleRate, Math.min(buffer.length, safeBufferSize))
+				module.then(module => {
 
-			for (let i = 0; i < outputCount; i++) {
-				this.port.postMessage(outputBuffer.slice(i * 2, (i + 1) * 2))
+					if (processor.error) return
+
+					const {
+						exports,
+						inputBuffer,
+						outputBuffer,
+						allTimePeak
+					} = module
+
+					if (!buffer) {
+						allTimePeak[0] = 0 // I may regret relying on this condition xd
+						return
+					}
+					
+					inputBuffer.set(buffer)
+
+					const outputCount = exports.process_input(tdSize, tdOverlap, sampleRate, Math.min(buffer.length, safeBufferSize))
+
+					for (let i = 0; i < outputCount; i++) {
+						this.port.postMessage(outputBuffer.slice(i*2, 2 + i*2))
+					}
+
+				}).catch(err => {
+
+					console.error(err)
+					console.log('Failed to run WebAssembly melody analyser.')
+					processor.error = err
+
+					processor.port.postMessage(err)
+					
+				})
+
 			}
 
 			return true

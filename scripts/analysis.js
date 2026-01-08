@@ -14,6 +14,8 @@ var scores
 var lastSegmentKey
 var lastSegmentDate
 
+const noteNames = "C C# D D# E F F# G G# A A# B".split(' ')
+
 resetVariables()
 
 function resetVariables() {
@@ -87,19 +89,79 @@ function analyseMelody(freq, loudness) {
 
 }
 
+var keyNoise = []
 
+function analyseKey(fullChroma, mapper) {
 
-function analyseKey(notes) {
+	let log = ''
+	// log += 'Full Chroma:\t'
+	// log += fullChroma.map(
+	// 	x => x.toFixed(3)
+	// ).join('\t').split('\t').map(
+	// 	(x, i) => (i > 0 && i % 12 == 0 ? '\n\t\t' : '') + x 
+	// ).join('\t')
+	// log += '\n'
 	
 	try {
 
 		if (!lastMelodyData.length && !lastKeyData.length) {
 			lastSegmentDate = Date.now()
 		}
+
+		const noiseThres = 0.8
+
+		// Remove noise
+		fullChroma = fullChroma.map((level, i) => level - (keyNoise[i] || 0))
+
+		// Update noise filter
+		keyNoise = fullChroma.map((level, i) => level * ((1-(level*noiseThres)**2)**0.5 || 0) / 1024 + (keyNoise[i] || 0))
+		
+
+		// Harmonic filter
+		fullChroma = fullChroma.map(
+			(x, i) => x - ((fullChroma[i-1] || 0) + (fullChroma[i+1] || 0)) / (fullChroma[i-1] && fullChroma[i+1] ? 2 : 1)
+		)
+
+		// const rawChroma = new Array(12).fill(0)
+		// oldChroma.forEach((level, i) => {
+		// 	rawChroma[i % 12] += level
+		// })
+		// log += 'Raw Chroma:\t'
+		// log += rawChroma.map(x => x.toFixed(3)).join('\t')
+		// log += '\n'
+
+		// Put chroma into 12 bins
+		let chroma = new Array(12).fill(0)
+		fullChroma.forEach((level, i) => {
+			chroma[i % 12] += level
+		})
+
+		// log += 'Filt Chroma:\t'
+		// log += chroma.map(x => x.toFixed(3)).join('\t')
+		// log += '\n'
+
+		// Normalize
+		{
+			const norm = Math.hypot(...chroma) || 1
+			chroma = chroma.map(x => x / norm)
+		}
+
+		// log += 'Norm Chroma:\t'
+		// log += chroma.map(x => x.toFixed(3)).join('\t')
+		// log += '\n'
+
+		// Detect notes
+		const notes = chroma.map(x => x > noiseThres ? 1 : 0)
+
+		// log += 'Notes:  \t'
+		// log += notes.map((x, i) => x ? noteNames[i] : '').join('\t')
+		// log += '\n'
 		
 		notes.forEach((note, i) => {
 			if (note) lastKeyData[i] = 1
 		})
+
+		// console.log(log)
 
 		analyseAudio()
 
@@ -110,6 +172,7 @@ function analyseKey(notes) {
 		disconnectAnalyser()
 
 	}
+	
 }
 
 

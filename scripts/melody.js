@@ -1,6 +1,8 @@
 const minVocalFreq = 50
 const maxVocalFreq = 800
 
+var melodyAllTimePeak = 0
+
 function getMelodyFreq(buf) {
 
 	// Reference 1 says something about ACF2+, idk what that is
@@ -10,11 +12,17 @@ function getMelodyFreq(buf) {
 	let peak = buf.reduce((a, b) => Math.max(a, Math.abs(b)), 0)
 	let freq = -1
 
+	if (peak > melodyAllTimePeak) {
+		melodyAllTimePeak = peak
+	}
+
 	// Compute RMS
 	let rms = 0
 
 	for (let i = 0; i < size; i++) {
-		const val = buf[i]
+		let val = buf[i]
+		val /= melodyAllTimePeak
+		buf[i] = val
 		rms += val * val
 	}
 
@@ -24,7 +32,7 @@ function getMelodyFreq(buf) {
 		return [freq, peak]
 	}
 
-	// Reduce buffer to a smaller length
+	// Cut out unfinished waves at both ends of the buffer
 	let r1 = 0
 	let r2 = size - 1
 	const thres = 0.2

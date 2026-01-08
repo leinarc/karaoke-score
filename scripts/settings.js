@@ -146,16 +146,24 @@ if (validConstraints.length) {
 
 resetSettings()
 
-function resetSettings() {
+async function resetSettings() {
 	setVolume(50, true)
 	calculation = 0
 	randomization = 0
 
 	for (const constraint of validConstraints) {
-		constraints[constraint] = true
+		constraints[constraint] = false
 	}
 
 	displaySettings()
+
+	if (audioContext) {
+		removeMicAudio()
+
+		await getMicAudio()
+
+		reconnectStreams()
+	}
 }
 
 function exportSettings() {

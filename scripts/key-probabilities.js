@@ -37,7 +37,6 @@ for (let mode = 0; mode < modeProfiles.length; mode++) {
 
 
 const modeNames = "Major Minor".split(' ')
-const noteNames = "C C# D D# E F F# G G# A A# B".split(' ')
 
 const keyNames = []
 

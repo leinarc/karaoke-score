@@ -1,19 +1,24 @@
 // Reference 1: https://whatnoteisthis.com/
 // Reference 2: https://davidtemperley.com/wp-content/uploads/2015/12/temperley-ms04.pdf
 
-const tdSize = 2048 // for td
-const fftSize = 8192 // for fft
-const dftSize = 4096 // for dft
+const tdSize = 2048 
+const fftSize = 8192
+const dftSize = 4096 // only the max cap; sample size is determined by frequency and cyclesPerDFT
 
-const tdOverlap = 0 // for fft
-const fftOverlap = 0 // for fft
-const dftOverlap = 0 // for dft
+const tdOverlap = 0
+const fftOverlap = 0
+const dftOverlap = dftSize - 128
 
-const tdIntervalTime = 20 // for td
-const fftIntervalTime = 500 // for fft
+const tdChannels = 2
+const dftChannels = 2
 
+const tdIntervalTime = 20
+const fftIntervalTime = 500
+
+// For dft
 const startNote = 21 // starting note; 69 = A4
-const noteCount = 88
+const noteCount = 61
+const cyclesPerDFT = 8 
 
 const safeNoteCount = 120
 const safeBufferSize = 32768
@@ -355,6 +360,8 @@ async function createWorkletMelodyAnalyser() {
 		{ 
 			processorOptions: {
 				tdSize,
+				tdOverlap,
+				tdChannels,
 				sampleRate,
 				melodyWASM,
 				safeNoteCount,
@@ -364,6 +371,10 @@ async function createWorkletMelodyAnalyser() {
 	)
 
 	melodyAnalyser.port.onmessage = (message) => {
+
+		if (!melodyAnalyser) {
+			return
+		}
 
 		const data = message.data
 
@@ -383,8 +394,13 @@ async function createTDMelodyAnalyser() {
 	melodyAnalyser = audioContext.createAnalyser()
 	melodyAnalyser.fftSize = tdSize
 	tdBuffer = new Float32Array(melodyAnalyser.fftSize)
+	melodyAllTimePeak = 0
 
 	tdInterval = setInterval( () => {
+
+		if (!melodyAnalyser) {
+			return
+		}
 
 		melodyAnalyser.getFloatTimeDomainData(tdBuffer)
 
@@ -410,8 +426,10 @@ async function createWorkletKeyAnalyser() {
 			processorOptions: {
 				dftSize,
 				dftOverlap,
+				dftChannels,
 				startNote,
 				noteCount,
+				cyclesPerDFT,
 				keyWASM,
 				sampleRate,
 				safeNoteCount,
@@ -422,6 +440,10 @@ async function createWorkletKeyAnalyser() {
 
 	keyAnalyser.port.onmessage = (message) => {
 
+		if (!keyAnalyser) {
+			return
+		}
+
 		const data = message.data
 
 		if (data instanceof Error) {
@@ -429,22 +451,16 @@ async function createWorkletKeyAnalyser() {
 			return
 		}
 
-		let chroma = new Array(12).fill(0)
-
+		const fullChroma = []
 		data.forEach((mag_sqr, i) => {
-			const j = (startNote + i) % 12
-			chroma[j] += mag_sqr ** 0.5 * 2 / dftSize
+			const note = startNote + i
+			const frequency = 440 * 2**((note - 69) / 12)
+			const samplesPerCycle = sampleRate / frequency
+			const cutoffSamples = samplesPerCycle * cyclesPerDFT
+			fullChroma[note] =  mag_sqr**0.5 * 2 / Math.min(cutoffSamples, dftSize)
 		})
 
-		const norm = Math.hypot(...chroma) || 1
-
-		chroma = chroma.map(x => x / norm)
-
-		// console.log(chroma.map(x => x.toFixed(3)).join('\t'))
-
-		const notes = chroma.map(x => x > 0.5 ? 1 : 0)
-
-		analyseKey(notes)
+		analyseKey(fullChroma)
 
 	}
 
@@ -458,11 +474,15 @@ async function createFFTKeyAnalyser() {
 
 	fftInterval = setInterval( () => {
 
+		if (!keyAnalyser) {
+			return
+		}
+
 		keyAnalyser.getFloatFrequencyData(fftBuffer)
 
-		const notes = getKeyNotes(fftBuffer)
+		const fullChroma = getKeyChroma(fftBuffer)
 
-		analyseKey(notes)
+		analyseKey(fullChroma)
 
 	}, fftIntervalTime)
 

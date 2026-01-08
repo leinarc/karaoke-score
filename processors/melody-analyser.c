@@ -10,6 +10,9 @@ double input_buffer[safe_buffer_size] = {0};
 __attribute__((used))
 double output_buffer[safe_buffer_size * 2] = {0};
 
+__attribute__((used))
+double all_time_peak = 0;
+
 double _abs (double value) {
 	if (value < 0) {
 		return -value;
@@ -21,51 +24,62 @@ double cache[safe_buffer_size] = {0};
 unsigned long cache_offset = 0;
 unsigned long cache_gap = 0;
 
+double buffer[safe_buffer_size] = {0};
+
 void process_output (long td_size, unsigned int sample_rate, unsigned long cache_offset, unsigned long output_offset) {
 
 	output_buffer[0 + output_offset*2] = -1; // initial freq
 
-	// Compute peak and RMS
+	// Compute peak
 	double peak = 0;
-	double rms = 0;
 
 	unsigned int i;
 
 	for (i = 0; i < td_size; i++) {
-
-		double value = cache[(i + cache_offset) % safe_buffer_size];
-		double abs_value = _abs(value);
+		double abs_value = _abs(cache[(i + cache_offset) % safe_buffer_size]);
 		if (abs_value > peak) {
 			peak = abs_value;
 		}
-
-		rms += value * value;
-		
 	}
 
-	output_buffer[1 + output_offset*2] = peak;
+	if (peak > all_time_peak) {
+		all_time_peak = peak;
+	}
+	
+	if (all_time_peak <= 0) return;
 
-	// cannot get square root because no libraries
-	rms = rms / td_size;
+	// Compute RMS, and normalized audio
+	double rms = 0;
+
+	for (i = 0; i < td_size; i++) {
+		double value = cache[(i + cache_offset) % safe_buffer_size];
+		value /= all_time_peak;
+		rms += value * value;
+		buffer[i] = value;
+	}
+
+	output_buffer[1 + output_offset*2] = peak / all_time_peak; // output loudness
+	
+	rms = rms / td_size; // cannot get square root because no libraries
 
 	if (rms < 0.0001) { // not enough signal
 		return;
 	}
 
-	// Reduce buffer to a smaller length
+	// Cut out unfinished waves at both ends of the buffer
 	unsigned long r1 = 0;
 	unsigned long r2 = td_size - 1;
 	double thres = 0.2;
 
 	for (i = 0; i < td_size / 2; i++) {
-		if (_abs(cache[(i + cache_offset) % safe_buffer_size]) < thres) {
+		if (_abs(buffer[i]) < thres) {
 			r1 = i;
 			break;
 		}
 	}
 
 	for (i = 1; i < td_size / 2; i++) {
-		if (_abs(cache[(td_size - i + cache_offset) % safe_buffer_size]) < thres) {
+		if (_abs(buffer[td_size - i]) < thres) {
 			r2 = td_size - i;
 			break;
 		}
@@ -79,13 +93,13 @@ void process_output (long td_size, unsigned int sample_rate, unsigned long cache
 
 	for (i = r1; i < r2; i++) {
 		for (j = 0; j < r2 - i; j++) {
-			c[i - r1] += cache[(r1 + j + cache_offset) % safe_buffer_size] * cache[(i + j + cache_offset) % safe_buffer_size];
+			c[i - r1] += buffer[r1 + j] * buffer[i + j];
 		}
 	}
 
 	// Discard dip from the lowest frequency 
-	unsigned long d = 1;
-	while (c[d] > c[d+1]) {
+	unsigned long d = 0;
+	while (c[d] > c[d+1] && d + 1 < r2) {
 		d++;
 	}
 
@@ -102,6 +116,8 @@ void process_output (long td_size, unsigned int sample_rate, unsigned long cache
 		}
 	}
 
+	if (maxpos <= 0) return;
+
 	// Interpolate and get the peak
 	double x1 = c[maxpos-1];
 	double x2 = c[maxpos];
@@ -114,6 +130,8 @@ void process_output (long td_size, unsigned int sample_rate, unsigned long cache
 	if (a != 0) {
 		T0 = T0 - b / (2*a);
 	}
+	
+	if (T0 <= 0) return;
 
 	output_buffer[0 + output_offset*2] = sample_rate / T0;
 

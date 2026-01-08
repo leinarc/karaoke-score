@@ -6,7 +6,7 @@ function getKeyChroma(buf) {
 	// Convert from dB to linear
 	const fftData = buf.map(db => Number.isFinite(db) ? 10**(db/20) : 0)
 
-	const chroma = new Array(12).fill(0)
+	const fullChroma = new Array(12).fill(0)
 
 	const sampleRate = audioContext.sampleRate
 
@@ -25,7 +25,7 @@ function getKeyChroma(buf) {
 		value *= (freq / minInstrFreq)**4 / (1 + (freq / minInstrFreq)**4)
 		value *= 1 / (1 + (freq / maxInstrFreq)**4)
 
-		let pitchClass = (9 + 12 * Math.log2(freq / 440)) % 12
+		let pitchClass = (9 + 12 * Math.log2(freq / 440))
 
 		while (pitchClass < 0) {
 			pitchClass += 12
@@ -37,29 +37,15 @@ function getKeyChroma(buf) {
 		const frac = pitchClass - class1
 		const multiplier = (1 - Math.cos(frac * Math.PI))
 		
-		chroma[class1] += value * (1 - multiplier)
-		chroma[class2] += value * multiplier
+		fullChroma[class1] += value * (1 - multiplier)
+		fullChroma[class2] += value * multiplier
 
 	}
 
-	// console.log(chroma.map(x => x.toFixed(3)).join('\t'))
+	// console.log(fullChroma.map(x => x.toFixed(3)).join('\t'))
 
-	return chroma
+	return fullChroma
 
-}
-
-function getKeyNotes(buf) {
-
-	let chroma = getKeyChroma(buf)
-
-	// Normalize
-	const norm = Math.hypot(...chroma)
-
-	chroma = chroma.map(x => x / norm)
-
-	const notes = chroma.map(x => x > 0.5 ? 1 : 0)
-
-	return notes
 }
 
 function getKeys(lastKey, nextKeyData) {

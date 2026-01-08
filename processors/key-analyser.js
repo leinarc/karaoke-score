@@ -11,8 +11,10 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 		const {
 			dftSize,
 			dftOverlap,
+			dftChannels,
 			startNote,
 			noteCount,
+			cyclesPerDFT,
 			sampleRate, 
 			keyWASM,
 			safeNoteCount,
@@ -21,109 +23,142 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 		processor.options = processorOptions
 
-		WebAssembly.instantiate(
-			keyWASM,
-			{
-				env: {
-					'js_log': console.log
+		const modules = []
+
+		for (let i = 0; i < dftChannels; i++) {
+			modules.push(createWASMModule())
+		}
+
+		processor._modules = modules
+
+		function createWASMModule() {
+
+			return WebAssembly.instantiate(
+				keyWASM,
+				{
+					env: {
+						'js_log': console.log
+					}
 				}
-			}
-		).then(module => {
-
-			module = module.instance.exports
-		
-			const sinTable = []
-			const cosTable = []			
-			const cutoffs = []
-
-			let m = dftSize - 1
-
-			for (let f = 0; f < noteCount; f++) {
-				const note = startNote + f
-				const frequency = 440 * 2**((note - 69) / 12)
-				const cyclesPerSample = frequency / sampleRate
-				const samplesPerCycle = sampleRate / frequency
-
-				const cutoffSamples = samplesPerCycle * 2
-
-				for(; m > cutoffSamples; m--) {
-					cutoffs[m] = f
-				}
-
-				sinTable[f] = Math.sin((cyclesPerSample % 1) * 2 * Math.PI)
-				cosTable[f] = Math.cos((cyclesPerSample % 1) * 2 * Math.PI)
-
-			}
-
-			for(; m > 0; m--) {
-				cutoffs[m] = noteCount
-			}
-
-			processor._module = module
-
-			;(new Float64Array(module.memory.buffer, module.sin_table, safeNoteCount)).set(sinTable)
-			;(new Float64Array(module.memory.buffer, module.cos_table, safeNoteCount)).set(cosTable)
-			;(new Uint16Array(module.memory.buffer, module.cutoffs, safeBufferSize)).set(cutoffs)
-
-			processor._inputBuffer = new Float64Array(module.memory.buffer, module.input_buffer, safeBufferSize)
-			processor._outputBuffer = new Float64Array(module.memory.buffer, module.output_buffer, noteCount)
-
-		}).catch(err => {
-
-			console.error(err)
-			console.log('Failed to import WebAssembly key analyser.')
-			processor.error = err
-
-			processor.port.postMessage(err)
+			).then(wa => {
 			
-		})
+				const sinTable = []
+				const cosTable = []			
+				const cutoffs = []
+
+				let m = dftSize - 1
+
+				for (let f = 0; f < noteCount; f++) {
+					const note = startNote + f
+					const frequency = 440 * 2**((note - 69) / 12)
+					const cyclesPerSample = frequency / sampleRate
+					const samplesPerCycle = sampleRate / frequency
+
+					const cutoffSamples = samplesPerCycle * cyclesPerDFT
+
+					for(; m > cutoffSamples; m--) {
+						cutoffs[m] = f
+					}
+
+					sinTable[f] = Math.sin((cyclesPerSample % 1) * 2 * Math.PI)
+					cosTable[f] = Math.cos((cyclesPerSample % 1) * 2 * Math.PI)
+
+				}
+
+				for(; m > 0; m--) {
+					cutoffs[m] = noteCount
+				}
+
+				const exports = wa.instance.exports
+
+				;(new Float64Array(exports.memory.buffer, exports.sin_table, safeNoteCount)).set(sinTable)
+				;(new Float64Array(exports.memory.buffer, exports.cos_table, safeNoteCount)).set(cosTable)
+				;(new Uint16Array(exports.memory.buffer, exports.cutoffs, safeBufferSize)).set(cutoffs)
+
+				const inputBuffer = new Float64Array(exports.memory.buffer, exports.input_buffer, safeBufferSize)
+				const outputBuffer = new Float64Array(exports.memory.buffer, exports.output_buffer, noteCount)
+
+				return {
+					exports,
+					inputBuffer,
+					outputBuffer
+				}
+
+			}).catch(err => {
+
+				console.error(err)
+				console.log('Failed to import WebAssembly key analyser.')
+				processor.error = err
+
+				processor.port.postMessage(err)
+				
+			})
+
+		}
 
 	}
 
 	process(inputs, outputs, parameters) {
 
-		const error = this.error
+		const processor = this
 
-		if (error) {
-			return false
-		}
-
-		const module = this._module
-
-		if (!module) {
-			return true
-		}
+		if (processor.error) return false
 
 		try {
 
-			this._processing = true
+			const modules = processor._modules
 			
-			const inputBuffer = this._inputBuffer
-			const outputBuffer = this._outputBuffer
 			const {
 				dftSize,
 				dftOverlap,
+				dftChannels,
 				startNote,
 				noteCount,
+				cyclesPerDFT,
 				sampleRate, 
 				keyWASM,
 				safeNoteCount,
 				safeBufferSize,
 				cutoffs
 			} = this.options
+			
+			const buffers = inputs.flat()
 
-			const buffer = inputs[0][0]
+			for (let i = 0; i < modules.length; i++) {
 
-			if (!buffer) {
-				return true
-			}
+				const module = modules[i]
+				const buffer = buffers[i]
 
-			inputBuffer.set(buffer)
+				if (!buffer) continue
 
-			const outputBins = module.process_input(dftSize, dftOverlap, noteCount, Math.min(buffer.length, safeBufferSize))
+				module.then(module => {
 
-			if (outputBins > 0) {
-				this.port.postMessage(outputBuffer.slice(0, outputBins))
+					if (processor.error) return
+
+					const {
+						exports,
+						inputBuffer,
+						outputBuffer
+					} = module
+
+					inputBuffer.set(buffer)
+
+					const outputBins = exports.process_input(dftSize, dftOverlap, noteCount, Math.min(buffer.length, safeBufferSize))
+
+					if (outputBins > 0) {
+						this.port.postMessage(outputBuffer.slice(0, outputBins))
+					}
+
+				}).catch(err => {
+
+					console.error(err)
+					console.log('Failed to run WebAssembly key analyser.')
+					processor.error = err
+
+					processor.port.postMessage(err)
+					
+				})
+
 			}
 
 			return true
