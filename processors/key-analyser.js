@@ -18,7 +18,8 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 			sampleRate, 
 			keyWASM,
 			safeNoteCount,
-			safeBufferSize
+			safeBufferSize,
+			maxDelay
 		} = processorOptions
 
 		processor.options = processorOptions
@@ -119,21 +120,30 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 				keyWASM,
 				safeNoteCount,
 				safeBufferSize,
-				cutoffs
+				cutoffs,
+				maxDelay
 			} = this.options
 			
 			const buffers = inputs.flat()
 
-			for (let i = 0; i < modules.length; i++) {
+			const startDate = Date.now()
 
-				const module = modules[i]
-				const buffer = buffers[i]
+			Promise.all(modules).then(modules => {
 
-				if (!buffer) continue
+				if (processor.error) return
 
-				module.then(module => {
+				const delay = Date.now() - startDate
 
-					if (processor.error) return
+				if (delay > maxDelay) {
+					return
+				}
+
+				const outputs = []
+
+				for (let i = 0; i < modules.length; i++) {
+
+					const module = modules[i]
+					const buffer = buffers[i]
 
 					const {
 						exports,
@@ -141,25 +151,31 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 						outputBuffer
 					} = module
 
+					if (!buffer) continue
+
 					inputBuffer.set(buffer)
 
 					const outputBins = exports.process_input(dftSize, dftOverlap, noteCount, Math.min(buffer.length, safeBufferSize))
 
 					if (outputBins > 0) {
-						this.port.postMessage(outputBuffer.slice(0, outputBins))
+						outputs.push(outputBuffer.slice(0, outputBins))
 					}
 
-				}).catch(err => {
+				}
 
-					console.error(err)
-					console.log('Failed to run WebAssembly key analyser.')
-					processor.error = err
+				if (outputs.length > 0) {
+					this.port.postMessage(outputs)
+				}
 
-					processor.port.postMessage(err)
-					
-				})
+			}).catch(err => {
 
-			}
+				console.error(err)
+				console.log('Failed to run WebAssembly key analyser.')
+				processor.error = err
+
+				processor.port.postMessage(err)
+				
+			})
 
 			return true
 

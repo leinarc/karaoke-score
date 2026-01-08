@@ -687,7 +687,12 @@ body {
 
 	background-color: var(--fg);
 
-	transition: all 0.2s ease-out;
+	transition:
+		font-weight 0.2s ease-out,
+		font-size 0.2s ease-out,
+		text-shadow 0.2s ease-out,
+		width 0.2s ease-out,
+		height 0.2s ease-out;
 }
 
 #finish-button {
@@ -696,7 +701,14 @@ body {
 	outline-width: 0;
 	outline-offset: 0.5em;
 
-	transition: all 0.2s ease-out, outline-width 0.01s linear, box-shadow 0.01s linear;
+	transition:
+		font-weight 0.2s ease-out,
+		font-size 0.2s ease-out,
+		text-shadow 0.2s ease-out,
+		width 0.2s ease-out,
+		height 0.2s ease-out,
+		outline-width 0.01s ease,
+		box-shadow 0.01s ease;
 }
 
 .button-container:hover .button {
@@ -716,7 +728,7 @@ body {
 	border-width: 0.5em;
 	border-radius: 50%;
 
-	transition: all 0.2s ease-out;
+	transition: box-shadow 0.2s ease-out, transform 0.2s ease-out, border-width 0.2s ease-out;
 	
 	pointer-events: none;
 }
@@ -754,7 +766,7 @@ body {
 	transform: rotate(360deg);
 	border-width: 0.5em;
 
-	transition: all 0.4s ease-out;
+	transition: box-shadow 0.4s ease-out, transform 0.4s ease-out, border-width 0.4s ease-out;
 }
 
 #start-button-container::before {

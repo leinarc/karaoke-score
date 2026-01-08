@@ -15,7 +15,8 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 			sampleRate, 
 			melodyWASM,
 			safeNoteCount,
-			safeBufferSize
+			safeBufferSize,
+			maxDelay
 		} = processorOptions
 
 		processor.options = processorOptions
@@ -82,19 +83,30 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 				sampleRate, 
 				melodyWASM,
 				safeNoteCount,
-				safeBufferSize
+				safeBufferSize,
+				maxDelay
 			} = processor.options
 
 			const buffers = inputs.flat()
 
-			for (let i = 0; i < modules.length; i++) {
+			const startDate = Date.now()
 
-				const module = modules[i]
-				const buffer = buffers[i]
+			Promise.all(modules).then(modules => {
 
-				module.then(module => {
+				if (processor.error) return
 
-					if (processor.error) return
+				const delay = Date.now() - startDate
+
+				if (delay > maxDelay) {
+					return
+				}
+
+				const outputs = []
+
+				for (let i = 0; i < modules.length; i++) {
+
+					const module = modules[i]
+					const buffer = buffers[i]
 
 					const {
 						exports,
@@ -105,7 +117,7 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 
 					if (!buffer) {
 						allTimePeak[0] = 0 // I may regret relying on this condition xd
-						return
+						continue
 					}
 					
 					inputBuffer.set(buffer)
@@ -113,20 +125,24 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 					const outputCount = exports.process_input(tdSize, tdOverlap, sampleRate, Math.min(buffer.length, safeBufferSize))
 
 					for (let i = 0; i < outputCount; i++) {
-						this.port.postMessage(outputBuffer.slice(i*2, 2 + i*2))
+						outputs.push(outputBuffer.slice(i*2, 2 + i*2))
 					}
 
-				}).catch(err => {
+				}
 
-					console.error(err)
-					console.log('Failed to run WebAssembly melody analyser.')
-					processor.error = err
+				if (outputs.length > 0) {
+					this.port.postMessage(outputs)
+				}
 
-					processor.port.postMessage(err)
-					
-				})
+			}).catch( err => {
 
-			}
+				console.error(err)
+				console.log('Failed to run WebAssembly melody analyser.')
+				processor.error = err
+
+				processor.port.postMessage(err)
+				
+			})
 
 			return true
 

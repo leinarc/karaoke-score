@@ -1,27 +1,34 @@
 // Reference 1: https://whatnoteisthis.com/
 // Reference 2: https://davidtemperley.com/wp-content/uploads/2015/12/temperley-ms04.pdf
 
+// values paired with worklet processors
+const safeNoteCount = 120
+const safeBufferSize = 32768
+
 const tdSize = 2048 
 const fftSize = 8192
 const dftSize = 4096 // only the max cap; sample size is determined by frequency and cyclesPerDFT
 
+// only used by worklet processors
 const tdOverlap = 0
-const fftOverlap = 0
-const dftOverlap = dftSize - 128
+const dftOverlap = 0
 
+// only used by worklet processors
 const tdChannels = 2
 const dftChannels = 2
 
+// only used by native processors
 const tdIntervalTime = 20
 const fftIntervalTime = 500
 
-// For dft
+// for dft
 const startNote = 21 // starting note; 69 = A4
 const noteCount = 61
-const cyclesPerDFT = 8 
+const cyclesPerDFT = 8
 
-const safeNoteCount = 120
-const safeBufferSize = 32768
+// only used by worklet processors
+// determines the delay when the processor gives up on a frame
+const maxDelay = 1000
 
 var tdBuffer
 var fftBuffer
@@ -365,7 +372,8 @@ async function createWorkletMelodyAnalyser() {
 				sampleRate,
 				melodyWASM,
 				safeNoteCount,
-				safeBufferSize
+				safeBufferSize,
+				maxDelay
 			}
 		}
 	)
@@ -383,7 +391,7 @@ async function createWorkletMelodyAnalyser() {
 			return
 		}
 
-		analyseMelody(...data)
+		analyseMelody(data)
 
 	}
 
@@ -404,7 +412,7 @@ async function createTDMelodyAnalyser() {
 
 		melodyAnalyser.getFloatTimeDomainData(tdBuffer)
 
-		analyseMelody(...getMelodyFreq(tdBuffer))
+		analyseMelody([getMelodyFreq(tdBuffer)])
 
 	}, tdIntervalTime)
 
@@ -433,7 +441,8 @@ async function createWorkletKeyAnalyser() {
 				keyWASM,
 				sampleRate,
 				safeNoteCount,
-				safeBufferSize
+				safeBufferSize,
+				maxDelay
 			} 
 		}
 	)
@@ -460,7 +469,7 @@ async function createWorkletKeyAnalyser() {
 			fullChroma[note] =  mag_sqr**0.5 * 2 / Math.min(cutoffSamples, dftSize)
 		})
 
-		analyseKey(fullChroma)
+		analyseKey([fullChroma])
 
 	}
 
@@ -482,7 +491,7 @@ async function createFFTKeyAnalyser() {
 
 		const fullChroma = getKeyChroma(fftBuffer)
 
-		analyseKey(fullChroma)
+		analyseKey([fullChroma])
 
 	}, fftIntervalTime)
 

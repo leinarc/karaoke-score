@@ -52,7 +52,7 @@ function getKeys(lastKey, nextKeyData) {
 
 	const notesIndexes = []
 	let keyData = nextKeyData
-	while (keyData && keyData.length) {
+	while (keyData) {
 		notesIndexes.push(notesToIndex(keyData))
 		keyData = keyData.next
 	}

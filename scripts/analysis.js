@@ -53,17 +53,35 @@ function removeSegment() {
 
 
 
-function analyseMelody(freq, loudness) {
-	
+const minMelodyFreq = 50
+const maxMelodyFreq = 2000
+
+function analyseMelody(data) {
+
 	try {
 
-		displayLoudness(loudness)
+		const averageLoudness = data.reduce((a, b) => a + b[1], 0) / data.length
+		displayLoudness(averageLoudness)
 
-		if (freq > 0) {
+		const maxQuality = data.reduce((a, b) => {
+
+			const freq = b[0]
+
+			if (freq < minMelodyFreq || freq > maxMelodyFreq) return a
 
 			const frac = (12 * Math.log2(freq / 440) % 1 + 1) % 1
 			const quality = 1 - 4 * (1-frac) * frac
-			displayQuality(quality)
+
+			return Math.max(a, quality)
+
+		}, 0)
+		displayQuality(maxQuality)
+
+		for (const channel of data) {
+
+			const [ freq ] = channel
+
+			if (freq < minMelodyFreq || freq > maxMelodyFreq) return
 
 			if (!lastMelodyData.length && !lastKeyData.length) {
 				lastSegmentDate = Date.now()
@@ -71,13 +89,9 @@ function analyseMelody(freq, loudness) {
 
 			lastMelodyData.push(freq)
 
-		} else {
-
-			displayQuality(0)
-
+			analyseAudio()
+		
 		}
-
-		analyseAudio()
 
 	} catch (err) {
 
@@ -89,81 +103,89 @@ function analyseMelody(freq, loudness) {
 
 }
 
+
+
 var keyNoise = []
 
-function analyseKey(fullChroma, mapper) {
-
-	let log = ''
-	// log += 'Full Chroma:\t'
-	// log += fullChroma.map(
-	// 	x => x.toFixed(3)
-	// ).join('\t').split('\t').map(
-	// 	(x, i) => (i > 0 && i % 12 == 0 ? '\n\t\t' : '') + x 
-	// ).join('\t')
-	// log += '\n'
-	
+function analyseKey(data) {
+		
 	try {
 
-		if (!lastMelodyData.length && !lastKeyData.length) {
-			lastSegmentDate = Date.now()
+		for (const channel of data) {
+
+			let fullChroma = channel
+
+			let log = ''
+			// log += 'Full Chroma:\t'
+			// log += fullChroma.map(
+			// 	x => x.toFixed(3)
+			// ).join('\t').split('\t').map(
+			// 	(x, i) => (i > 0 && i % 12 == 0 ? '\n\t\t' : '') + x 
+			// ).join('\t')
+			// log += '\n'
+
+			if (!lastMelodyData.length && !lastKeyData.length) {
+				lastSegmentDate = Date.now()
+			}
+
+			const noiseThres = 0.8
+
+			// Remove noise
+			fullChroma = fullChroma.map((level, i) => level - (keyNoise[i] || 0))
+
+			// Update noise filter
+			keyNoise = fullChroma.map((level, i) => level * ((1-(level*noiseThres)**2)**0.5 || 0) / 1024 + (keyNoise[i] || 0))
+			
+
+			// Harmonic filter
+			fullChroma = fullChroma.map(
+				(x, i) => x - ((fullChroma[i-1] || 0) + (fullChroma[i+1] || 0)) / (fullChroma[i-1] && fullChroma[i+1] ? 2 : 1)
+			)
+
+			// const rawChroma = new Array(12).fill(0)
+			// oldChroma.forEach((level, i) => {
+			// 	rawChroma[i % 12] += level
+			// })
+			// log += 'Raw Chroma:\t'
+			// log += rawChroma.map(x => x.toFixed(3)).join('\t')
+			// log += '\n'
+
+			// Put chroma into 12 bins
+			let chroma = new Array(12).fill(0)
+			fullChroma.forEach((level, i) => {
+				chroma[i % 12] += level
+			})
+
+			// log += 'Filt Chroma:\t'
+			// log += chroma.map(x => x.toFixed(3)).join('\t')
+			// log += '\n'
+
+			// Normalize
+			{
+				const norm = Math.hypot(...chroma) || 1
+				chroma = chroma.map(x => x / norm)
+			}
+
+			// log += 'Norm Chroma:\t'
+			// log += chroma.map(x => x.toFixed(3)).join('\t')
+			// log += '\n'
+
+			// Detect notes
+			const notes = chroma.map(x => x > noiseThres ? 1 : 0)
+
+			// log += 'Notes:  \t'
+			// log += notes.map((x, i) => x ? noteNames[i] : '').join('\t')
+			// log += '\n'
+			
+			notes.forEach((note, i) => {
+				if (note) lastKeyData[i] = 1
+			})
+
+			// console.log(log)
+
+			analyseAudio()
+
 		}
-
-		const noiseThres = 0.8
-
-		// Remove noise
-		fullChroma = fullChroma.map((level, i) => level - (keyNoise[i] || 0))
-
-		// Update noise filter
-		keyNoise = fullChroma.map((level, i) => level * ((1-(level*noiseThres)**2)**0.5 || 0) / 1024 + (keyNoise[i] || 0))
-		
-
-		// Harmonic filter
-		fullChroma = fullChroma.map(
-			(x, i) => x - ((fullChroma[i-1] || 0) + (fullChroma[i+1] || 0)) / (fullChroma[i-1] && fullChroma[i+1] ? 2 : 1)
-		)
-
-		// const rawChroma = new Array(12).fill(0)
-		// oldChroma.forEach((level, i) => {
-		// 	rawChroma[i % 12] += level
-		// })
-		// log += 'Raw Chroma:\t'
-		// log += rawChroma.map(x => x.toFixed(3)).join('\t')
-		// log += '\n'
-
-		// Put chroma into 12 bins
-		let chroma = new Array(12).fill(0)
-		fullChroma.forEach((level, i) => {
-			chroma[i % 12] += level
-		})
-
-		// log += 'Filt Chroma:\t'
-		// log += chroma.map(x => x.toFixed(3)).join('\t')
-		// log += '\n'
-
-		// Normalize
-		{
-			const norm = Math.hypot(...chroma) || 1
-			chroma = chroma.map(x => x / norm)
-		}
-
-		// log += 'Norm Chroma:\t'
-		// log += chroma.map(x => x.toFixed(3)).join('\t')
-		// log += '\n'
-
-		// Detect notes
-		const notes = chroma.map(x => x > noiseThres ? 1 : 0)
-
-		// log += 'Notes:  \t'
-		// log += notes.map((x, i) => x ? noteNames[i] : '').join('\t')
-		// log += '\n'
-		
-		notes.forEach((note, i) => {
-			if (note) lastKeyData[i] = 1
-		})
-
-		// console.log(log)
-
-		analyseAudio()
 
 	} catch (err) {
 

@@ -46,7 +46,10 @@ void process_output (long td_size, unsigned int sample_rate, unsigned long cache
 		all_time_peak = peak;
 	}
 	
-	if (all_time_peak <= 0) return;
+	if (all_time_peak <= 0) {
+		output_buffer[1 + output_offset*2] = 0;
+		return;
+	}
 
 	// Compute RMS, and normalized audio
 	double rms = 0;

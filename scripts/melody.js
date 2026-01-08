@@ -1,6 +1,3 @@
-const minVocalFreq = 50
-const maxVocalFreq = 800
-
 var melodyAllTimePeak = 0
 
 function getMelodyFreq(buf) {
@@ -77,11 +74,6 @@ function getMelodyFreq(buf) {
 	let maxval = -1
 	let maxpos = -1
 	for (let i = d; i < size; i++) {
-		// Limit to vocal range
-		// const freq = sampleRate / i
-		// if (freq < minVocalFreq/2) { break }
-		// if (freq > maxVocalFreq*2) { continue }
-
 		if (c[i] > maxval && c[i] > valthres) {
 			maxval = c[i]
 			maxpos = i
