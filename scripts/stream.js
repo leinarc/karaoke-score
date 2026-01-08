@@ -300,6 +300,7 @@ async function connectAnalyser() {
 
 		}
 
+		keyNoise = [] // Reset noise filter
 		source.connect(keyAnalyser)
 
 		document.getElementById('start-button-container').style.display = 'none'
