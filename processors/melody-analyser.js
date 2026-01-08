@@ -103,4 +103,4 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 
 }
 
-registerProcessor('melody-analyser', melodyAnalyserProcessor,)
+registerProcessor('melody-analyser', melodyAnalyserProcessor)
