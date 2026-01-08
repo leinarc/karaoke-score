@@ -33,8 +33,12 @@ var analyse2RAF
 
 var analyzing
 
-var keyWasm
-var melodyWasm
+var keyWASM
+var melodyWASM
+var keyJS
+var melodyJS
+
+loadProcessors()
 
 
 
@@ -299,20 +303,47 @@ async function connectAnalyser() {
 
 }
 
+async function loadProcessors() {
+	melodyWASM = loadProcessorWASM('processors/melody-analyser.wasm')
+
+	keyWASM = loadProcessorWASM('processors/key-analyser.wasm')
+
+	melodyJS = loadProcessorJS('processors/melody-analyser.js')
+
+	keyJS = loadProcessorJS('processors/key-analyser.js')
+}
+
+function loadProcessorWASM(url) {
+	return fetch(url).then(
+		response => response.arrayBuffer()
+	)
+}
+
+function loadProcessorJS(url) {
+	return fetch(url).then(
+		response => response.text()
+	).then(
+		text => new Blob([text], { type: 'application/javascript; charset=utf-8' })
+	).then(
+		blob => {
+			let reader = new FileReader();
+			reader.readAsDataURL(blob);
+			return new Promise((resolve) => {
+				reader.onloadend = () => {
+					resolve(reader.result);
+				}
+			})
+        }
+	)
+
+}
+
 async function createWorkletMelodyAnalyser() {
 
-	if (!melodyWasm) {
-		const response = await fetch('processors/melody-analyser.wasm')
-		melodyWasm = await response.arrayBuffer();
-	}
+	melodyWASM = await melodyWASM
+	melodyJS = await melodyJS
 
-	const response = await fetch('processors/melody-analyser.js')
-	const text = await response.text()
-	const blob = new Blob([text], { type: 'application/javascript; charset=utf-8' });
-	const objectUrl = URL.createObjectURL(blob);
-
-	await audioContext.audioWorklet.addModule(objectUrl)
-	URL.revokeObjectURL(objectUrl)
+	await audioContext.audioWorklet.addModule(melodyJS)
 
 	const sampleRate = audioContext.sampleRate
 
@@ -323,7 +354,7 @@ async function createWorkletMelodyAnalyser() {
 			processorOptions: {
 				tdSize,
 				sampleRate,
-				melodyWasm,
+				melodyWASM,
 				safeNoteCount,
 				safeBufferSize
 			}
@@ -363,18 +394,10 @@ async function createTDMelodyAnalyser() {
 
 async function createWorkletKeyAnalyser() {
 
-	if (!keyWasm) {
-		const response = await fetch('processors/key-analyser.wasm')
-		keyWasm = await response.arrayBuffer();
-	}
+	keyWASM = await keyWASM
+	keyJS = await keyJS
 
-	const response = await fetch('processors/key-analyser.js')
-	const text = await response.text()
-	const blob = new Blob([text], { type: 'application/javascript; charset=utf-8' });
-	const objectUrl = URL.createObjectURL(blob);
-
-	await audioContext.audioWorklet.addModule(objectUrl)
-	URL.revokeObjectURL(objectUrl)
+	await audioContext.audioWorklet.addModule(keyJS)
 
 	const sampleRate = audioContext.sampleRate
 
@@ -387,7 +410,7 @@ async function createWorkletKeyAnalyser() {
 				fftOverlap,
 				startNote,
 				noteCount,
-				keyWasm,
+				keyWASM,
 				sampleRate,
 				safeNoteCount,
 				safeBufferSize

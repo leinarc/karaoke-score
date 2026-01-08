@@ -12,7 +12,7 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 			tdSize,
 			tdOverlap,
 			sampleRate, 
-			melodyWasm,
+			melodyWASM,
 			safeNoteCount,
 			safeBufferSize
 		} = processorOptions
@@ -20,7 +20,7 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 		processor.options = processorOptions
 
 		WebAssembly.instantiate(
-			melodyWasm,
+			melodyWASM,
 			{
 				env: {
 					'js_log': console.log
@@ -49,7 +49,7 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 
 	}
 
-	async process(inputs, outputs, parameters) {
+	process(inputs, outputs, parameters) {
 
 		const error = this.error
 
@@ -74,7 +74,7 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 				tdSize,
 				tdOverlap,
 				sampleRate, 
-				melodyWasm,
+				melodyWASM,
 				safeNoteCount,
 				safeBufferSize
 			} = this.options
@@ -83,7 +83,7 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 
 			inputBuffer.set(buffer)
 
-			const outputCount = await module.process_input(tdSize, tdOverlap, sampleRate, Math.min(buffer.length, safeBufferSize))
+			const outputCount = module.process_input(tdSize, tdOverlap, sampleRate, Math.min(buffer.length, safeBufferSize))
 
 			for (let i = 0; i < outputCount; i++) {
 				this.port.postMessage(outputBuffer.slice(i * 2, (i + 1) * 2))

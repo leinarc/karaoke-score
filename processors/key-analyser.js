@@ -13,7 +13,7 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 			startNote,
 			noteCount,
 			sampleRate, 
-			keyWasm,
+			keyWASM,
 			safeNoteCount,
 			safeBufferSize
 		} = processorOptions
@@ -21,7 +21,7 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 		processor.options = processorOptions
 
 		WebAssembly.instantiate(
-			keyWasm,
+			keyWASM,
 			{
 				env: {
 					'js_log': console.log
@@ -79,7 +79,9 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 	}
 
-	async process(inputs, outputs, parameters) {
+	process(inputs, outputs, parameters) {
+
+		console.log(inputs)
 
 		const error = this.error
 
@@ -105,7 +107,7 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 				startNote,
 				noteCount,
 				sampleRate, 
-				keyWasm,
+				keyWASM,
 				safeNoteCount,
 				safeBufferSize,
 				cutoffs
@@ -115,7 +117,7 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 			inputBuffer.set(buffer)
 
-			const outputBins = await module.process_input(fftSize, fftOverlap, noteCount, Math.min(buffer.length, safeBufferSize))
+			const outputBins = module.process_input(fftSize, fftOverlap, noteCount, Math.min(buffer.length, safeBufferSize))
 
 			if (outputBins > 0) {
 				this.port.postMessage(outputBuffer.slice(0, outputBins))
