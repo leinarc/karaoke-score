@@ -50,7 +50,7 @@ void process_output (long td_size, unsigned int sample_rate, unsigned long cache
 		
 	}
 
-	all_time_peak = peak / 128 + all_time_peak * 127 / 128;
+	all_time_peak = peak / 256 + all_time_peak * 255 / 256;
 
 	if (peak <= 0) {
  		output_buffer_loudness[output_offset] = 0;
@@ -62,6 +62,7 @@ void process_output (long td_size, unsigned int sample_rate, unsigned long cache
 		peak = all_time_peak;
 	} else {
  		output_buffer_loudness[output_offset] = 1;
+		all_time_peak = peak / 8 + all_time_peak * 7 / 8;
 	}
 	
 	rms = rms / (peak*peak) / td_size;
@@ -148,19 +149,17 @@ bad_freq:
 
 }
 
-unsigned long process_input (long td_size, long td_overlap, unsigned int sample_rate, unsigned long buffer_size, int skip_output) {
+unsigned long process_input (unsigned long td_size, unsigned long td_interval, unsigned int sample_rate, unsigned long buffer_size, int skip_output) {
 
 	unsigned long output_count = 0;
 
 	unsigned long i;
 
-	int td_gap = td_size - td_overlap;
-
 	for (i = 0; i < buffer_size; i++) {
 
 		cache_gap++;
 
-		if (cache_gap >= td_gap) {
+		if (cache_gap >= td_interval) {
 
 			if (!skip_output) {
 				process_output(td_size, sample_rate, (cache_offset + safe_buffer_size - td_size) % safe_buffer_size, output_count);

@@ -10,13 +10,13 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 
 		const {
 			tdSize,
-			tdOverlap,
+			tdProcessInterval,
 			tdChannels,
 			sampleRate, 
 			melodyWASM,
 			safeNoteCount,
 			safeBufferSize,
-			maxDelay
+			tdMaxDelay
 		} = processorOptions
 
 		processor.options = processorOptions
@@ -78,29 +78,29 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 
 			const modules = processor._modules
 			const processorOptions = processor.options
-			
-			const {
-				tdSize,
-				tdOverlap,
-				tdChannels,
-				sampleRate, 
-				melodyWASM,
-				safeNoteCount,
-				safeBufferSize,
-				maxDelay
-			} = processorOptions
 
 			const buffers = inputs.flat()
 
 			const scheduledDate = Date.now()
 
 			Promise.all(modules).then(modules => {
+			
+				const {
+					tdSize,
+					tdProcessInterval,
+					tdChannels,
+					sampleRate, 
+					melodyWASM,
+					safeNoteCount,
+					safeBufferSize,
+					tdMaxDelay
+				} = processorOptions
 
 				if (processor.error) return
 
 				const startDate = Date.now()
 
-				const skipOutput = maxDelay > 0 && startDate - scheduledDate > maxDelay
+				const skipOutput = tdMaxDelay > 0 && startDate - scheduledDate > tdMaxDelay
 
 				const outputs = []
 
@@ -120,7 +120,7 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 					
 					inputBuffer.set(buffer)
 
-					const outputCount = exports.process_input(tdSize, tdOverlap, sampleRate, buffer.length, skipOutput)
+					const outputCount = exports.process_input(tdSize, tdProcessInterval, sampleRate, buffer.length, skipOutput)
 
 					if (outputCount > 0) {
 
@@ -140,16 +140,14 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 					this.port.postMessage(outputs)
 				}
 
-				if (maxDelay > 0 && Date.now() - startDate > maxDelay && processorOptions.tdSize > 2048) {
+				if (tdMaxDelay > 0 && Date.now() - startDate > tdMaxDelay && processorOptions.tdSize > tdProcessInterval) {
 					console.log('Excess delay detected in melody processor, halving size...')
 					processorOptions.tdSize /= 2
-					processorOptions.tdOverlap /= 2
 					console.log('TD size set to:', processorOptions.tdSize)
-					console.log('TD overlap set to:', processorOptions.tdOverlap)
 				}
 
 			}).catch( err => {
-				
+
 				console.error(err)
 				console.log('Failed to run WebAssembly melody analyser.')
 				processor.error = err

@@ -6,7 +6,12 @@ const soundGood = new Audio('sounds/karaoke-good.ogg')
 const soundNormal = new Audio('sounds/karaoke-normal.ogg')
 const soundBad = new Audio('sounds/karaoke-bad.ogg')
 
+createVisualizerBars()
+
 function startEndAnimation(score) {
+		
+	displayVisualizer()
+	displayKey()
 
 	const message = generateMessage(score)
 	const emoji = generateEmoji()
@@ -20,8 +25,6 @@ function startEndAnimation(score) {
 	const effect39 = score == 39
 
 	const gif = getGIF(score)
-		
-
 	
 	document.getElementById('showing-score').checked = true
 	document.getElementById('show-score').checked = true
@@ -60,6 +63,9 @@ function startEndAnimation(score) {
 function stopEndAnimation() {
 	clearInterval(animationInterval)
 	clearTimeout(animationTimeout)
+
+	displayVisualizer()
+	displayKey()
 	
 	soundRoll.pause()
 	soundGood.pause()
@@ -223,6 +229,47 @@ function getGIF(score) {
 }
 
 
+
+function displayVisualizer(fullChroma) {
+	for (let i = 0; i < noteCount; i++) {
+		const bar = document.getElementById('visualizer-bar-' + i)
+		const note = i + startNote
+		const level = Math.max(0, Math.min(1, fullChroma?.[note] || 0))
+		bar.style.height = level*100 + '%'
+		bar.style.opacity = level*50 + 50 + '%'
+	}
+}
+
+function displayKey(key) {
+	if (key === undefined) {
+		for (let i = 0; i < noteCount; i++) {
+			const bar = document.getElementById('visualizer-bar-' + i)
+			bar.style.backgroundColor = 'var(--fg)'
+		}
+		return
+	}
+
+	const profile = rotateProfile(onKeyNotes, key)
+	
+	for (let i = 0; i < noteCount; i++) {
+		const bar = document.getElementById('visualizer-bar-' + i)
+		const note = i + startNote
+		if (profile[note % 12]) {
+			bar.style.backgroundColor = 'var(--fg)'
+		} else {
+			bar.style.backgroundColor = 'var(--accent2)'
+		}
+	}
+}
+
+function createVisualizerBars() {
+	const visualizer = document.getElementById('visualizer')
+	for (let i = 0; i < noteCount; i++) {
+		const bar = document.createElement('bar')
+		bar.id = 'visualizer-bar-' + i
+		visualizer.appendChild(bar)
+	}
+}
 
 
 

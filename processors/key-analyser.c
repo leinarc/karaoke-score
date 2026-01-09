@@ -43,7 +43,7 @@ unsigned int m_count = 1;
 // it's the index of the max m, but it's the smallest index
 unsigned int start_m_index = 0;
 
-double all_time_peak = 1;
+double all_time_peak = 0;
 
 double get_value (unsigned int note, S* s) {
 
@@ -91,10 +91,12 @@ void process_output (unsigned int note_count, unsigned int m_index, unsigned lon
 		}
 	}
 
-	all_time_peak = peak / 128 + all_time_peak * 127 / 128;
+	all_time_peak = peak / 1024 + all_time_peak * 1023 / 1024;
 
 	if (all_time_peak > peak) {
 		peak = all_time_peak;
+	} else {
+		all_time_peak = peak / 8 + all_time_peak * 7 / 8;
 	}
 
 	if (peak <= 0) return;
@@ -109,17 +111,15 @@ void process_output (unsigned int note_count, unsigned int m_index, unsigned lon
 
 }
 
-int process_input (long dft_size, long dft_overlap, unsigned long note_count, unsigned long buffer_size, int skip_output) {
+int process_input (unsigned long dft_size, unsigned long dft_interval, unsigned long note_count, unsigned long buffer_size, int skip_output) {
 
 	unsigned long output_count = 0;
 
-	int m_gap = dft_size - dft_overlap;
-
 	min_m += buffer_size;
 
-	if (min_m > m_gap) {
+	if (min_m > dft_interval) {
 
-		min_m = min_m - m_gap;
+		min_m = min_m - dft_interval;
 
 		mm[start_m_index + m_count] = min_m - buffer_size;
 

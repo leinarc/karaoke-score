@@ -1,5 +1,5 @@
 const segmentInterval = 5000
-const segmentLimit = 4
+const segmentLimit = 3
 
 const melodyDataLimit = 1024
 
@@ -108,74 +108,138 @@ function analyseMelody(data) {
 
 
 var keyNoiseFilters = []
+const keyMaxErrorAccumulation = dftSize * 2**4
+const keyMinErrorAccumulation = -keyMaxErrorAccumulation
+var pMult = 0.5
+var iMult = 0.01
+var dMult = 0.01
 
 function analyseKey(data) {
 		
 	try {
 
-		for (let i = 0; i < data.length; i++) {
+		if (pMult > 0.0001) pMult *= 0.95
+		if (iMult > 0.00001) iMult *= 0.9
 
-			const channel = data[i]
+		for (let k = 0; k < data.length; k++) {
 
-			let channelFilters = keyNoiseFilters[i]
+			const channel = data[k]
+
+			let channelFilters = keyNoiseFilters[k]
 			if (!channelFilters) {
 				channelFilters = []
-				keyNoiseFilters[i] = channelFilters
+				keyNoiseFilters[k] = channelFilters
 			}
 
 			for (let j = 0; j < channel.length; j++) {
-
-				// let log = ''
-
-				const frame = channel[j]
-				let [ fullChroma, peak ] = frame
-
-				let noiseFilter = channelFilters[j]
-				if (!noiseFilter) {
-					noiseFilter = fullChroma.map(x => x * peak)
-				}
-
-				// log += 'Full Chroma:\t'
-				// log += formatFullChroma(fullChroma)
-				// log += '\n'
 
 				if (!lastMelodyData.length && !lastKeyData.length) {
 					lastSegmentDate = Date.now()
 				}
 
-				// Remove noise
-				const oldChroma = fullChroma
-				fullChroma = oldChroma.map((level, i) => level - (noiseFilter[i] || 1) / peak)
+				let log = ''
+
+				const frame = channel[j]
+				let [ fullChroma, peak ] = frame
+
+				let channelFilter = channelFilters[j]
+				if (!channelFilter) {
+					channelFilter = {noiseFilter: [], errorAccumulation: [], lastNoiseFilter: []}
+					channelFilters[j] = channelFilter
+				}
+
+				log += 'peak:\t'
+				log += peak
+				log += '\n'
+
+				// log += 'Full Chroma:\t'
+				// log += formatFullChroma(fullChroma)
+				// log += '\n'
+				
+				// log += 'True Chroma:\t'
+				// log += formatFullChromaInt(fullChroma.map(x => x * peak))
+				// log += '\n'
+
+
+
+				// Calculate PIDs for the filter
+				let { noiseFilter, errorAccumulation, lastNoiseFilter } = channelFilter
+
+				const E = fullChroma.map((level, i) => level*peak*1.0 - (noiseFilter[i] || level))
+
+				const P = E
+
+				const I = errorAccumulation.slice()
+
+				E.forEach((e, i) => {
+					I[i] = Math.max(Math.min((I[i]||0) + e, keyMaxErrorAccumulation), keyMinErrorAccumulation)
+				})
+
+				const D = noiseFilter.map((e, i) => e - (lastNoiseFilter[i]||0))
 
 				// Update noise filter
-				channelFilters[i] = oldChroma.map((level, i) => level * peak / 1024 + (noiseFilter[i] || 1) * 1023 / 1024)
-				
+				lastNoiseFilter = noiseFilter
+				noiseFilter = []
+				I.forEach((I_i, i) => {
+					const change = (lastNoiseFilter[i]||0) + pMult*(P[i]||0) + iMult*I_i + dMult*(D[i]||0)
+					noiseFilter[i] = change > 0 ? change : change/128 
+				})
+
+				channelFilter.noiseFilter = noiseFilter
+				channelFilter.errorAccumulation = I
+				channelFilter.lastNoiseFilter = lastNoiseFilter
+
 				// log += 'Noise Filter:\t'
-				// log += formatFullChroma(noiseFilter.map(x => (x / peak))
+				// log += formatFullChroma(noiseFilter.map(x => (x / peak)))
 				// log += '\n'
+				
+				// log += 'True Filter:\t'
+				// log += formatFullChromaInt(noiseFilter)
+				// log += '\n'
+
+
+
+				// Apply noise filter
+				fullChroma = fullChroma.map((level, i) => level - noiseFilter[i] / peak)
 
 				// log += 'Filt Chroma:\t'
 				// log += formatFullChroma(fullChroma)
 				// log += '\n'
+
+				// log += 'Filt Chroma:\t'
+				// log += formatFullChromaInt(fullChroma.map(x => x * peak))
+				// log += '\n'
+
+				
 
 				// Dissonance filter
 				fullChroma = fullChroma.map(
 					(x, i) => {
 						a = fullChroma[i-1]
 						b = fullChroma[i+1]
-						return x - ((a > 0 ? a : 0) + (b > 0 ? b : 0 )) // / (a > 0 && b > 0 ? 2 : 1)
+						return (
+							x
+							+ (x>a ? x-a : 0)
+							+ (x>b ? x-b : 0)
+						) / 3
 					}
 				)
+
+				displayVisualizer(fullChroma)
+
+
 
 				// Put chroma levels into 12 bins
 				let chroma = []
 				fullChroma.forEach((x, i) => {
-					chroma[i % 12] = (chroma[i % 12] || 0) + x
+					chroma[i % 12] = (chroma[i % 12] || 0) + x**2
 				})
 
-				// log += 'Harm Chroma:  \t'
-				// log += chroma.map(x => x.toFixed(3)).join('\t')
-				// log += '\n'
+				log += 'Harm Chroma:  \t'
+				log += formatChroma(chroma)
+				log += '\n'
+
+
 
 				// Normalize
 				// {
@@ -187,8 +251,10 @@ function analyseKey(data) {
 				// log += formatFullChroma(fullChroma)
 				// log += '\n'
 
+
+
 				// Detect notes
-				const notes = chroma.map(x => x > 0.5 ? 1 : 0)
+				const notes = chroma.map(x => x**0.5 > 0.7 ? 1 : 0)
 
 				// log += 'Notes:  \t'
 				// log += notes.map((x, i) => x ? noteNames[i] : '').join('\t')
@@ -198,25 +264,37 @@ function analyseKey(data) {
 					if (note) lastKeyData[i] = 1
 				})
 
-				// if (notes.some(x => x)) {
-				// 	console.log(log)
-				// }
+				// console.log(log)
 
-				// if (notes.some(x => x)) {
-				// 	console.log('Notes:  \t' + notes.map((x, i) => x ? noteNames[i] : '').join('\t'))
-				// }
+				if (notes.some(x => x)) {
+					console.log('Notes:  \t' + notes.map((x, i) => x ? noteNames[i] : '').join('\t'))
+				}
 
-				// function formatFullChroma(fullChroma) {
-				// 	return fullChroma.map(
-				// 		x => x.toFixed(3)
-				// 	).join('\t').split('\t').map(
-				// 		(x, i) => (i > 0 && i % 12 == 0 ? '\n\t\t' : '') + x 
-				// 	).join('\t')
-				// }
 
-				// function formatChroma(chroma) {
-				// 	return chroma.map(x => x.toFixed(3)).join('\t')
-				// }
+
+				function formatFullChroma(fullChroma) {
+					return fullChroma.map(
+						x => x.toFixed(3)
+					).join('\t').split('\t').map(
+						(x, i) => (i > 0 && i % 12 == 0 ? '\n\t\t' : '') + x 
+					).join('\t')
+				}
+
+				function formatChroma(chroma) {
+					return chroma.map(x => x.toFixed(3)).join('\t')
+				}
+
+				function formatFullChromaInt(fullChroma) {
+					return fullChroma.map(
+						x => Math.floor(x)
+					).join('\t').split('\t').map(
+						(x, i) => (i > 0 && i % 12 == 0 ? '\n\t\t' : '') + x 
+					).join('\t')
+				}
+
+				function formatChromaInt(chroma) {
+					return chroma.map(x => Math.floor(x)).join('\t')
+				}
 
 			}
 
@@ -252,6 +330,8 @@ function analyseAudio() {
 
 			const key = getKey(lastSegmentKey, nextKeyData)
 			console.log('Detected key:\t' + keyNames[key])
+
+			displayKey(key)
 
 			const newScores = getScores(key, nextMelodyData)
 			scores.push(...newScores)

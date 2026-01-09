@@ -79,6 +79,17 @@ for (let i = 0; i < 2**12; i++) {
 
 
 
+function rotateProfile(profile, key) {
+
+	const offset = (Math.floor(key / 12) * 3 + key)  % 12
+	const half1 = profile.slice(12 - offset)
+	const half2 = profile.slice(0, 12 - offset)
+	profile = half1.concat(half2)
+
+	return profile
+	
+}
+
 function notesToIndex(notes) {
 	return notes.reduce((a, b, i) => a + (b > 0 ? 1 : 0) * 2**i, 0)
 }

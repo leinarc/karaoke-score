@@ -256,6 +256,40 @@ body {
 	z-index: -98;
 }
 
+
+
+
+#visualizer {
+	position: absolute;
+	display: flex;
+	flex-direction: row;
+	align-items: flex-end;
+	justify-content: space-evenly;
+
+	width: 100svw;
+	height: 10em;
+
+	bottom: 0;
+
+	opacity: 50%;
+
+	z-index: -97;
+}
+
+#visualizer * {
+	background-color: var(--fg);
+
+	width: 1em;
+	margin: 0 0.1em;
+
+	transition:
+		height 0.1s ease-out,
+		opacity 0.02s ease-out;
+}
+
+
+
+
 #settings {
 	position: absolute;
 	display: flex;
@@ -671,7 +705,8 @@ body {
 
 	transition:
 		outline-width 0.5s ease-out,
-		outline-offset 0.5s ease-out;
+		outline-offset 0.5s ease-out,
+		outline-color 0.04s ease-out;
 }
 
 .button {
@@ -709,8 +744,8 @@ body {
 		text-shadow 0.2s ease-out,
 		width 0.2s ease-out,
 		height 0.2s ease-out,
-		outline-width 0.01s ease,
-		box-shadow 0.01s ease;
+		outline-width 0.02s ease,
+		box-shadow 0.02s ease;
 }
 
 .button-container:hover .button {

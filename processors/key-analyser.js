@@ -10,7 +10,7 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 		const {
 			dftSize,
-			dftOverlap,
+			dftProcessInterval,
 			dftChannels,
 			startNote,
 			noteCount,
@@ -18,7 +18,7 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 			keyWASM,
 			safeNoteCount,
 			safeBufferSize,
-			maxDelay
+			dftMaxDelay
 		} = processorOptions
 
 		processor.options = processorOptions
@@ -116,31 +116,31 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 			const modules = processor._modules
 			const processorOptions = processor.options
 			
-			const {
-				dftSize,
-				dftOverlap,
-				dftChannels,
-				startNote,
-				noteCount,
-				sampleRate, 
-				keyWASM,
-				safeNoteCount,
-				safeBufferSize,
-				cutoffs,
-				maxDelay
-			} = processorOptions
-			
 			const buffers = inputs.flat()
 
 			const scheduledDate = Date.now()
 
 			Promise.all(modules).then(modules => {
+			
+				const {
+					dftSize,
+					dftProcessInterval,
+					dftChannels,
+					startNote,
+					noteCount,
+					sampleRate, 
+					keyWASM,
+					safeNoteCount,
+					safeBufferSize,
+					cutoffs,
+					dftMaxDelay
+				} = processorOptions
 
 				if (processor.error) return
 
 				const startDate = Date.now()
 
-				const skipOutput = maxDelay > 0 && startDate - scheduledDate > maxDelay
+				const skipOutput = dftMaxDelay > 0 && startDate - scheduledDate > dftMaxDelay
 
 				const outputs = []
 
@@ -160,7 +160,7 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 					inputBuffer.set(buffer)
 
-					const outputCount = exports.process_input(dftSize, dftOverlap, noteCount, Math.min(buffer.length, safeBufferSize), skipOutput)
+					const outputCount = exports.process_input(dftSize, dftProcessInterval, noteCount, Math.min(buffer.length, safeBufferSize), skipOutput)
 
 					if (outputCount > 0) {
 
@@ -180,12 +180,10 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 					this.port.postMessage(outputs)
 				}
 
-				if (maxDelay > 0 && Date.now() - startDate > maxDelay && processorOptions.dftSize > 4096) {
+				if (dftMaxDelay > 0 && Date.now() - startDate > dftMaxDelay && processorOptions.dftSize > dftProcessInterval) {
 					console.log('Excess delay detected in key processor, halving size...')
 					processorOptions.dftSize /= 2
-					processorOptions.dftOverlap /= 4
 					console.log('DFT size set to:', processorOptions.dftSize)
-					console.log('DFT overlap set to:', processorOptions.dftOverlap)
 				}
 
 			}).catch(err => {

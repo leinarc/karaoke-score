@@ -10,8 +10,8 @@ const fftSize = 8192
 const dftSize = 8192
 
 // only used by worklet processors
-const tdOverlap = 0
-const dftOverlap = 0
+const tdProcessInterval = 1024
+const dftProcessInterval = 2048
 
 // only used by worklet processors
 const tdChannels = 1
@@ -27,7 +27,9 @@ const noteCount = 88
 
 // only used by worklet processors
 // determines the delay when the processor gives up on a frame
-const maxDelay = 50
+// also determines if an operation takes too long and lags behind
+const tdMaxDelay = 50
+const dftMaxDelay = 20
 
 var tdBuffer
 var fftBuffer
@@ -299,7 +301,7 @@ async function connectAnalyser() {
 
 		}
 
-		// keyNoise = [] // Reset noise filter
+		keyNoiseFilters = [] // Reset noise filter
 		source.connect(keyAnalyser)
 
 		document.getElementById('start-button-container').style.display = 'none'
@@ -365,13 +367,13 @@ async function createWorkletMelodyAnalyser() {
 		{ 
 			processorOptions: {
 				tdSize,
-				tdOverlap,
+				tdProcessInterval,
 				tdChannels,
 				sampleRate,
 				melodyWASM,
 				safeNoteCount,
 				safeBufferSize,
-				maxDelay
+				tdMaxDelay
 			}
 		}
 	)
@@ -431,7 +433,7 @@ async function createWorkletKeyAnalyser() {
 		{ 
 			processorOptions: {
 				dftSize,
-				dftOverlap,
+				dftProcessInterval,
 				dftChannels,
 				startNote,
 				noteCount,
@@ -439,7 +441,7 @@ async function createWorkletKeyAnalyser() {
 				sampleRate,
 				safeNoteCount,
 				safeBufferSize,
-				maxDelay
+				dftMaxDelay
 			} 
 		}
 	)
