@@ -109,7 +109,7 @@ void process_output (unsigned int note_count, unsigned int m_index, unsigned lon
 
 }
 
-int process_input (long dft_size, long dft_overlap, unsigned long note_count, unsigned long buffer_size) {
+int process_input (long dft_size, long dft_overlap, unsigned long note_count, unsigned long buffer_size, int skip_output) {
 
 	unsigned long output_count = 0;
 
@@ -179,8 +179,10 @@ int process_input (long dft_size, long dft_overlap, unsigned long note_count, un
 
 		if (m_has_output > 0) {
 
-			process_output(note_count, m_index, output_count);
-			output_count++;
+			if (!skip_output) {
+				process_output(note_count, m_index, output_count);
+				output_count++;
+			}
 			
 			mm[m_index] = 0;
 

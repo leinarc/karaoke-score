@@ -14,7 +14,6 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 			dftChannels,
 			startNote,
 			noteCount,
-			cyclesPerDFT,
 			sampleRate, 
 			keyWASM,
 			safeNoteCount,
@@ -117,6 +116,7 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 		try {
 
 			const modules = processor._modules
+			const processorOptions = processor.options
 			
 			const {
 				dftSize,
@@ -124,26 +124,25 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 				dftChannels,
 				startNote,
 				noteCount,
-				cyclesPerDFT,
 				sampleRate, 
 				keyWASM,
 				safeNoteCount,
 				safeBufferSize,
 				cutoffs,
 				maxDelay
-			} = this.options
+			} = processorOptions
 			
 			const buffers = inputs.flat()
 
-			const startDate = Date.now()
+			const scheduledDate = Date.now()
 
 			Promise.all(modules).then(modules => {
 
 				if (processor.error) return
 
-				if (maxDelay > 0 && Date.now() - startDate > maxDelay) {
-					return
-				}
+				const startDate = Date.now()
+
+				const skipOutput = maxDelay > 0 && startDate - scheduledDate > maxDelay
 
 				const outputs = []
 
@@ -167,7 +166,7 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 					inputBuffer.set(buffer)
 
-					const outputCount = exports.process_input(dftSize, dftOverlap, noteCount, Math.min(buffer.length, safeBufferSize))
+					const outputCount = exports.process_input(dftSize, dftOverlap, noteCount, Math.min(buffer.length, safeBufferSize), skipOutput)
 
 					if (outputCount > 0) {
 
@@ -185,6 +184,12 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 				if (outputs.length > 0) {
 					this.port.postMessage(outputs)
+				}
+
+				if (maxDelay > 0 && Date.now() - startDate > maxDelay && processorOptions.dftSize > 4096) {
+					console.log('Excess delay detected in key processor, halving size...')
+					processorOptions.dftSize /= 2
+					processorOptions.dftOverlap /= 2
 				}
 
 			}).catch(err => {

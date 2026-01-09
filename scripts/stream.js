@@ -5,13 +5,13 @@
 const safeNoteCount = 120
 const safeBufferSize = 32768
 
-const tdSize = 1024 
+const tdSize = 8192
 const fftSize = 8192
 const dftSize = 8192 // only the max cap; sample size is determined by frequency and cyclesPerDFT
 
 // only used by worklet processors
 const tdOverlap = 0
-const dftOverlap = dftSize/2
+const dftOverlap = 0
 
 // only used by worklet processors
 const tdChannels = 2
@@ -28,7 +28,7 @@ const cyclesPerDFT = 4
 
 // only used by worklet processors
 // determines the delay when the processor gives up on a frame
-const maxDelay = 5000
+const maxDelay = 10
 
 var tdBuffer
 var fftBuffer

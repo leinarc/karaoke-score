@@ -142,7 +142,7 @@ void process_output (long td_size, unsigned int sample_rate, unsigned long cache
 	return;
 }
 
-unsigned long process_input (long td_size, long td_overlap, unsigned int sample_rate, unsigned long buffer_size) {
+unsigned long process_input (long td_size, long td_overlap, unsigned int sample_rate, unsigned long buffer_size, int skip_output) {
 
 	unsigned long output_count = 0;
 
@@ -156,9 +156,11 @@ unsigned long process_input (long td_size, long td_overlap, unsigned int sample_
 
 		if (cache_gap >= td_gap) {
 
-			process_output(td_size, sample_rate, cache_offset - td_size, output_count);
-			output_count++;
-
+			if (!skip_output) {
+				process_output(td_size, sample_rate, cache_offset - td_size, output_count);
+				output_count++;
+			}
+			
 			cache_gap = 0;
 
 		}

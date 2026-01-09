@@ -79,6 +79,7 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 		try {
 
 			const modules = processor._modules
+			const processorOptions = processor.options
 			
 			const {
 				tdSize,
@@ -89,19 +90,19 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 				safeNoteCount,
 				safeBufferSize,
 				maxDelay
-			} = processor.options
+			} = processorOptions
 
 			const buffers = inputs.flat()
 
-			const startDate = Date.now()
+			const scheduledDate = Date.now()
 
 			Promise.all(modules).then(modules => {
 
 				if (processor.error) return
 
-				if (maxDelay > 0 && Date.now() - startDate > maxDelay) {
-					return
-				}
+				const startDate = Date.now()
+
+				const skipOutput = maxDelay > 0 && startDate - scheduledDate > maxDelay
 
 				const outputs = []
 
@@ -125,7 +126,7 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 					
 					inputBuffer.set(buffer)
 
-					const outputCount = exports.process_input(tdSize, tdOverlap, sampleRate, Math.min(buffer.length, safeBufferSize))
+					const outputCount = exports.process_input(tdSize, tdOverlap, sampleRate, Math.min(buffer.length, safeBufferSize), skipOutput)
 
 					if (outputCount > 0) {
 
@@ -143,6 +144,12 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 
 				if (outputs.length > 0) {
 					this.port.postMessage(outputs)
+				}
+
+				if (maxDelay > 0 && Date.now() - startDate > maxDelay && processorOptions.tdSize > 1024) {
+					console.log('Excess delay detected in melody processor, halving size...')
+					processorOptions.tdSize /= 2
+					processorOptions.tdOverlap /= 2
 				}
 
 			}).catch( err => {
