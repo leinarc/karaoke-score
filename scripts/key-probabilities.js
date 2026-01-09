@@ -80,7 +80,7 @@ for (let i = 0; i < 2**12; i++) {
 
 
 function notesToIndex(notes) {
-	return notes.reduce((a, b, i) => a + b * 2**i, 0)
+	return notes.reduce((a, b, i) => a + (b > 0 ? 1 : 0) * 2**i, 0)
 }
 
 function getStructureProb(lastKey, keys) {

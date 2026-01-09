@@ -8,7 +8,10 @@ __attribute__((used))
 double input_buffer[safe_buffer_size] = {0};
 
 __attribute__((used))
-double output_buffer[safe_buffer_size * 2] = {0};
+double output_buffer_frequency[safe_buffer_size] = {0};
+
+__attribute__((used))
+double output_buffer_loudness[safe_buffer_size] = {0};
 
 __attribute__((used))
 double all_time_peak = 0;
@@ -28,7 +31,7 @@ double buffer[safe_buffer_size] = {0};
 
 void process_output (long td_size, unsigned int sample_rate, unsigned long cache_offset, unsigned long output_offset) {
 
-	output_buffer[0 + output_offset*2] = -1; // initial freq
+	output_buffer_frequency[output_offset] = -1; // initial freq
 
 	// Compute peak
 	double peak = 0;
@@ -47,7 +50,7 @@ void process_output (long td_size, unsigned int sample_rate, unsigned long cache
 	}
 	
 	if (all_time_peak <= 0) {
-		output_buffer[1 + output_offset*2] = 0;
+		output_buffer_loudness[output_offset] = 0;
 		return;
 	}
 
@@ -61,13 +64,11 @@ void process_output (long td_size, unsigned int sample_rate, unsigned long cache
 		buffer[i] = value;
 	}
 
-	output_buffer[1 + output_offset*2] = peak / all_time_peak; // output loudness
+	output_buffer_loudness[output_offset] = peak / all_time_peak; // output loudness
 	
 	rms = rms / td_size; // cannot get square root because no libraries
 
-	if (rms < 0.0001) { // not enough signal
-		return;
-	}
+	if (rms < 0.0001) return; // not enough signal
 
 	// Cut out unfinished waves at both ends of the buffer
 	unsigned long r1 = 0;
@@ -136,7 +137,7 @@ void process_output (long td_size, unsigned int sample_rate, unsigned long cache
 	
 	if (T0 <= 0) return;
 
-	output_buffer[0 + output_offset*2] = sample_rate / T0;
+	output_buffer_frequency[output_offset] = sample_rate / T0;
 
 	return;
 }
@@ -156,7 +157,6 @@ unsigned long process_input (long td_size, long td_overlap, unsigned int sample_
 		if (cache_gap >= td_gap) {
 
 			process_output(td_size, sample_rate, cache_offset - td_size, output_count);
-
 			output_count++;
 
 			cache_gap = 0;

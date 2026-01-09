@@ -15,10 +15,19 @@ __attribute__((used))
 double input_buffer[safe_buffer_size] = {0};
 
 __attribute__((used))
-double output_buffer[safe_note_count] = {0};
+double output_buffer_chroma[safe_buffer_size*safe_note_count] = {0};
 
 __attribute__((used))
-unsigned int cutoffs[safe_buffer_size] = {0};
+double output_buffer_peak[safe_buffer_size] = {0};
+
+// __attribute__((used))
+// double max_values_sqr[safe_note_count] = {0};
+
+// __attribute__((used))
+// unsigned int cutoffs[safe_note_count] = {0};
+
+// __attribute__((used))
+// double max_value_sqr = 0;
 
 typedef struct {
     double n_1;
@@ -32,43 +41,69 @@ long min_m = 0;
 unsigned int m_count = 1;
 // this is NOT the index which contains min_m
 // it's the index of the max m, but it's the smallest index
-unsigned int start_m_index = 0; 
+unsigned int start_m_index = 0;
 
-double get_magnitude (unsigned int note, S* s) {
+double all_time_peak = 0;
+
+double get_value (unsigned int note, S* s) {
 
 	double cos = cos_table[note];
 	double sin = sin_table[note];
 	double y_r = s->n_1 - cos * s->n_2;
 	double y_i = sin * s->n_2;
 
-	return y_r*y_r + y_i*y_i;
+	return (y_r*y_r + y_i*y_i); // / max_value_sqr;
 
 }
 
-void process_output (unsigned int note_count, unsigned int m_index) {
+void process_output (unsigned int note_count, unsigned int m_index, unsigned long output_offset) {
 
-	unsigned int output_bins = note_count;
+	output_buffer_peak[output_offset] = 1; // initial peak
+
+	unsigned long chroma_offset = output_offset*note_count;
 
 	unsigned int note;
 
-	for (note = 0; note < output_bins; note++) {
-
-		output_buffer[note] = 0;
-		
+	for (note = 0; note < note_count; note++) {
+		output_buffer_chroma[note + chroma_offset] = 0;
 	}
 
 	for (note = 0; note < note_count; note++) {
 
 		S* s = &sss[m_index][note];
 
-		double mag = get_magnitude(note, s);
+		double value = get_value(note, s);
 
-		output_buffer[note] += mag;
+		output_buffer_chroma[note + chroma_offset] += value;
 
 		s->n_1 = 0;
 		s->n_2 = 0;
 
 	}
+
+	double peak = 0;
+
+	for (note = 0; note < note_count; note++) {
+		double value = output_buffer_chroma[note + chroma_offset];
+
+		if (value > peak) {
+			peak = value;
+		}
+	}
+
+	all_time_peak = peak / 128 + all_time_peak * 127 / 128;
+
+	if (all_time_peak > peak) {
+		peak = all_time_peak;
+	}
+
+	if (peak <= 0) return;
+
+	for (note = 0; note < note_count; note++) {
+		output_buffer_chroma[note + chroma_offset] /= peak;
+	}
+
+	output_buffer_peak[output_offset] = peak;
 
 	return;
 
@@ -76,9 +111,7 @@ void process_output (unsigned int note_count, unsigned int m_index) {
 
 int process_input (long dft_size, long dft_overlap, unsigned long note_count, unsigned long buffer_size) {
 
-	unsigned int output_bins = note_count;
-
-	int has_output = 0;
+	unsigned long output_count = 0;
 
 	int m_gap = dft_size - dft_overlap;
 
@@ -118,9 +151,9 @@ int process_input (long dft_size, long dft_overlap, unsigned long note_count, un
 
 			unsigned int note;
 
-			unsigned int cutoff = cutoffs[m];
+			// double cutoff = cutoffs[note];
 
-			for (note = 0; note < note_count && note < cutoff; note++) {
+			for (note = 0; note < note_count; note++) {
 
 				S* s = &sss[m_index][note];
 
@@ -136,9 +169,7 @@ int process_input (long dft_size, long dft_overlap, unsigned long note_count, un
 			
 			if (m >= dft_size) {
 
-				has_output = output_bins;
-				
-				m_has_output = output_bins;
+				m_has_output = 1;
 
 				break;
 
@@ -148,7 +179,8 @@ int process_input (long dft_size, long dft_overlap, unsigned long note_count, un
 
 		if (m_has_output > 0) {
 
-			process_output(note_count, m_index);
+			process_output(note_count, m_index, output_count);
+			output_count++;
 			
 			mm[m_index] = 0;
 
@@ -166,6 +198,6 @@ int process_input (long dft_size, long dft_overlap, unsigned long note_count, un
 
 	}
 
-	return has_output;
+	return output_count;
 
 }

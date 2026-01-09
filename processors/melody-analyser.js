@@ -41,14 +41,18 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 			).then(wa => {
 
 				const exports = wa.instance.exports
-				const inputBuffer = new Float64Array(exports.memory.buffer, exports.input_buffer, safeBufferSize)
-				const outputBuffer = new Float64Array(exports.memory.buffer, exports.output_buffer, safeBufferSize*2)
-				const allTimePeak = new Float64Array(exports.memory.buffer, exports.all_time_peak, 1)
+				const buffer = exports.memory.buffer
+
+				const inputBuffer = new Float64Array(buffer, exports.input_buffer, safeBufferSize)
+				const outputBufferFrequency = new Float64Array(buffer, exports.output_buffer_frequency, safeBufferSize)
+				const outputBufferLoudness = new Float64Array(buffer, exports.output_buffer_loudness, safeBufferSize)
+				const allTimePeak = new Float64Array(buffer, exports.all_time_peak, 1)
 
 				return {
 					exports,
 					inputBuffer,
-					outputBuffer,
+					outputBufferFrequency,
+					outputBufferLoudness,
 					allTimePeak
 				}
 
@@ -109,7 +113,8 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 					const {
 						exports,
 						inputBuffer,
-						outputBuffer,
+						outputBufferFrequency,
+						outputBufferLoudness,
 						allTimePeak
 					} = module
 
@@ -122,8 +127,16 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 
 					const outputCount = exports.process_input(tdSize, tdOverlap, sampleRate, Math.min(buffer.length, safeBufferSize))
 
-					for (let i = 0; i < outputCount; i++) {
-						outputs.push(outputBuffer.slice(i*2, 2 + i*2))
+					if (outputCount > 0) {
+
+						const frames = []
+
+						for (let i = 0; i < outputCount; i++) {
+							frames.push([outputBufferFrequency.at(i), outputBufferLoudness.at(i)])
+						}
+
+						outputs.push(frames)
+						
 					}
 
 				}

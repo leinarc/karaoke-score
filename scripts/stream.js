@@ -5,13 +5,13 @@
 const safeNoteCount = 120
 const safeBufferSize = 32768
 
-const tdSize = 2048 
+const tdSize = 1024 
 const fftSize = 8192
-const dftSize = 4096 // only the max cap; sample size is determined by frequency and cyclesPerDFT
+const dftSize = 8192 // only the max cap; sample size is determined by frequency and cyclesPerDFT
 
 // only used by worklet processors
 const tdOverlap = 0
-const dftOverlap = 0
+const dftOverlap = dftSize/2
 
 // only used by worklet processors
 const tdChannels = 2
@@ -23,12 +23,12 @@ const fftIntervalTime = 500
 
 // for dft
 const startNote = 21 // starting note; 69 = A4
-const noteCount = 61
-const cyclesPerDFT = 8
+const noteCount = 88
+const cyclesPerDFT = 4
 
 // only used by worklet processors
 // determines the delay when the processor gives up on a frame
-const maxDelay = 1000
+const maxDelay = 5000
 
 var tdBuffer
 var fftBuffer
@@ -300,7 +300,7 @@ async function connectAnalyser() {
 
 		}
 
-		keyNoise = [] // Reset noise filter
+		// keyNoise = [] // Reset noise filter
 		source.connect(keyAnalyser)
 
 		document.getElementById('start-button-container').style.display = 'none'
@@ -411,7 +411,7 @@ async function createTDMelodyAnalyser() {
 
 		melodyAnalyser.getFloatTimeDomainData(tdBuffer)
 
-		analyseMelody([getMelodyFreq(tdBuffer)])
+		analyseMelody([[getMelodyFreq(tdBuffer)]])
 
 	}, tdIntervalTime)
 
@@ -459,20 +459,20 @@ async function createWorkletKeyAnalyser() {
 			return
 		}
 
-		data = data.map(channel => {
-			const fullChroma = []
+		for (const channel of data) {
+			for (const frame of channel) {
 
-			channel.forEach((mag_sqr, i) => {
-				const note = startNote + i
-				const frequency = 440 * 2**((note - 69) / 12)
-				const samplesPerCycle = sampleRate / frequency
-				const cutoffSamples = samplesPerCycle * cyclesPerDFT
-				fullChroma[note] =  mag_sqr**0.5 * 2 / Math.min(cutoffSamples, dftSize)
-			})
+				const fullChroma = []
 
-			return fullChroma
-		})
+				frame[0].forEach((mag_sqr, i) => {
+					fullChroma[i + startNote] = mag_sqr**0.5
+				})
 
+				frame[0] = fullChroma
+
+			}
+		}
+		
 		analyseKey(data)
 
 	}
@@ -484,6 +484,7 @@ async function createFFTKeyAnalyser() {
 	keyAnalyser = audioContext.createAnalyser()
 	keyAnalyser.fftSize = fftSize
 	fftBuffer = new Float32Array(keyAnalyser.frequencyBinCount)
+	keyAllTimePeak = 0
 
 	fftInterval = setInterval( () => {
 
@@ -495,7 +496,7 @@ async function createFFTKeyAnalyser() {
 
 		const fullChroma = getKeyChroma(fftBuffer)
 
-		analyseKey([fullChroma])
+		analyseKey([[fullChroma, 1]])
 
 	}, fftIntervalTime)
 

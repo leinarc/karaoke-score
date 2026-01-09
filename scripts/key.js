@@ -1,12 +1,14 @@
 const minInstrFreq = 50
 const maxInstrFreq = 3200
 
+var keyAllTimePeak = 0
+
 function getKeyChroma(buf) {
 
 	// Convert from dB to linear
 	const fftData = buf.map(db => Number.isFinite(db) ? 10**(db/20) : 0)
 
-	const fullChroma = new Array(12).fill(0)
+	let fullChroma = []
 
 	const sampleRate = audioContext.sampleRate
 
@@ -40,6 +42,15 @@ function getKeyChroma(buf) {
 		fullChroma[class1] += value * (1 - multiplier)
 		fullChroma[class2] += value * multiplier
 
+	}
+
+	const peak = fullChroma.reduce((a, b) => Math.max(a, b), 0)
+	if (peak > keyAllTimePeak) {
+		keyAllTimePeak = peak
+	}
+
+	if (keyAllTimePeak > 0) {
+		fullChroma = fullChroma.map(x => x / keyAllTimePeak)
 	}
 
 	// console.log(fullChroma.map(x => x.toFixed(3)).join('\t'))

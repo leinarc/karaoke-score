@@ -44,45 +44,54 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 			).then(wa => {
 			
 				const sinTable = []
-				const cosTable = []			
-				const cutoffs = []
-
-				let m = dftSize - 1
+				const cosTable = []
+				// const maxValuesSqr = []
+				// const cutoffs = []
+				// const maxValueSqr = (dftSize / 2) ** 2
 
 				for (let f = 0; f < noteCount; f++) {
 					const note = startNote + f
 					const frequency = 440 * 2**((note - 69) / 12)
 					const cyclesPerSample = frequency / sampleRate
-					const samplesPerCycle = sampleRate / frequency
-
-					const cutoffSamples = samplesPerCycle * cyclesPerDFT
-
-					for(; m > cutoffSamples; m--) {
-						cutoffs[m] = f
-					}
+					// const samplesPerCycle = sampleRate / frequency
+					// const maxValue = samplesPerCycle / 2
+					// const maxValueSqr = maxValue**2
 
 					sinTable[f] = Math.sin((cyclesPerSample % 1) * 2 * Math.PI)
 					cosTable[f] = Math.cos((cyclesPerSample % 1) * 2 * Math.PI)
+					
+					// maxValuesSqr[f] = maxValueSqr
+
+					// for(; m > cutoffSamples; m--) {
+					// 	cutoffs[m] = f
+					// }
 
 				}
 
-				for(; m > 0; m--) {
-					cutoffs[m] = noteCount
-				}
+				// for(; m > 0; m--) {
+				// 	cutoffs[m] = noteCount
+				// }
 
 				const exports = wa.instance.exports
+				const buffer = exports.memory.buffer
 
-				;(new Float64Array(exports.memory.buffer, exports.sin_table, safeNoteCount)).set(sinTable)
-				;(new Float64Array(exports.memory.buffer, exports.cos_table, safeNoteCount)).set(cosTable)
-				;(new Uint16Array(exports.memory.buffer, exports.cutoffs, safeBufferSize)).set(cutoffs)
+				;(new Float64Array(buffer, exports.sin_table, safeNoteCount)).set(sinTable)
+				;(new Float64Array(buffer, exports.cos_table, safeNoteCount)).set(cosTable)
+				// ;(new Float64Array(buffer, exports.max_values_sqr, safeNoteCount)).set(maxValuesSqr)
+				// ;(new Uint32Array(buffer, exports.cutoffs, safeNoteCount)).set(cutoffs)
+				// ;(new Float64Array(buffer, exports.max_value_sqr, 1)).set([maxValueSqr])
 
-				const inputBuffer = new Float64Array(exports.memory.buffer, exports.input_buffer, safeBufferSize)
-				const outputBuffer = new Float64Array(exports.memory.buffer, exports.output_buffer, noteCount)
+				const inputBuffer = new Float64Array(buffer, exports.input_buffer, safeBufferSize)
+				const outputBufferChroma = new Float64Array(buffer, exports.output_buffer_chroma, safeBufferSize * safeNoteCount)
+				const outputBufferPeak = new Float64Array(buffer, exports.output_buffer_peak, safeBufferSize)
+				const allTimePeak = new Float64Array(buffer, exports.all_time_peak, 1)
 
 				return {
 					exports,
 					inputBuffer,
-					outputBuffer
+					outputBufferChroma,
+					outputBufferPeak,
+					allTimePeak
 				}
 
 			}).catch(err => {
@@ -146,17 +155,30 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 					const {
 						exports,
 						inputBuffer,
-						outputBuffer
+						outputBufferChroma,
+						outputBufferPeak,
+						allTimePeak
 					} = module
 
-					if (!buffer) continue
+					if (!buffer) {
+						allTimePeak[0] = 0 // I may regret relying on this condition xd
+						continue
+					}
 
 					inputBuffer.set(buffer)
 
-					const outputBins = exports.process_input(dftSize, dftOverlap, noteCount, Math.min(buffer.length, safeBufferSize))
+					const outputCount = exports.process_input(dftSize, dftOverlap, noteCount, Math.min(buffer.length, safeBufferSize))
 
-					if (outputBins > 0) {
-						outputs.push(outputBuffer.slice(0, outputBins))
+					if (outputCount > 0) {
+
+						const frames = []
+
+						for (let i = 0; i < outputCount; i++) {
+							frames.push([outputBufferChroma.slice(i*noteCount, i*noteCount + noteCount), outputBufferPeak.at(i)])
+						}
+
+						outputs.push(frames)
+						
 					}
 
 				}
