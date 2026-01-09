@@ -6,7 +6,7 @@
 	--fg-extreme: #fff;
 	--bg-extreme: #000;
 	--fg-tame: #ccc;
-	--bg-tame: #333;
+	--bg-tame: #222;
 	--accent-dark: #003830;
 	--accent-dim: #055e50;
 	--accent: #198375;
@@ -267,7 +267,7 @@ body {
 	justify-content: space-evenly;
 
 	width: 100svw;
-	height: 10em;
+	height: 20em;
 
 	bottom: 0;
 
@@ -279,8 +279,9 @@ body {
 #visualizer * {
 	background-color: var(--fg);
 
+	flex-grow: 1;
 	width: 1em;
-	margin: 0 0.1em;
+	margin: 0 0.1%;
 
 	transition:
 		height 0.1s ease-out,
@@ -290,26 +291,20 @@ body {
 
 
 
-#settings {
+#settings-container {
 	position: absolute;
-	display: flex;
-	flex-direction: column;
-	align-items: stretch;
-	justify-content: flex-start;
 
 	top: 0;
-	left: 0;
+	right: 0;
 
 	font-size: 0.9em;
 
-	padding: 0 max(1em, (100dvw - 35em) / 2);
+	padding: 2em min(1em, (100svw - 35em) / 2);
 
-	width: 100dvw;
-	height: 0;
+	width: 0;
+	height: calc(100dvh - 4em);
 
-	box-sizing: border-box;
-
-	background-color: var(--bg);
+	background-color: var(--bg-tame);
 
 	overflow: hidden;
 	visibility: hidden;
@@ -319,9 +314,11 @@ body {
 
 @keyframes open-settings {
 	0% {
-		padding: 0 max(1em, (100dvw - 35em) / 2);
+		padding: 2em 0;
 
-		height: 0;
+		box-shadow: 0 0 0 0 var(--bg);
+
+		width: 0;
 
 		overflow: hidden;
 		visibility: visible;
@@ -330,9 +327,11 @@ body {
 		overflow: hidden;
 	}
 	100% {
-		padding: 2em max(1em, (100dvw - 35em) / 2);
+		padding: 2em 1em;
 
-		height: 100dvh;
+		box-shadow: 0 0 5em 5em var(--bg);
+		
+		width: min(100dvw - 2em, 33em);
 
 		overflow: auto;
 		visibility: visible;
@@ -341,30 +340,42 @@ body {
 
 @keyframes close-settings {
 	0% {		
-		padding: 2em max(1em, (100dvw - 35em) / 2);
+		padding: 2em 1em;
 
-		height: 100dvh;
+		box-shadow: 0 0 5em 5em var(--bg);
+		
+		width: min(100dvw - 2em, 33em);
 
 		overflow: hidden;
 		visibility: visible;
 	}
-	99% {
-		padding: 0 max(1em, (100dvw - 35em) / 2);
-
-		height: 0;
-	}
 	100% {
+		box-shadow: 0 0 0 0 var(--bg);
+
+		width: 0;
+
+		padding: 2em 0;
+
 		overflow: hidden;
 		visibility: hidden;
 	}
 }
 
-#is-settings-open:checked ~ #settings {
-	animation: open-settings 0.2s cubic-bezier(0, 0.5, 0.5, 1) forwards;
+#is-settings-open:checked ~ #settings-container {
+	animation: open-settings 0.3s cubic-bezier(0, 0.5, 0, 1) forwards;
 }
 
-#is-settings-closed:checked ~ #settings {
-	animation: close-settings 0.2s cubic-bezier(0, 0.5, 0.5, 1) forwards;
+#is-settings-closed:checked ~ #settings-container {
+	animation: close-settings 0.2s cubic-bezier(1, 0, 0.5, 1) forwards;
+}
+
+#settings {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: flex-start;
+
+	width: min(100dvw - 2em, 33em);
 }
 
 #settings > * {

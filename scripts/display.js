@@ -299,7 +299,7 @@ function checkFullscreen() {
 function openSettings() {
 	document.getElementById('is-settings-open').checked = true
 	document.getElementById('is-settings-closed').checked = false
-	document.getElementById('settings').scrollTo(0, 0)
+	document.getElementById('settings-container').scrollTo(0, 0)
 
 	displaySettings()
 }
