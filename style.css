@@ -669,7 +669,9 @@ body {
 	outline-width: 0;
 	outline-offset: 0;
 
-	transition: outline-width 0.5s ease-out, outline-offset 0.5s ease-out;
+	transition:
+		outline-width 0.5s ease-out,
+		outline-offset 0.5s ease-out;
 }
 
 .button {
@@ -728,7 +730,10 @@ body {
 	border-width: 0.5em;
 	border-radius: 50%;
 
-	transition: box-shadow 0.2s ease-out, transform 0.2s ease-out, border-width 0.2s ease-out;
+	transition: 
+		box-shadow 0.2s ease-out,
+		transform 0.2s ease-out,
+		border-width 0.2s ease-out;
 	
 	pointer-events: none;
 }
@@ -766,7 +771,10 @@ body {
 	transform: rotate(360deg);
 	border-width: 0.5em;
 
-	transition: box-shadow 0.4s ease-out, transform 0.4s ease-out, border-width 0.4s ease-out;
+	transition:
+		box-shadow 0.4s ease-out,
+		transform 0.4s ease-out,
+		border-width 0.4s ease-out;
 }
 
 #start-button-container::before {

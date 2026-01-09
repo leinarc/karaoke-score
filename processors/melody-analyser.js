@@ -46,14 +46,12 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 				const inputBuffer = new Float64Array(buffer, exports.input_buffer, safeBufferSize)
 				const outputBufferFrequency = new Float64Array(buffer, exports.output_buffer_frequency, safeBufferSize)
 				const outputBufferLoudness = new Float64Array(buffer, exports.output_buffer_loudness, safeBufferSize)
-				const allTimePeak = new Float64Array(buffer, exports.all_time_peak, 1)
 
 				return {
 					exports,
 					inputBuffer,
 					outputBufferFrequency,
-					outputBufferLoudness,
-					allTimePeak
+					outputBufferLoudness
 				}
 
 			}).catch(err => {
@@ -115,18 +113,14 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 						exports,
 						inputBuffer,
 						outputBufferFrequency,
-						outputBufferLoudness,
-						allTimePeak
+						outputBufferLoudness
 					} = module
 
-					if (!buffer) {
-						allTimePeak[0] = 0 // I may regret relying on this condition xd
-						continue
-					}
+					if (!buffer) continue
 					
 					inputBuffer.set(buffer)
 
-					const outputCount = exports.process_input(tdSize, tdOverlap, sampleRate, Math.min(buffer.length, safeBufferSize), skipOutput)
+					const outputCount = exports.process_input(tdSize, tdOverlap, sampleRate, buffer.length, skipOutput)
 
 					if (outputCount > 0) {
 
@@ -146,14 +140,16 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 					this.port.postMessage(outputs)
 				}
 
-				if (maxDelay > 0 && Date.now() - startDate > maxDelay && processorOptions.tdSize > 1024) {
+				if (maxDelay > 0 && Date.now() - startDate > maxDelay && processorOptions.tdSize > 2048) {
 					console.log('Excess delay detected in melody processor, halving size...')
 					processorOptions.tdSize /= 2
 					processorOptions.tdOverlap /= 2
+					console.log('TD size set to:', processorOptions.tdSize)
+					console.log('TD overlap set to:', processorOptions.tdOverlap)
 				}
 
 			}).catch( err => {
-
+				
 				console.error(err)
 				console.log('Failed to run WebAssembly melody analyser.')
 				processor.error = err

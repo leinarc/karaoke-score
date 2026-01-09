@@ -43,7 +43,7 @@ unsigned int m_count = 1;
 // it's the index of the max m, but it's the smallest index
 unsigned int start_m_index = 0;
 
-double all_time_peak = 0;
+double all_time_peak = 1;
 
 double get_value (unsigned int note, S* s) {
 

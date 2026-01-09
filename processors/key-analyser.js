@@ -83,14 +83,12 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 				const inputBuffer = new Float64Array(buffer, exports.input_buffer, safeBufferSize)
 				const outputBufferChroma = new Float64Array(buffer, exports.output_buffer_chroma, safeBufferSize * safeNoteCount)
 				const outputBufferPeak = new Float64Array(buffer, exports.output_buffer_peak, safeBufferSize)
-				const allTimePeak = new Float64Array(buffer, exports.all_time_peak, 1)
 
 				return {
 					exports,
 					inputBuffer,
 					outputBufferChroma,
-					outputBufferPeak,
-					allTimePeak
+					outputBufferPeak
 				}
 
 			}).catch(err => {
@@ -155,14 +153,10 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 						exports,
 						inputBuffer,
 						outputBufferChroma,
-						outputBufferPeak,
-						allTimePeak
+						outputBufferPeak
 					} = module
 
-					if (!buffer) {
-						allTimePeak[0] = 0 // I may regret relying on this condition xd
-						continue
-					}
+					if (!buffer) continue
 
 					inputBuffer.set(buffer)
 
@@ -189,7 +183,9 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 				if (maxDelay > 0 && Date.now() - startDate > maxDelay && processorOptions.dftSize > 4096) {
 					console.log('Excess delay detected in key processor, halving size...')
 					processorOptions.dftSize /= 2
-					processorOptions.dftOverlap /= 2
+					processorOptions.dftOverlap /= 4
+					console.log('DFT size set to:', processorOptions.dftSize)
+					console.log('DFT overlap set to:', processorOptions.dftOverlap)
 				}
 
 			}).catch(err => {

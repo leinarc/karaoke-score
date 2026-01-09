@@ -5,17 +5,17 @@
 const safeNoteCount = 120
 const safeBufferSize = 32768
 
-const tdSize = 8192
+const tdSize = 2048
 const fftSize = 8192
-const dftSize = 8192 // only the max cap; sample size is determined by frequency and cyclesPerDFT
+const dftSize = 8192
 
 // only used by worklet processors
 const tdOverlap = 0
 const dftOverlap = 0
 
 // only used by worklet processors
-const tdChannels = 2
-const dftChannels = 2
+const tdChannels = 1
+const dftChannels = 1
 
 // only used by native processors
 const tdIntervalTime = 20
@@ -24,11 +24,10 @@ const fftIntervalTime = 500
 // for dft
 const startNote = 21 // starting note; 69 = A4
 const noteCount = 88
-const cyclesPerDFT = 4
 
 // only used by worklet processors
 // determines the delay when the processor gives up on a frame
-const maxDelay = 10
+const maxDelay = 50
 
 var tdBuffer
 var fftBuffer
@@ -436,7 +435,6 @@ async function createWorkletKeyAnalyser() {
 				dftChannels,
 				startNote,
 				noteCount,
-				cyclesPerDFT,
 				keyWASM,
 				sampleRate,
 				safeNoteCount,
@@ -496,7 +494,7 @@ async function createFFTKeyAnalyser() {
 
 		const fullChroma = getKeyChroma(fftBuffer)
 
-		analyseKey([[fullChroma, 1]])
+		analyseKey([fullChroma])
 
 	}, fftIntervalTime)
 

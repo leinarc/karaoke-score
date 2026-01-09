@@ -45,17 +45,20 @@ function getKeyChroma(buf) {
 	}
 
 	const peak = fullChroma.reduce((a, b) => Math.max(a, b), 0)
-	if (peak > keyAllTimePeak) {
-		keyAllTimePeak = peak
+
+	keyAllTimePeak = peak / 128 + keyAllTimePeak * 127 / 128;
+
+	if (keyAllTimePeak > peak) {
+		peak = keyAllTimePeak;
 	}
 
-	if (keyAllTimePeak > 0) {
-		fullChroma = fullChroma.map(x => x / keyAllTimePeak)
+	if (peak > 0) {
+		fullChroma = fullChroma.map(x => x / peak)
 	}
 
 	// console.log(fullChroma.map(x => x.toFixed(3)).join('\t'))
 
-	return fullChroma
+	return [fullChroma, peak]
 
 }
 

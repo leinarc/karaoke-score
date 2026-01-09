@@ -67,7 +67,7 @@ function analyseMelody(data) {
 
 		const maxQuality = flatData.reduce((a, b) => {
 
-			const freq = b[0]
+			const [ freq, peak ] = b
 
 			if (freq < minMelodyFreq || freq > maxMelodyFreq) return a
 
@@ -81,7 +81,7 @@ function analyseMelody(data) {
 
 		for (const frame of flatData) {
 
-			const [ freq ] = frame
+			const [ freq, peak ] = frame
 
 			if (freq < minMelodyFreq || freq > maxMelodyFreq) continue
 

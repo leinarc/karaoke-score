@@ -6,28 +6,30 @@ function getMelodyFreq(buf) {
 	// Oh ok I get it now, this is detecting the frequency at which the audio wave aligns with itself
 	let size = buf.length
 
-	let peak = buf.reduce((a, b) => Math.max(a, Math.abs(b)), 0)
 	let freq = -1
 
-	if (peak > melodyAllTimePeak) {
-		melodyAllTimePeak = peak
+	// Compute Peak and RMS
+	let peak = buf.reduce((a, b) => Math.max(a, Math.abs(b)), 0)
+
+	melodyAllTimePeak = peak / 128 + melodyAllTimePeak * 127 / 128;
+
+	if (melodyAllTimePeak > peak) {
+		peak = melodyAllTimePeak;
 	}
 
-	// Compute RMS
 	let rms = 0
 
+	if (peak <= 0) return [freq, peak]
+
 	for (let i = 0; i < size; i++) {
-		let val = buf[i]
-		val /= melodyAllTimePeak
-		buf[i] = val
-		rms += val * val
+		const val = buf[i]
+		buf[i] /= peak
+		rms += val*val
 	}
 
-	rms = Math.sqrt(rms / size)
+	rms = rms / (peak*peak) / size
 
-	if (rms < 0.01) { // not enough signal
-		return [freq, peak]
-	}
+	if (rms < 0.0001) return [freq, peak] // not enough signal
 
 	// Cut out unfinished waves at both ends of the buffer
 	let r1 = 0
@@ -56,40 +58,45 @@ function getMelodyFreq(buf) {
 
 	for (let i = 0; i < size; i++) {
 		for (let j = 0; j < size-i; j++) {
-			c[i] = c[i] + buf[j] * buf[j+i]
+			c[i] += buf[j] * buf[j+i]
 		}
 	}
 
 	const sampleRate = audioContext.sampleRate
 
-	// Discard dip from the lowest frequency 
-	let d=1
+	// Discard slope from the low lag 
+	let d=0
 	while (c[d] > c[d+1]) {
 		d++
 	}
 
 	// Get the lag with the highest correlation
-	const valthres = 1
-
 	let maxval = -1
 	let maxpos = -1
 	for (let i = d; i < size; i++) {
-		if (c[i] > maxval && c[i] > valthres) {
+		if (c[i] > maxval) {
 			maxval = c[i]
 			maxpos = i
 		}
 	}
 
-	// Interpolate and get the peak
-	const x1 = c[maxpos-1]
-	const x2 = c[maxpos]
-	const x3 = c[maxpos+1]
-	const a = (x1 + x3 - 2*x2) / 2
-	const b = (x3 - x1)/2
+	if (maxpos <= 0) return [freq, peak]
 
 	let T0 = maxpos
-	if (a) {
+
+	if (maxpos + 1 < size) {
+
+		// Interpolate and get the maxima
+		const x1 = c[maxpos-1]
+		const x2 = c[maxpos]
+		const x3 = c[maxpos+1]
+		const a = (x1 + x3 - 2*x2) / 2
+		const b = (x3 - x1)/2
+
 		T0 = T0 - b / (2*a)
+
+		if (T0 <= 0) return [freq, peak]
+
 	}
 
 	freq = sampleRate / T0

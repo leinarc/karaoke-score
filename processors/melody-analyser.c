@@ -1,3 +1,5 @@
+#include <stdint.h> // For uint64_t
+
 #define safe_buffer_size 32768
 
 __attribute__((import_module("env")))
@@ -13,9 +15,6 @@ double output_buffer_frequency[safe_buffer_size] = {0};
 __attribute__((used))
 double output_buffer_loudness[safe_buffer_size] = {0};
 
-__attribute__((used))
-double all_time_peak = 0;
-
 double _abs (double value) {
 	if (value < 0) {
 		return -value;
@@ -27,48 +26,47 @@ double cache[safe_buffer_size] = {0};
 unsigned long cache_offset = 0;
 unsigned long cache_gap = 0;
 
-double buffer[safe_buffer_size] = {0};
+double buffer_corr[safe_buffer_size] = {0};
 
-void process_output (long td_size, unsigned int sample_rate, unsigned long cache_offset, unsigned long output_offset) {
+double all_time_peak = 1;
 
-	output_buffer_frequency[output_offset] = -1; // initial freq
+void process_output (long td_size, unsigned int sample_rate, unsigned long cache_index, unsigned long output_offset) {
 
-	// Compute peak
+	// Compute for Peak and RMS
 	double peak = 0;
+	double rms = 0;
 
-	unsigned int i;
-
+	unsigned long i;
 	for (i = 0; i < td_size; i++) {
-		double abs_value = _abs(cache[(i + cache_offset) % safe_buffer_size]);
+
+		double value = cache[(cache_index + i) % safe_buffer_size];
+		double abs_value = _abs(value);
+
 		if (abs_value > peak) {
 			peak = abs_value;
 		}
+
+		rms += value*value;
+		
 	}
 
-	if (peak > all_time_peak) {
-		all_time_peak = peak;
+	all_time_peak = peak / 128 + all_time_peak * 127 / 128;
+
+	if (peak <= 0) {
+ 		output_buffer_loudness[output_offset] = 0;
+		goto bad_freq;
+	}
+
+	if (all_time_peak > peak) {
+		output_buffer_loudness[output_offset] = peak / all_time_peak;
+		peak = all_time_peak;
+	} else {
+ 		output_buffer_loudness[output_offset] = 1;
 	}
 	
-	if (all_time_peak <= 0) {
-		output_buffer_loudness[output_offset] = 0;
-		return;
-	}
+	rms = rms / (peak*peak) / td_size;
 
-	// Compute RMS, and normalized audio
-	double rms = 0;
-
-	for (i = 0; i < td_size; i++) {
-		double value = cache[(i + cache_offset) % safe_buffer_size];
-		value /= all_time_peak;
-		rms += value * value;
-		buffer[i] = value;
-	}
-
-	output_buffer_loudness[output_offset] = peak / all_time_peak; // output loudness
-	
-	rms = rms / td_size; // cannot get square root because no libraries
-
-	if (rms < 0.0001) return; // not enough signal
+	if (rms < 0.0001) goto bad_freq; // not enough signal
 
 	// Cut out unfinished waves at both ends of the buffer
 	unsigned long r1 = 0;
@@ -76,70 +74,78 @@ void process_output (long td_size, unsigned int sample_rate, unsigned long cache
 	double thres = 0.2;
 
 	for (i = 0; i < td_size / 2; i++) {
-		if (_abs(buffer[i]) < thres) {
+		if (_abs(cache[i]) < thres) {
 			r1 = i;
 			break;
 		}
 	}
 
 	for (i = 1; i < td_size / 2; i++) {
-		if (_abs(buffer[td_size - i]) < thres) {
+		if (_abs(cache[td_size - i]) < thres) {
 			r2 = td_size - i;
 			break;
 		}
 	}
 
+
 	// Get correlation per lag
-	unsigned long c_size = r2 - r1;
-	double c[safe_buffer_size] = {0};
+	unsigned long r_size = r2 - r1;
 
-	unsigned int j;
-
-	for (i = r1; i < r2; i++) {
-		for (j = 0; j < r2 - i; j++) {
-			c[i - r1] += buffer[r1 + j] * buffer[i + j];
+	unsigned long lag;
+	for (lag = 0; lag < r_size; lag++) {
+		buffer_corr[lag] = 0;
+		for (i = 0; i < r_size - lag; i++) {
+			buffer_corr[lag] += cache[(cache_index + r1 + i) % safe_buffer_size] * cache[(cache_index + r1 + i + lag) % safe_buffer_size];
 		}
 	}
 
-	// Discard dip from the lowest frequency 
+	// Discard slope from the low lag
 	unsigned long d = 0;
-	while (c[d] > c[d+1] && d + 1 < r2) {
+	while (buffer_corr[d] > buffer_corr[d+1] && d + 1 < td_size) {
 		d++;
-	}
+	};
 
 	// Get the lag with the highest correlation
-	double valthres = 1;
-
 	double maxval = -1;
-	unsigned long maxpos = -1;
+	unsigned long maxpos = 0;
 
-	for (i = d; i < c_size; i++) {
-		if (c[i] > maxval && c[i] > valthres) {
-			maxval = c[i];
+	for (i = d; i < td_size; i++) {
+		if (buffer_corr[i] > maxval) {
+			maxval = buffer_corr[i];
 			maxpos = i;
 		}
 	}
 
-	if (maxpos <= 0) return;
-
-	// Interpolate and get the peak
-	double x1 = c[maxpos-1];
-	double x2 = c[maxpos];
-	double x3 = c[maxpos+1];
-	double a = (x1 + x3 - 2*x2) / 2;
-	double b = (x3 - x1)/2;
-
 	double T0 = maxpos;
 
-	if (a != 0) {
-		T0 = T0 - b / (2*a);
+	if (maxpos <= 0) goto bad_freq;
+
+	if (maxpos + 1 < td_size) {
+
+		// Interpolate and get the maxima
+		double x1 = buffer_corr[maxpos-1];
+		double x2 = buffer_corr[maxpos];
+		double x3 = buffer_corr[maxpos+1];
+		double a = (x1 + x3 - 2*x2) / 2;
+		double b = (x3 - x1)/2;
+
+		if (a != 0) {
+			T0 = T0 - b / (2*a);
+		}
+
+		if (T0 <= 0) goto bad_freq;
+
 	}
-	
-	if (T0 <= 0) return;
 
 	output_buffer_frequency[output_offset] = sample_rate / T0;
 
 	return;
+
+bad_freq:
+	output_buffer_frequency[output_offset] = -1;
+
+	return;
+
 }
 
 unsigned long process_input (long td_size, long td_overlap, unsigned int sample_rate, unsigned long buffer_size, int skip_output) {
@@ -157,7 +163,7 @@ unsigned long process_input (long td_size, long td_overlap, unsigned int sample_
 		if (cache_gap >= td_gap) {
 
 			if (!skip_output) {
-				process_output(td_size, sample_rate, cache_offset - td_size, output_count);
+				process_output(td_size, sample_rate, (cache_offset + safe_buffer_size - td_size) % safe_buffer_size, output_count);
 				output_count++;
 			}
 			
