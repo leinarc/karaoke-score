@@ -111,7 +111,7 @@ function analyseMelody(data) {
 	} catch (err) {
 
 		console.error(err)
-		alert('Failed to analyze audio melody.')
+		alert('Failed to analyze audio melody.\n' + err)
 		disconnectAnalyser()
 
 	}
@@ -355,7 +355,7 @@ function analyseKey(data) {
 	} catch (err) {
 
 		console.error(err)
-		alert('Failed to analyze audio key.')
+		alert('Failed to analyze audio key.\n' + err)
 		disconnectAnalyser()
 
 	}

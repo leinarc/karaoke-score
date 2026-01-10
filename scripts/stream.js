@@ -73,7 +73,7 @@ async function finishKaraoke() {
 	} catch (err) {
 
 		console.error(err)
-		alert('Failed to analyze audio at the end.')
+		alert('Failed to analyze audio at the end.\n' + err)
 
 	}
 
@@ -123,7 +123,7 @@ async function getMicAudio() {
 
 	} catch (err) {
 
-		alert('Failed to get microphone audio.')
+		alert('Failed to get microphone audio.\n' + err)
 		throw err
 
 	}
