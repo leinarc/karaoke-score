@@ -192,7 +192,7 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 					console.log('Excess delay detected in key processor, attempting to change settings...')
 
-					if (dftSize > 8192) {
+					if (dftSize > 2048) {
 
 						dftSize = dftSize / 2
 						processorOptions.dftSize = dftSize
