@@ -54,7 +54,9 @@ async function startKaraoke() {
 
 	stopEndAnimation()
 
-	connectAnalyser()
+	await connectAnalyser()
+	
+	await requestWakeLock()
 
 }
 
@@ -76,6 +78,8 @@ async function finishKaraoke() {
 	}
 
 	resetVariables()
+	
+	await releaseWakeLock()
 
 }
 

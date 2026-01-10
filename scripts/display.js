@@ -1,3 +1,53 @@
+var wakeLock
+
+async function requestWakeLock() {
+
+	if (wakeLock !== undefined) {
+
+		try {
+
+			await wakeLock.release()
+
+		} catch (err) {
+
+			console.error(err)
+			console.log('Could not release wake lock.')
+
+		}
+
+	}
+
+	try {
+
+		wakeLock = await navigator.wakeLock.request("screen")
+
+	} catch (err) {
+
+		console.error(err)
+		console.log('Could not request wake lock.')
+		wakeLock = undefined
+
+	}
+
+}
+
+async function releaseWakeLock() {
+
+	try {
+
+		await wakeLock.release()
+
+	} catch (err) {
+
+		console.error(err)
+		console.log('Could not release wake lock.')
+
+	}
+
+	wakeLock = undefined
+
+}
+
 var animationInterval
 var animationTimeout
 
