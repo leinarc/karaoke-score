@@ -282,10 +282,6 @@ body {
 	flex-grow: 1;
 	width: 1em;
 	margin: 0 0.1%;
-
-	transition:
-		height 0.1s ease-out,
-		opacity 0.02s ease-out;
 }
 
 
@@ -483,7 +479,11 @@ body {
 
 	z-index: 2;
 
-	transition: background-color 0.2s ease-out, color 0.2s ease-out, box-shadow 0.2s ease-out, font-size 0.2s ease-out;
+	transition:
+		background-color 0.2s ease-out,
+		color 0.2s ease-out,
+		box-shadow 0.2s ease-out,
+		font-size 0.2s ease-out;
 
 	cursor: pointer;
 	user-select: none;
@@ -713,11 +713,6 @@ body {
 	outline-color: var(--fg);
 	outline-width: 0;
 	outline-offset: 0;
-
-	transition:
-		outline-width 0.5s ease-out,
-		outline-offset 0.5s ease-out,
-		outline-color 0.04s ease-out;
 }
 
 .button {
@@ -735,6 +730,7 @@ body {
 
 	background-color: var(--fg);
 
+	/* See display.js */
 	transition:
 		font-weight 0.2s ease-out,
 		font-size 0.2s ease-out,
@@ -748,15 +744,6 @@ body {
 	outline-color: #ffffff22;
 	outline-width: 0;
 	outline-offset: 0.5em;
-
-	transition:
-		font-weight 0.2s ease-out,
-		font-size 0.2s ease-out,
-		text-shadow 0.2s ease-out,
-		width 0.2s ease-out,
-		height 0.2s ease-out,
-		outline-width 0.02s ease,
-		box-shadow 0.02s ease;
 }
 
 .button-container:hover .button {

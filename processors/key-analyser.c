@@ -56,7 +56,7 @@ double get_value (unsigned int note, S* s) {
 
 }
 
-void process_output (unsigned int note_count, unsigned int m_index, unsigned long output_offset) {
+void process_output (unsigned long sample_rate, unsigned int note_count, unsigned int m_index, unsigned long output_offset) {
 
 	output_buffer_peak[output_offset] = 1; // initial peak
 
@@ -72,7 +72,7 @@ void process_output (unsigned int note_count, unsigned int m_index, unsigned lon
 
 		S* s = &sss[m_index][note];
 
-		double value = get_value(note, s);
+		double value = get_value(note, s) / sample_rate;
 
 		output_buffer_chroma[note + chroma_offset] += value;
 
@@ -111,7 +111,7 @@ void process_output (unsigned int note_count, unsigned int m_index, unsigned lon
 
 }
 
-int process_input (unsigned long dft_size, unsigned long dft_interval, unsigned long note_count, unsigned long buffer_size, int skip_output) {
+int process_input (unsigned long dft_size, unsigned long dft_interval, unsigned long sample_rate, unsigned long note_count, unsigned long buffer_size, int skip_output) {
 
 	unsigned long output_count = 0;
 
@@ -127,17 +127,17 @@ int process_input (unsigned long dft_size, unsigned long dft_interval, unsigned 
 
 	}
 
-	unsigned int m_index = start_m_index;
+	unsigned long m_index = start_m_index;
 
-	unsigned int m_i;
+	unsigned long m_i;
 
-	for (m_i = 0; m_i <= m_count; m_i++) {
+	for (m_i = 0; m_i < m_count; m_i++) {
 
 		int m_has_output = 0;
 
 		long m = mm[m_index];
 
-		unsigned int n;
+		unsigned long n;
 
 		for (n = 0; n < buffer_size; n++) {
 
@@ -180,7 +180,7 @@ int process_input (unsigned long dft_size, unsigned long dft_interval, unsigned 
 		if (m_has_output > 0) {
 
 			if (!skip_output) {
-				process_output(note_count, m_index, output_count);
+				process_output(sample_rate, note_count, m_index, output_count);
 				output_count++;
 			}
 			

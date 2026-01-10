@@ -7,29 +7,18 @@ const safeBufferSize = 32768
 
 const tdSize = 2048
 const fftSize = 8192
-const dftSize = 8192
+const dftSize = 8192*4
 
-// only used by worklet processors
-const tdProcessInterval = 1024
-const dftProcessInterval = 2048
+const tdSampleInterval = 1024
+const fftSampleInterval = fftSize
+const dftSampleInterval = 2048
 
-// only used by worklet processors
 const tdChannels = 1
 const dftChannels = 1
-
-// only used by native processors
-const tdIntervalTime = 20
-const fftIntervalTime = 500
 
 // for dft
 const startNote = 21 // starting note; 69 = A4
 const noteCount = 88
-
-// only used by worklet processors
-// determines the delay when the processor gives up on a frame
-// also determines if an operation takes too long and lags behind
-const tdMaxDelay = 50
-const dftMaxDelay = 20
 
 var tdBuffer
 var fftBuffer
@@ -185,6 +174,16 @@ async function clearAudio() {
 
 	const oldContext = audioContext;
 
+	if (tdInterval !== undefined) {
+		clearInterval(tdInterval)
+		tdInterval = undefined
+	}
+
+	if (fftInterval !== undefined) {
+		clearInterval(fftInterval)
+		fftInterval = undefined
+	}
+
 	try {
 		keyAnalyser?.disconnect()
 	} catch (err) {
@@ -251,18 +250,6 @@ async function connectAnalyser() {
 
 			await createWorkletMelodyAnalyser()
 
-			melodyAnalyser.onprocessorerror = (err) => {
-
-				console.error(err)
-				console.log('Processor for worklet melody analyser failed.')
-				console.log('Falling back to TD analyser...')
-
-				source.disconnect(melodyAnalyser)
-				createTDMelodyAnalyser()
-				source.connect(melodyAnalyser)
-
-			}
-
 		} catch (err) {
 
 			console.error(err)
@@ -279,18 +266,6 @@ async function connectAnalyser() {
 
 			await createWorkletKeyAnalyser()
 
-			keyAnalyser.onprocessorerror = (err) => {
-
-				console.error(err)
-				console.log('Processor for worklet melody analyser failed.')
-				console.log('Falling back to FFT analyser...')
-
-				source.disconnect(keyAnalyser)
-				createFFTKeyAnalyser()
-				source.connect(keyAnalyser)
-
-			}
-
 		} catch (err) {
 
 			console.error(err)
@@ -301,8 +276,9 @@ async function connectAnalyser() {
 
 		}
 
-		keyNoiseFilters = [] // Reset noise filter
 		source.connect(keyAnalyser)
+
+		resetKeyNoise()
 
 		document.getElementById('start-button-container').style.display = 'none'
 		document.getElementById('finish-button-container').style.display = 'flex'
@@ -314,6 +290,30 @@ async function connectAnalyser() {
 		clearAudio()
 
 	}
+
+}
+
+function onWorkletMelodyAnalyserError(err) {
+
+	console.error(err)
+	console.log('Processor for worklet melody analyser failed.')
+	console.log('Falling back to FFT analyser...')
+
+	source.disconnect(melodyAnalyser)
+	createTDMelodyAnalyser()
+	source.connect(melodyAnalyser)
+
+}
+
+function onWorkletKeyAnalyserError(err) {
+
+	console.error(err)
+	console.log('Processor for worklet key analyser failed.')
+	console.log('Falling back to FFT analyser...')
+
+	source.disconnect(keyAnalyser)
+	createFFTKeyAnalyser()
+	source.connect(keyAnalyser)
 
 }
 
@@ -367,16 +367,17 @@ async function createWorkletMelodyAnalyser() {
 		{ 
 			processorOptions: {
 				tdSize,
-				tdProcessInterval,
+				tdSampleInterval,
 				tdChannels,
 				sampleRate,
 				melodyWASM,
 				safeNoteCount,
-				safeBufferSize,
-				tdMaxDelay
+				safeBufferSize
 			}
 		}
 	)
+
+	melodyAnalyser.onprocessorerror = onWorkletMelodyAnalyserError
 
 	melodyAnalyser.port.onmessage = (message) => {
 
@@ -387,13 +388,21 @@ async function createWorkletMelodyAnalyser() {
 		const data = message.data
 
 		if (data instanceof Error) {
-			melodyAnalyser.onprocessorerror(data)
+			onWorkletMelodyAnalyserError(data)
 			return
 		}
 
-		analyseMelody(data)
+		if (data.outputs) {
+			analyseMelody(data.outputs)
+		}
+
+		if (data.func) {
+			data.args ? window[data.func](...data.args) : window[data.func]()
+		}
 
 	}
+
+	setMelodyInterval(tdSampleInterval / sampleRate)
 
 }
 
@@ -404,18 +413,30 @@ async function createTDMelodyAnalyser() {
 	tdBuffer = new Float32Array(melodyAnalyser.fftSize)
 	melodyAllTimePeak = 0
 
-	tdInterval = setInterval( () => {
+	setMelodyInterval(tdSampleInterval / audioContext.sampleRate)
 
-		if (!melodyAnalyser) {
-			return
-		}
+}
 
-		melodyAnalyser.getFloatTimeDomainData(tdBuffer)
+function processTDMelodyAnalyserData() {
 
-		analyseMelody([[getMelodyFreq(tdBuffer)]])
+	if (!melodyAnalyser) {
+		return
+	}
 
-	}, tdIntervalTime)
+	melodyAnalyser.getFloatTimeDomainData(tdBuffer)
 
+	analyseMelody([[getMelodyFreq(tdBuffer)]])
+
+}
+
+function setMelodyInterval(time) {
+	if (tdInterval !== undefined) {
+		clearInterval(tdInterval)
+		tdInterval = setInterval(processTDMelodyAnalyserData, time)
+	}
+
+	setLoudnessAnimationTime(time)
+	setQualityAnimationTime(time)
 }
 
 async function createWorkletKeyAnalyser() {
@@ -433,18 +454,19 @@ async function createWorkletKeyAnalyser() {
 		{ 
 			processorOptions: {
 				dftSize,
-				dftProcessInterval,
+				dftSampleInterval,
 				dftChannels,
 				startNote,
 				noteCount,
 				keyWASM,
 				sampleRate,
 				safeNoteCount,
-				safeBufferSize,
-				dftMaxDelay
+				safeBufferSize
 			} 
 		}
 	)
+
+	keyAnalyser.onprocessorerror = onWorkletKeyAnalyserError
 
 	keyAnalyser.port.onmessage = (message) => {
 
@@ -455,27 +477,35 @@ async function createWorkletKeyAnalyser() {
 		let data = message.data
 
 		if (data instanceof Error) {
-			keyAnalyser.onprocessorerror(data)
+			onWorkletKeyAnalyserError(data)
 			return
 		}
 
-		for (const channel of data) {
-			for (const frame of channel) {
+		if (data.outputs) {
+			for (const channel of data.outputs) {
+				for (const frame of channel) {
 
-				const fullChroma = []
+					const fullChroma = []
 
-				frame[0].forEach((mag_sqr, i) => {
-					fullChroma[i + startNote] = mag_sqr**0.5
-				})
+					frame[0].forEach((mag_sqr, i) => {
+						fullChroma[i + startNote] = mag_sqr**0.5
+					})
 
-				frame[0] = fullChroma
+					frame[0] = fullChroma
 
+				}
 			}
+
+			analyseKey(data.outputs)
 		}
-		
-		analyseKey(data)
+
+		if (data.func) {
+			data.args ? window[data.func](...data.args) : window[data.func]()
+		}
 
 	}
+
+	setKeyInterval(dftSampleInterval / sampleRate)
 
 }
 
@@ -486,51 +516,84 @@ async function createFFTKeyAnalyser() {
 	fftBuffer = new Float32Array(keyAnalyser.frequencyBinCount)
 	keyAllTimePeak = 0
 
-	fftInterval = setInterval( () => {
+	setKeyInterval(fftSampleInterval / audioContext.sampleRate)
 
-		if (!keyAnalyser) {
-			return
-		}
+}
 
-		keyAnalyser.getFloatFrequencyData(fftBuffer)
+function processFFTAnalyserData() {
+	if (!keyAnalyser) {
+		return
+	}
 
-		const fullChroma = getKeyChroma(fftBuffer)
+	keyAnalyser.getFloatFrequencyData(fftBuffer)
 
-		analyseKey([fullChroma])
+	const fullChroma = getKeyChroma(fftBuffer)
 
-	}, fftIntervalTime)
+	analyseKey([fullChroma])
+}
+
+function setKeyInterval(time) {
+
+	if (fftInterval !== undefined) {
+		clearInterval(fftInterval)
+		fftInterval = setInterval(processFFTAnalyserData, time)
+	}
+
+	setVisualizerAnimationTime(time)
+	const sampleRate = audioContext.sampleRate
 
 }
 
 function disconnectAnalyser() {
 
+
+	if (fftInterval !== undefined) {
+		clearInterval(fftInterval)
+		fftInterval = undefined
+	}
+
+	if (tdInterval !== undefined) {
+		clearInterval(tdInterval)
+		tdInterval = undefined
+	}
+
+	let clearAfter = false
+
 	try {
 
 		if (keyAnalyser) {
-			clearInterval(fftInterval)
 			source.disconnect(keyAnalyser)
 			keyAnalyser = undefined
-		}
-
-		if (melodyAnalyser) {
-			clearInterval(tdInterval)
-			source.disconnect(melodyAnalyser)
-			melodyAnalyser = undefined
-		}
-
-		document.getElementById('start-button-container').style.display = 'flex'
-		document.getElementById('finish-button-container').style.display = 'none'
-
-		if (!loopback) {
-			clearAudio()
 		}
 
 	} catch (err) {
 
 		console.error(err)
-		console.log('Failed to disconnect analyser.')
-		clearAudio()
+		console.log('Failed to disconnect key analyser.')
+		clearAfter = true
 
+	}
+
+	try {
+
+		if (melodyAnalyser) {
+			source.disconnect(melodyAnalyser)
+			melodyAnalyser = undefined
+		}
+
+	} catch (err) {
+
+		console.error(err)
+		console.log('Failed to disconnect melody analyser.')
+		clearAfter = true
+
+	}
+
+	document.getElementById('start-button-container').style.display = 'flex'
+	document.getElementById('finish-button-container').style.display = 'none'
+
+	if (!loopback || clearAfter) {
+		clearAudio()
 	}
 	
 

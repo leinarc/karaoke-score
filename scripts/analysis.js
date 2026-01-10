@@ -107,12 +107,21 @@ function analyseMelody(data) {
 
 
 
-var keyNoiseFilters = []
+var keyNoiseFilters
 const keyMaxErrorAccumulation = dftSize * 2**4
 const keyMinErrorAccumulation = -keyMaxErrorAccumulation
-var pMult = 0.5
-var iMult = 0.01
-var dMult = 0.01
+var pMult
+var iMult
+var dMult
+
+resetKeyNoise()
+
+function resetKeyNoise() {
+	keyNoiseFilters = []
+	pMult = 0.5
+	iMult = 0.01
+	dMult = 0.01
+}
 
 function analyseKey(data) {
 		

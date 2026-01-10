@@ -10,16 +10,18 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 		const {
 			dftSize,
-			dftProcessInterval,
+			dftSampleInterval,
 			dftChannels,
 			startNote,
 			noteCount,
 			sampleRate, 
 			keyWASM,
 			safeNoteCount,
-			safeBufferSize,
-			dftMaxDelay
+			safeBufferSize
 		} = processorOptions
+
+		processorOptions.origDFTSize = dftSize
+		processorOptions.origDFTSampleInterval = dftSampleInterval
 
 		processor.options = processorOptions
 
@@ -122,9 +124,11 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 			Promise.all(modules).then(modules => {
 			
-				const {
+				let {
 					dftSize,
-					dftProcessInterval,
+					dftSampleInterval,
+					origDFTSize,
+					origDFTSampleInterval,
 					dftChannels,
 					startNote,
 					noteCount,
@@ -132,15 +136,16 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 					keyWASM,
 					safeNoteCount,
 					safeBufferSize,
-					cutoffs,
-					dftMaxDelay
+					cutoffs
 				} = processorOptions
 
 				if (processor.error) return
 
+				const maxDelay = dftSampleInterval / sampleRate * 1000
+
 				const startDate = Date.now()
 
-				const skipOutput = dftMaxDelay > 0 && startDate - scheduledDate > dftMaxDelay
+				const skipOutput = startDate - scheduledDate > maxDelay
 
 				const outputs = []
 
@@ -160,7 +165,7 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 					inputBuffer.set(buffer)
 
-					const outputCount = exports.process_input(dftSize, dftProcessInterval, noteCount, Math.min(buffer.length, safeBufferSize), skipOutput)
+					const outputCount = exports.process_input(dftSize, dftSampleInterval, sampleRate, noteCount, Math.min(buffer.length, safeBufferSize), skipOutput)
 
 					if (outputCount > 0) {
 
@@ -177,13 +182,36 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 				}
 
 				if (outputs.length > 0) {
-					this.port.postMessage(outputs)
+					this.port.postMessage({outputs})
 				}
 
-				if (dftMaxDelay > 0 && Date.now() - startDate > dftMaxDelay && processorOptions.dftSize > dftProcessInterval) {
-					console.log('Excess delay detected in key processor, halving size...')
-					processorOptions.dftSize /= 2
-					console.log('DFT size set to:', processorOptions.dftSize)
+				if (Date.now() - startDate > maxDelay) {
+
+					console.log('Excess delay detected in key processor, attempting to change settings...')
+
+					if (dftSize > 4096) {
+
+						dftSize = dftSize / 2
+						processorOptions.dftSize = dftSize
+						console.log('DFT size set to:', dftSize)
+
+					} else if (dftSampleInterval < 32768) {
+
+						dftSize = origDFTSize
+						processorOptions.dftSize = dftSize
+						console.log('DFT size set to:', dftSize)
+
+						dftSampleInterval = dftSampleInterval * 2
+						processorOptions.dftSampleInterval = dftSampleInterval
+						console.log('DFT interval set to:', dftSampleInterval)
+
+						this.port.postMessage({
+							func: "setKeyInterval",
+							args: [dftSampleInterval / sampleRate]
+						})
+
+					}
+
 				}
 
 			}).catch(err => {

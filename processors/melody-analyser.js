@@ -10,14 +10,16 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 
 		const {
 			tdSize,
-			tdProcessInterval,
+			tdSampleInterval,
 			tdChannels,
 			sampleRate, 
 			melodyWASM,
 			safeNoteCount,
-			safeBufferSize,
-			tdMaxDelay
+			safeBufferSize
 		} = processorOptions
+
+		processorOptions.origTDSize = tdSize
+		processorOptions.origTDSampleInterval = tdSampleInterval
 
 		processor.options = processorOptions
 
@@ -85,22 +87,25 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 
 			Promise.all(modules).then(modules => {
 			
-				const {
+				let {
 					tdSize,
-					tdProcessInterval,
+					tdSampleInterval,
+					origTDSize,
+					origTDSampleInterval,
 					tdChannels,
 					sampleRate, 
 					melodyWASM,
 					safeNoteCount,
-					safeBufferSize,
-					tdMaxDelay
+					safeBufferSize
 				} = processorOptions
 
 				if (processor.error) return
 
+				const maxDelay = tdSampleInterval / sampleRate * 1000
+
 				const startDate = Date.now()
 
-				const skipOutput = tdMaxDelay > 0 && startDate - scheduledDate > tdMaxDelay
+				const skipOutput = maxDelay > 0 && startDate - scheduledDate > maxDelay
 
 				const outputs = []
 
@@ -120,7 +125,7 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 					
 					inputBuffer.set(buffer)
 
-					const outputCount = exports.process_input(tdSize, tdProcessInterval, sampleRate, buffer.length, skipOutput)
+					const outputCount = exports.process_input(tdSize, tdSampleInterval, sampleRate, buffer.length, skipOutput)
 
 					if (outputCount > 0) {
 
@@ -137,13 +142,36 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 				}
 
 				if (outputs.length > 0) {
-					this.port.postMessage(outputs)
+					this.port.postMessage({outputs})
 				}
 
-				if (tdMaxDelay > 0 && Date.now() - startDate > tdMaxDelay && processorOptions.tdSize > tdProcessInterval) {
-					console.log('Excess delay detected in melody processor, halving size...')
-					processorOptions.tdSize /= 2
-					console.log('TD size set to:', processorOptions.tdSize)
+				if (Date.now() - startDate > maxDelay) {
+
+					console.log('Excess delay detected in melody processor, attempting to change settings...')
+
+					if (tdSize > 512) {
+
+						tdSize = tdSize / 2
+						processorOptions.tdSize = tdSize
+						console.log('TD size set to:', tdSize)
+
+					} else if (tdSampleInterval < 32768) {
+
+						tdSize = origTDSize
+						processorOptions.tdSize = tdSize
+						console.log('TD size set to:', tdSize)
+
+						tdSampleInterval = tdSampleInterval * 2
+						processorOptions.tdSampleInterval = tdSampleInterval
+						console.log('TD interval set to:', tdSampleInterval)
+
+						this.port.postMessage({
+							func: "setMelodyInterval",
+							args: [tdSampleInterval / sampleRate]
+						})
+
+					}
+
 				}
 
 			}).catch( err => {

@@ -9,7 +9,7 @@ const soundBad = new Audio('sounds/karaoke-bad.ogg')
 createVisualizerBars()
 
 function startEndAnimation(score) {
-		
+	
 	displayVisualizer()
 	displayKey()
 
@@ -166,6 +166,24 @@ var lastLoudnessDisplayDate
 
 var prevLoudness
 
+
+
+function setLoudnessAnimationTime(time) {
+
+	const button = document.getElementById('finish-button')
+	
+	button.style.transition = `
+		font-weight 0.2s ease-out,
+		font-size 0.2s ease-out,
+		text-shadow 0.2s ease-out,
+		width 0.2s ease-out,
+		height 0.2s ease-out,
+		outline-width ${time}s ease,
+		box-shadow ${time}s ease
+	`
+
+}
+
 function displayLoudness(loudness) {
 
 	const date = Date.now()
@@ -178,8 +196,10 @@ function displayLoudness(loudness) {
 		}
 	}
 
-	document.getElementById('finish-button').style.outlineWidth = Math.log10(loudness + 1) * 8 + "em"
-	document.getElementById('finish-button').style.boxShadow = `0 0 ${loudness + 0.5}em var(--fg)`;
+	const button = document.getElementById('finish-button')
+
+	button.style.outlineWidth = Math.log10(loudness + 1) * 8 + "em"
+	button.style.boxShadow = `0 0 ${loudness + 0.5}em var(--fg)`;
 
 	prevLoudness = loudness
 
@@ -187,15 +207,31 @@ function displayLoudness(loudness) {
 
 }
 
+function setQualityAnimationTime(time) {
+
+	const buttonContainer = document.getElementById('finish-button-container')
+
+	buttonContainer.style.transition = `
+		outline-width ${Math.max(time, 0.5)}s ease-out,
+		outline-offset ${Math.max(time, 0.5)}s ease-out,
+		outline-color 0.05s ease-out
+	`
+
+}
+
 function displayQuality(quality) {
-	document.getElementById('finish-button-container').style.outlineWidth = quality + "em"
-	document.getElementById('finish-button-container').style.outlineOffset = (1 - quality) * 0.5 - 0.25 + "em"
+
+	const buttonContainer = document.getElementById('finish-button-container')
+
+	buttonContainer.style.outlineWidth = quality + "em"
+	buttonContainer.style.outlineOffset = (1 - quality) * 0.5 - 0.25 + "em"
 
 	if (quality > 0.5) {
-		document.getElementById('finish-button-container').style.outlineColor = "white"
+		buttonContainer.style.outlineColor = "white"
 	} else {
-		document.getElementById('finish-button-container').style.outlineColor = "#ffffff77"
+		buttonContainer.style.outlineColor = "#ffffff77"
 	}
+
 }
 
 
@@ -229,6 +265,16 @@ function getGIF(score) {
 }
 
 
+
+function setVisualizerAnimationTime(time) {
+	for (let i = 0; i < noteCount; i++) {
+		const bar = document.getElementById('visualizer-bar-' + i)
+		bar.style.transition = `
+			height ${Math.max(time, 0.1)}s ease-out,
+			opacity ${time}s ease-out
+		`
+	}
+}
 
 function displayVisualizer(fullChroma) {
 	for (let i = 0; i < noteCount; i++) {
