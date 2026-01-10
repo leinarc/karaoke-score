@@ -274,7 +274,13 @@ function analyseKey(data) {
 				// log += '\n'
 				
 				notes.forEach((note, i) => {
-					if (note) lastKeyData[i] = 1
+					if (note) {
+						const p = (i+11)%12
+						const n = (i+1)%12
+						lastKeyData[i] = (lastKeyData[i] || 0) + 1
+						lastKeyData[p] = (lastKeyData[p] || 0) - 1
+						lastKeyData[n] = (lastKeyData[n] || 0) - 1
+					}
 				})
 
 				// console.log(log)

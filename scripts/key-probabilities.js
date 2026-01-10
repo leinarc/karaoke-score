@@ -91,7 +91,16 @@ function rotateProfile(profile, key) {
 }
 
 function notesToIndex(notes) {
-	return notes.reduce((a, b, i) => a + (b > 0 ? 1 : 0) * 2**i, 0)
+
+	// Only take the 5 most frequent notes
+	return notes
+		.map((count, note) => [count, note])
+		.sort((a, b) => a[0] - b[0])
+		.filter(arr => arr[0] > 0)
+		.slice(0, 5)
+		.map(arr => notes[arr[1]])
+		.reduce((a, b, i) => a + (b > 0 ? 1 : 0) * 2**i, 0)
+
 }
 
 function getStructureProb(lastKey, keys) {
