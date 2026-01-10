@@ -432,7 +432,7 @@ function getFinalScore() {
 				.sort((a, b) => b[0] - a[0])
 				.map((arr, i) =>  [...arr, i < 5])
 				.sort((a, b) => a[1] - b[1])
-				.reduce((a, b) => ({data: [...a.data, ...new Array(b[1]-a.index),...b], index: b[1]+ 1}), {data:[], index: 0})
+				.reduce((a, b) => ({data: a.data.concat(new Array(b[1]-a.index), [b]), index: b[1]+ 1}), {data:[], index: 0})
 				.data
 				.map(arr => arr[0] > 0 ? (arr[2] ? noteNames[arr[1]] : '-') : '')
 				.join('\t')
