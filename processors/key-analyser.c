@@ -1,7 +1,7 @@
 #define safe_note_count 120
 #define safe_buffer_size 32768
 
-double min_peak = 0.0001;
+double min_peak = 0.0005;
 
 __attribute__((import_module("env")))
 __attribute__((import_name("js_log")))
@@ -96,7 +96,7 @@ void process_output (unsigned long dft_size, unsigned int note_count, unsigned i
 		}
 	}
 
-	all_time_peak = peak / 1024 + all_time_peak * 1023 / 1024;
+	all_time_peak = peak / 256 + all_time_peak * 255 / 256;
 
 	if (all_time_peak < min_peak) {
 		all_time_peak = min_peak;

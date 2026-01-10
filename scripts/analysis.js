@@ -1,5 +1,5 @@
 const segmentInterval = 5000
-const segmentLimit = 3
+const segmentLimit = 4
 
 const melodyDataLimit = 1024
 
@@ -118,8 +118,8 @@ resetKeyNoise()
 
 function resetKeyNoise() {
 	keyNoiseFilters = []
-	pMult = 1
-	iMult = 0.001
+	pMult = 5
+	iMult = 0.005
 	dMult = 0
 }
 
@@ -180,7 +180,7 @@ function analyseKey(data) {
 				let { noiseFilter, errorAccumulation, lastNoiseFilter } = channelFilter
 
 				const E = fullChroma
-					.map((level, i) => level*peak*1.2 - (noiseFilter[i]||0))
+					.map((level, i) => (level+0.1)*peak - (noiseFilter[i]||0))
 					.map(error => error > 0 ? error/64 : error)
 
 				const P = E
@@ -285,11 +285,12 @@ function analyseKey(data) {
 				
 				notes.forEach((note, i) => {
 					if (note) {
-						const p = (i+11)%12
-						const n = (i+1)%12
+						// lastKeyData[i] = 1
+						// const p = (i+11)%12
+						// const n = (i+1)%12
 						lastKeyData[i] = (lastKeyData[i] || 0) + 1
-						lastKeyData[p] = (lastKeyData[p] || 0) - 1
-						lastKeyData[n] = (lastKeyData[n] || 0) - 1
+						// lastKeyData[p] = (lastKeyData[p] || 0) - 1
+						// lastKeyData[n] = (lastKeyData[n] || 0) - 1
 					}
 				})
 
@@ -357,7 +358,19 @@ function analyseAudio() {
 	) {
 		if (segmentCount >= segmentLimit) {
 
-			console.log('Key Notes:\t' + nextKeyData.map((x, i) => x > 0 ? noteNames[i] : '').join('\t'))
+			console.log(
+				'Key Notes:\t' +
+				nextKeyData
+					// .map((x, i) => x > 0 ? noteNames[i] : '').join('\t')
+					.map((x, i) => [x, i])
+					.sort((a, b) => a[0] - b[0])
+					.map((arr, i) =>  [...arr, i < 5])
+					.sort((a, b) => a[1] - b[1])
+					.reduce((a, b) => ({data: a.data.concat(new Array(b[1] - a.index),[b]), index: b[1] + 1}), {data:[], index: 0})
+					.data
+					.map((arr, i) => (arr[2] ? '' : '*') + (arr[0] ? noteNames[arr[1]] : ''))
+					.join('\t')
+			)
 
 			const key = getKey(lastSegmentKey, nextKeyData)
 			console.log('Detected key:\t' + keyNames[key])
@@ -388,7 +401,19 @@ function getFinalScore() {
 
 	let keyData = nextKeyData
 	while (keyData) {
-		console.log('Key Notes:\t' + keyData.map((x, i) => x > 0 ? noteNames[i] : '').join('\t'))
+		console.log(
+			'Key Notes:\t' +
+			keyData
+				// .map((x, i) => x > 0 ? noteNames[i] : '').join('\t')
+				.map((x, i) => [x, i])
+				.sort((a, b) => a[0] - b[0])
+				.map((arr, i) =>  [...arr, i < 5])
+				.sort((a, b) => a[1] - b[1])
+				.reduce((a, b) => ({data: a.data.concat(new Array(b[1] - a.index),[b]), index: b[1] + 1}), {data:[], index: 0})
+				.data
+				.map((arr, i) => (arr[2] ? '' : '*') + (arr[0] ? noteNames[arr[1]] : ''))
+				.join('\t')
+		)
 		keyData = keyData.next
 	}
 

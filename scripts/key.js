@@ -1,7 +1,7 @@
 const minInstrFreq = 50
 const maxInstrFreq = 3200
 
-const keyMinPeak = 0.0001
+const keyMinPeak = 0.0005
 
 var keyAllTimePeak = 0
 

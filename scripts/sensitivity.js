@@ -185,13 +185,13 @@ function getFrequencySensitivity(freq) {
 		T_f = T[p]*pMult + T[n]*nMult
 	}
 
-	const L_N = 40
+	const L_N = 80
 	const A_f = 4.47 * 10**(-30) * (10**(0.025*L_N) - 1.15) + (0.4 * 10**((T_f+L_U)/10 - 9))**a_f
 	const L_p = 10/a_f * Math.log10(A_f) - L_U + 94
 
 	const amplitude = 10**(-L_p/20)
 
-	return amplitude**0.25
+	return amplitude**0.1
 
 }
 
