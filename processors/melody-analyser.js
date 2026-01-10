@@ -15,7 +15,8 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 			sampleRate, 
 			melodyWASM,
 			safeNoteCount,
-			safeBufferSize
+			safeBufferSize,
+			sensitivities
 		} = processorOptions
 
 		processorOptions.origTDSize = tdSize
@@ -96,7 +97,8 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 					sampleRate, 
 					melodyWASM,
 					safeNoteCount,
-					safeBufferSize
+					safeBufferSize,
+					sensitivities
 				} = processorOptions
 
 				if (processor.error) return
@@ -149,7 +151,7 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 
 					console.log('Excess delay detected in melody processor, attempting to change settings...')
 
-					if (tdSize > 1024) {
+					if (tdSize > 512) {
 
 						tdSize = tdSize / 2
 						processorOptions.tdSize = tdSize

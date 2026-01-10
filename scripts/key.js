@@ -1,7 +1,7 @@
 const minInstrFreq = 50
 const maxInstrFreq = 3200
 
-const keyMinPeak = 0.005
+const keyMinPeak = 0.0001
 
 var keyAllTimePeak = 0
 
@@ -45,6 +45,8 @@ function getKeyChroma(buf) {
 		fullChroma[class2] += value * multiplier
 
 	}
+
+	fullChroma = fullChroma.map((x, i) => x * sensitivities[i])
 
 	const peak = fullChroma.reduce((a, b) => Math.max(a, b), 0)
 

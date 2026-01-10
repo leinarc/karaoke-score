@@ -127,6 +127,9 @@ function analyseKey(data) {
 		
 	try {
 
+		const visualizerChroma = []
+		let frameCount = 0
+
 		if (pMult > 0.01) pMult *= 0.95
 		if (iMult > 0.00001) iMult *= 0.95
 
@@ -142,11 +145,13 @@ function analyseKey(data) {
 
 			for (let j = 0; j < channel.length; j++) {
 
+				// let log = ''
+
 				if (!lastMelodyData.length && !lastKeyData.length) {
 					lastSegmentDate = Date.now()
 				}
 
-				// let log = ''
+				frameCount++
 
 				const frame = channel[j]
 				let [ fullChroma, peak ] = frame
@@ -213,7 +218,12 @@ function analyseKey(data) {
 				// Apply noise filter
 				fullChroma = fullChroma.map((level, i) => (level - noiseFilter[i]/peak) / ((1-noiseFilter[i]/peak) || 1))
 
-				displayVisualizer(fullChroma)
+				// Sensitivity filter
+				fullChroma = fullChroma.map((level, i) => level * sensitivities[i])
+
+				fullChroma.forEach((level, i) => {
+					visualizerChroma[i] =  (visualizerChroma[i]||0) + level
+				})
 
 				// log += 'Filt Chroma:\t'
 				// log += formatFullChroma(fullChroma)
@@ -318,6 +328,8 @@ function analyseKey(data) {
 			}
 
 		}
+				
+		if (frameCount) displayVisualizer(visualizerChroma.map(x => x / frameCount))
 
 		analyseAudio()
 

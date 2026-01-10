@@ -372,7 +372,8 @@ async function createWorkletMelodyAnalyser() {
 				sampleRate,
 				melodyWASM,
 				safeNoteCount,
-				safeBufferSize
+				safeBufferSize,
+				sensitivities
 			}
 		}
 	)
@@ -461,7 +462,8 @@ async function createWorkletKeyAnalyser() {
 				keyWASM,
 				sampleRate,
 				safeNoteCount,
-				safeBufferSize
+				safeBufferSize,
+				sensitivities
 			} 
 		}
 	)

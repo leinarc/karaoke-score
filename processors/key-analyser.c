@@ -1,7 +1,7 @@
 #define safe_note_count 120
 #define safe_buffer_size 32768
 
-double min_peak = 0.005;
+double min_peak = 0.0001;
 
 __attribute__((import_module("env")))
 __attribute__((import_name("js_log")))
@@ -30,6 +30,9 @@ double output_buffer_peak[safe_buffer_size] = {0};
 
 // __attribute__((used))
 // double max_value_sqr = 0;
+
+__attribute__((used))
+double sensitivities_sqr[safe_note_count] = {0};
 
 typedef struct {
     double n_1;
@@ -74,7 +77,7 @@ void process_output (unsigned long dft_size, unsigned int note_count, unsigned i
 
 		S* s = &sss[m_index][note];
 
-		double value = get_value(note, s) / (dft_size*dft_size) * 4;
+		double value = get_value(note, s) / (dft_size*dft_size) * 4 * sensitivities_sqr[note];
 
 		output_buffer_chroma[note + chroma_offset] += value;
 

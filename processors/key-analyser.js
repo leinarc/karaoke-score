@@ -17,7 +17,8 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 			sampleRate, 
 			keyWASM,
 			safeNoteCount,
-			safeBufferSize
+			safeBufferSize,
+			sensitivities
 		} = processorOptions
 
 		processorOptions.origDFTSize = dftSize
@@ -81,6 +82,7 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 				// ;(new Float64Array(buffer, exports.max_values_sqr, safeNoteCount)).set(maxValuesSqr)
 				// ;(new Uint32Array(buffer, exports.cutoffs, safeNoteCount)).set(cutoffs)
 				// ;(new Float64Array(buffer, exports.max_value_sqr, 1)).set([maxValueSqr])
+				;(new Float64Array(buffer, exports.sensitivities_sqr, safeNoteCount)).set(sensitivities.slice(startNote).map(x => x**2))
 
 				const inputBuffer = new Float64Array(buffer, exports.input_buffer, safeBufferSize)
 				const outputBufferChroma = new Float64Array(buffer, exports.output_buffer_chroma, safeBufferSize * safeNoteCount)
@@ -136,7 +138,8 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 					keyWASM,
 					safeNoteCount,
 					safeBufferSize,
-					cutoffs
+					cutoffs,
+					sensitivities
 				} = processorOptions
 
 				if (processor.error) return
