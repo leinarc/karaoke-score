@@ -8,6 +8,6 @@ for input in ./processors/*.c; do
 
     output="$base.wasm"
 
-    clang --target=wasm32 --no-standard-libraries -Wl,--export-all -Wl,--no-entry -o "$output" "$input"
+    clang -O3 --target=wasm32 --no-standard-libraries -Wl,--export-all -Wl,--no-entry -o "$output" "$input"
 
 done
