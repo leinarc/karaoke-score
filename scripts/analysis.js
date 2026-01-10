@@ -55,11 +55,12 @@ function filterDissonantNotes(keyData) {
 	// Never allow a single note to remove another
 	// It requires max count + 1 number of adjacent notes to remove a note
 	const max = Math.max(...keyData.filter(x => x !== undefined), 0)
+	const mult = 0.75**max * 0.75 + 0.25
 	const oldKeyData = keyData.slice()
 	oldKeyData.forEach((x, i) => {
 		const p = (i+11)%12
 		const n = (i+1)%12
-		keyData[i] = x - x * ((oldKeyData[p]||0) + (oldKeyData[n]||0)) / (max + 1)
+		keyData[i] = ((oldKeyData[p]||0) + (oldKeyData[n]||0)) * mult > x ? 0 : x
 	})
 }
 
@@ -120,8 +121,8 @@ function analyseMelody(data) {
 
 
 var keyNoiseFilters
-const keyMaxErrorAccumulation = 1
-const keyMinErrorAccumulation = -1
+const keyMaxErrorAccumulation = 0.0001
+const keyMinErrorAccumulation = -keyMaxErrorAccumulation
 var pMult
 var iMult
 var dMult
@@ -131,7 +132,7 @@ resetKeyNoise()
 function resetKeyNoise() {
 	keyNoiseFilters = []
 	pMult = 5
-	iMult = 0.005
+	iMult = 0.5
 	dMult = 0
 }
 
@@ -142,8 +143,8 @@ function analyseKey(data) {
 		const visualizerChroma = []
 		let frameCount = 0
 
-		if (pMult > 0.1) pMult *= 0.95
-		if (iMult > 0.0001) iMult *= 0.95
+		if (pMult > 0.01) pMult *= 0.95
+		if (iMult > 0.001) iMult *= 0.95
 
 		for (let k = 0; k < data.length; k++) {
 
@@ -167,6 +168,10 @@ function analyseKey(data) {
 
 				const frame = channel[j]
 				let [ fullChroma, peak ] = frame
+				
+				fullChroma.forEach((level, i) => {
+					visualizerChroma[i] =  (visualizerChroma[i]||0) + level
+				})
 
 				let channelFilter = channelFilters[j]
 				if (!channelFilter) {
@@ -192,7 +197,7 @@ function analyseKey(data) {
 				let { noiseFilter, errorAccumulation, lastNoiseFilter } = channelFilter
 
 				const E = fullChroma
-					.map((level, i) => (level+0.1)*peak*1.1 - (noiseFilter[i]||0))
+					.map((level, i) => (level+0.2)*peak*1.2 - (noiseFilter[i]||0))
 					.map(error => error > 0 ? error/64 : error)
 
 				const P = E
@@ -246,7 +251,7 @@ function analyseKey(data) {
 				// Dissonance filter
 				fullChroma = fullChroma.map(
 					(x, i) => {
-						if (x < 0) return 0
+						if (x < 0) return x
 
 						a = fullChroma[i-1]
 						b = fullChroma[i+1]
@@ -258,16 +263,12 @@ function analyseKey(data) {
 					}
 				)
 
-				fullChroma.forEach((level, i) => {
-					visualizerChroma[i] =  (visualizerChroma[i]||0) + level
-				})
-
 
 
 				// Put chroma levels into 12 bins
 				let chroma = []
 				fullChroma.forEach((x, i) => {
-					chroma[i % 12] = (chroma[i % 12] || 0) + x
+					chroma[i%12] = (chroma[i%12] || 0) + x
 				})
 
 				// log += 'Harm Chroma:  \t'
@@ -277,8 +278,11 @@ function analyseKey(data) {
 
 
 				// Normalize
-				const norm = Math.hypot(...chroma) || 1
-				normalizedChroma = chroma.map(x => x / (norm + 1) * 2)
+				const min = Math.min(...chroma)
+				const max = Math.max(...chroma)
+				normalizedChroma = chroma.map(x => (x - min) / (max - min || 1))
+				const hypot = Math.hypot(...normalizedChroma)
+				normalizedChroma = normalizedChroma.map(x => x / (hypot || 1))
 
 				// log += 'Norm Chroma:\t'
 				// log += formatChroma(chroma)
@@ -290,7 +294,7 @@ function analyseKey(data) {
 				const newNotes = []
 				const noteAdded = {}
 
-				normalizedChroma.map(x => x > 0.5 ? 1 : 0).forEach(addNote)
+				normalizedChroma.map(x => x > 0.6 ? 1 : 0).forEach(addNote)
 				chroma.map(x => x > 0.8 ? 1 : 0).forEach(addNote)
 
 
@@ -300,9 +304,9 @@ function analyseKey(data) {
 				// log += '\n'
 
 				function addNote(count, note) {
-					if (noteAdded[note]) return
-					noteAdded[note] = true
 					if (count) {
+						if (noteAdded[note]) return
+						noteAdded[note] = true
 						lastKeyData[note] = (lastKeyData[note] || 0) + 1
 						newNotes[note] = 1
 					}
@@ -385,7 +389,7 @@ function analyseAudio() {
 					.sort((a, b) => a[1] - b[1])
 					.reduce((a, b) => ({data: a.data.concat(new Array(b[1] - a.index),[b]), index: b[1] + 1}), {data:[], index: 0})
 					.data
-					.map((arr, i) => (arr[2] ? '' : '*') + (arr[0] > 0 ? noteNames[arr[1]] : '-'))
+					.map(arr => arr[0] > 0 ? (arr[2] ? noteNames[arr[1]] : '+') : arr[2] ? '-' : '*')
 					.join('\t')
 			)
 
@@ -430,7 +434,7 @@ function getFinalScore() {
 				.sort((a, b) => a[1] - b[1])
 				.reduce((a, b) => ({data: [...a.data, ...new Array(b[1]-a.index),...b], index: b[1]+ 1}), {data:[], index: 0})
 				.data
-				.map((arr, i) => (arr[2] ? '' : '*') + (arr[0] > 0 ? noteNames[arr[1]] : '-'))
+				.map(arr => arr[0] > 0 ? (arr[2] ? noteNames[arr[1]] : '-') : '')
 				.join('\t')
 		)
 		keyData = keyData.next
