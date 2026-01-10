@@ -170,6 +170,8 @@ var prevLoudness
 
 function setLoudnessAnimationTime(time) {
 
+	time += 0.01
+
 	const button = document.getElementById('finish-button')
 	
 	button.style.transition = `
@@ -208,6 +210,8 @@ function displayLoudness(loudness) {
 }
 
 function setQualityAnimationTime(time) {
+
+	time += 0.01
 
 	const buttonContainer = document.getElementById('finish-button-container')
 
@@ -267,16 +271,22 @@ function getGIF(score) {
 
 
 function setVisualizerAnimationTime(time) {
+
+	time += 0.01
+
 	for (let i = 0; i < noteCount; i++) {
 		const bar = document.getElementById('visualizer-bar-' + i)
 		bar.style.transition = `
 			height ${Math.max(time, 0.1)}s ease-out,
-			opacity ${time}s ease-out
+			opacity ${time}s ease-out,
+			background-color 2s ease-out
 		`
 	}
+
 }
 
 function displayVisualizer(fullChroma) {
+
 	for (let i = 0; i < noteCount; i++) {
 		const bar = document.getElementById('visualizer-bar-' + i)
 		const note = i + startNote
@@ -284,13 +294,14 @@ function displayVisualizer(fullChroma) {
 		bar.style.height = level*100 + '%'
 		bar.style.opacity = level*50 + 50 + '%'
 	}
+	
 }
 
 function displayKey(key) {
 	if (key === undefined) {
 		for (let i = 0; i < noteCount; i++) {
 			const bar = document.getElementById('visualizer-bar-' + i)
-			bar.style.backgroundColor = 'var(--fg)'
+			bar.style.backgroundColor = 'var(--accent2)'
 		}
 		return
 	}
@@ -301,7 +312,7 @@ function displayKey(key) {
 		const bar = document.getElementById('visualizer-bar-' + i)
 		const note = i + startNote
 		if (profile[note % 12]) {
-			bar.style.backgroundColor = 'var(--fg)'
+			bar.style.backgroundColor = 'var(--accent2-light)'
 		} else {
 			bar.style.backgroundColor = 'var(--accent2)'
 		}

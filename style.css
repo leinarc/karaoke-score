@@ -269,15 +269,19 @@ body {
 	width: 100svw;
 	height: 20em;
 
+	mix-blend-mode: screen;
+
+	mask: linear-gradient(to bottom, #000, #000a);
+
 	bottom: 0;
 
-	opacity: 50%;
+	opacity: 60%;
 
 	z-index: -97;
 }
 
 #visualizer * {
-	background-color: var(--fg);
+	background-color: var(--accent2);
 
 	flex-grow: 1;
 	width: 1em;
