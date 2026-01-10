@@ -2,6 +2,8 @@
 
 #define safe_buffer_size 32768
 
+double min_peak = 0.02;
+
 __attribute__((import_module("env")))
 __attribute__((import_name("js_log")))
 void js_log(double);
@@ -55,6 +57,10 @@ void process_output (long td_size, unsigned int sample_rate, unsigned long cache
 	if (peak <= 0) {
  		output_buffer_loudness[output_offset] = 0;
 		goto bad_freq;
+	}
+
+	if (all_time_peak < min_peak) {
+		all_time_peak = min_peak;
 	}
 
 	if (all_time_peak > peak) {

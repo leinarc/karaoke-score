@@ -101,7 +101,7 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 
 				if (processor.error) return
 
-				const maxDelay = tdSampleInterval / sampleRate * 1000
+				const maxDelay = tdSampleInterval / sampleRate * 1000 - 1
 
 				const startDate = Date.now()
 
@@ -149,7 +149,7 @@ class melodyAnalyserProcessor extends AudioWorkletProcessor {
 
 					console.log('Excess delay detected in melody processor, attempting to change settings...')
 
-					if (tdSize > 512) {
+					if (tdSize > 1024) {
 
 						tdSize = tdSize / 2
 						processorOptions.tdSize = tdSize

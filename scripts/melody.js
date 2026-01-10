@@ -1,3 +1,5 @@
+const melodyMinPeak = 0.2
+
 var melodyAllTimePeak = 0
 
 function getMelodyFreq(buf) {
@@ -13,6 +15,10 @@ function getMelodyFreq(buf) {
 
 	melodyAllTimePeak = peak / 128 + melodyAllTimePeak * 127 / 128;
 
+	if (melodyAllTimePeak < melodyMinPeak) {
+		melodyAllTimePeak = melodyMinPeak
+	}
+	
 	if (melodyAllTimePeak > peak) {
 		peak = melodyAllTimePeak;
 	}

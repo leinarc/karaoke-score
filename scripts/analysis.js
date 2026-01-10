@@ -108,8 +108,8 @@ function analyseMelody(data) {
 
 
 var keyNoiseFilters
-const keyMaxErrorAccumulation = dftSize * 2**4
-const keyMinErrorAccumulation = -keyMaxErrorAccumulation
+const keyMaxErrorAccumulation = 1
+const keyMinErrorAccumulation = -1
 var pMult
 var iMult
 var dMult
@@ -118,17 +118,17 @@ resetKeyNoise()
 
 function resetKeyNoise() {
 	keyNoiseFilters = []
-	pMult = 0.5
-	iMult = 0.01
-	dMult = 0.01
+	pMult = 1
+	iMult = 0.001
+	dMult = 0
 }
 
 function analyseKey(data) {
 		
 	try {
 
-		if (pMult > 0.0001) pMult *= 0.95
-		if (iMult > 0.00001) iMult *= 0.9
+		if (pMult > 0.01) pMult *= 0.95
+		if (iMult > 0.00001) iMult *= 0.95
 
 		for (let k = 0; k < data.length; k++) {
 
@@ -146,7 +146,7 @@ function analyseKey(data) {
 					lastSegmentDate = Date.now()
 				}
 
-				let log = ''
+				// let log = ''
 
 				const frame = channel[j]
 				let [ fullChroma, peak ] = frame
@@ -157,9 +157,9 @@ function analyseKey(data) {
 					channelFilters[j] = channelFilter
 				}
 
-				log += 'peak:\t'
-				log += peak
-				log += '\n'
+				// log += 'peak:\t'
+				// log += peak
+				// log += '\n'
 
 				// log += 'Full Chroma:\t'
 				// log += formatFullChroma(fullChroma)
@@ -174,7 +174,9 @@ function analyseKey(data) {
 				// Calculate PIDs for the filter
 				let { noiseFilter, errorAccumulation, lastNoiseFilter } = channelFilter
 
-				const E = fullChroma.map((level, i) => level*peak*1.0 - (noiseFilter[i] || level))
+				const E = fullChroma
+					.map((level, i) => level*peak*1.2 - (noiseFilter[i]||0))
+					.map(error => error > 0 ? error/64 : error)
 
 				const P = E
 
@@ -191,7 +193,7 @@ function analyseKey(data) {
 				noiseFilter = []
 				I.forEach((I_i, i) => {
 					const change = (lastNoiseFilter[i]||0) + pMult*(P[i]||0) + iMult*I_i + dMult*(D[i]||0)
-					noiseFilter[i] = change > 0 ? change : change/128 
+					noiseFilter[i] = change 
 				})
 
 				channelFilter.noiseFilter = noiseFilter
@@ -209,7 +211,9 @@ function analyseKey(data) {
 
 
 				// Apply noise filter
-				fullChroma = fullChroma.map((level, i) => level - noiseFilter[i] / peak)
+				fullChroma = fullChroma.map((level, i) => (level - noiseFilter[i]/peak) / ((1-noiseFilter[i]/peak) || 1))
+
+				displayVisualizer(fullChroma)
 
 				// log += 'Filt Chroma:\t'
 				// log += formatFullChroma(fullChroma)
@@ -224,46 +228,46 @@ function analyseKey(data) {
 				// Dissonance filter
 				fullChroma = fullChroma.map(
 					(x, i) => {
+						if (x < 0) return 0
+
 						a = fullChroma[i-1]
 						b = fullChroma[i+1]
 						return (
 							x
-							+ (x>a ? x-a : 0)
-							+ (x>b ? x-b : 0)
+							+ (a>0 && x>a ? x-a : 0)
+							+ (b>0 && x>b ? x-b : 0)
 						) / 3
 					}
 				)
-
-				displayVisualizer(fullChroma)
 
 
 
 				// Put chroma levels into 12 bins
 				let chroma = []
 				fullChroma.forEach((x, i) => {
-					chroma[i % 12] = (chroma[i % 12] || 0) + x**2
+					chroma[i % 12] = (chroma[i % 12] || 0) + x
 				})
 
-				log += 'Harm Chroma:  \t'
-				log += formatChroma(chroma)
-				log += '\n'
+				// log += 'Harm Chroma:  \t'
+				// log += formatChroma(chroma)
+				// log += '\n'
 
 
 
 				// Normalize
 				// {
 				// 	const norm = Math.hypot(...chroma) || 1
-				// 	chroma = chroma.map(x => x / norm)
+				// 	chroma = chroma.map(x => x / (norm + 0.5) * 1.5)
 				// }
 
 				// log += 'Norm Chroma:\t'
-				// log += formatFullChroma(fullChroma)
+				// log += formatChroma(chroma)
 				// log += '\n'
 
 
 
 				// Detect notes
-				const notes = chroma.map(x => x**0.5 > 0.7 ? 1 : 0)
+				const notes = chroma.map(x => x > 0.8 ? 1 : 0)
 
 				// log += 'Notes:  \t'
 				// log += notes.map((x, i) => x ? noteNames[i] : '').join('\t')
@@ -275,9 +279,9 @@ function analyseKey(data) {
 
 				// console.log(log)
 
-				if (notes.some(x => x)) {
-					console.log('Notes:  \t' + notes.map((x, i) => x ? noteNames[i] : '').join('\t'))
-				}
+				// if (notes.some(x => x)) {
+				// 	console.log('Notes:  \t' + notes.map((x, i) => x ? noteNames[i] : '').join('\t'))
+				// }
 
 
 

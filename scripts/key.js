@@ -1,6 +1,8 @@
 const minInstrFreq = 50
 const maxInstrFreq = 3200
 
+const keyMinPeak = 0.005
+
 var keyAllTimePeak = 0
 
 function getKeyChroma(buf) {
@@ -47,6 +49,10 @@ function getKeyChroma(buf) {
 	const peak = fullChroma.reduce((a, b) => Math.max(a, b), 0)
 
 	keyAllTimePeak = peak / 128 + keyAllTimePeak * 127 / 128;
+
+	if (keyAllTimePeak < keyMinPeak) {
+		keyAllTimePeak = keyMinPeak
+	}
 
 	if (keyAllTimePeak > peak) {
 		peak = keyAllTimePeak;

@@ -141,7 +141,7 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 				if (processor.error) return
 
-				const maxDelay = dftSampleInterval / sampleRate * 1000
+				const maxDelay = dftSampleInterval / sampleRate * 1000 - 1
 
 				const startDate = Date.now()
 
@@ -165,7 +165,7 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 					inputBuffer.set(buffer)
 
-					const outputCount = exports.process_input(dftSize, dftSampleInterval, sampleRate, noteCount, Math.min(buffer.length, safeBufferSize), skipOutput)
+					const outputCount = exports.process_input(dftSize, dftSampleInterval, noteCount, Math.min(buffer.length, safeBufferSize), skipOutput)
 
 					if (outputCount > 0) {
 
@@ -189,7 +189,7 @@ class keyAnalyserProcessor extends AudioWorkletProcessor {
 
 					console.log('Excess delay detected in key processor, attempting to change settings...')
 
-					if (dftSize > 4096) {
+					if (dftSize > 8192) {
 
 						dftSize = dftSize / 2
 						processorOptions.dftSize = dftSize

@@ -7,11 +7,11 @@ const safeBufferSize = 32768
 
 const tdSize = 2048
 const fftSize = 8192
-const dftSize = 8192*4
+const dftSize = 8192
 
 const tdSampleInterval = 1024
 const fftSampleInterval = fftSize
-const dftSampleInterval = 2048
+const dftSampleInterval = 1024
 
 const tdChannels = 1
 const dftChannels = 1

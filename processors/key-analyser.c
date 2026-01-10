@@ -1,6 +1,8 @@
 #define safe_note_count 120
 #define safe_buffer_size 32768
 
+double min_peak = 0.005;
+
 __attribute__((import_module("env")))
 __attribute__((import_name("js_log")))
 void js_log(double);
@@ -56,7 +58,7 @@ double get_value (unsigned int note, S* s) {
 
 }
 
-void process_output (unsigned long sample_rate, unsigned int note_count, unsigned int m_index, unsigned long output_offset) {
+void process_output (unsigned long dft_size, unsigned int note_count, unsigned int m_index, unsigned long output_offset) {
 
 	output_buffer_peak[output_offset] = 1; // initial peak
 
@@ -72,7 +74,7 @@ void process_output (unsigned long sample_rate, unsigned int note_count, unsigne
 
 		S* s = &sss[m_index][note];
 
-		double value = get_value(note, s) / sample_rate;
+		double value = get_value(note, s) / (dft_size*dft_size) * 4;
 
 		output_buffer_chroma[note + chroma_offset] += value;
 
@@ -93,10 +95,14 @@ void process_output (unsigned long sample_rate, unsigned int note_count, unsigne
 
 	all_time_peak = peak / 1024 + all_time_peak * 1023 / 1024;
 
+	if (all_time_peak < min_peak) {
+		all_time_peak = min_peak;
+	}
+
 	if (all_time_peak > peak) {
 		peak = all_time_peak;
 	} else {
-		all_time_peak = peak / 8 + all_time_peak * 7 / 8;
+		all_time_peak = peak / 64 + all_time_peak * 63 / 64;
 	}
 
 	if (peak <= 0) return;
@@ -111,7 +117,7 @@ void process_output (unsigned long sample_rate, unsigned int note_count, unsigne
 
 }
 
-int process_input (unsigned long dft_size, unsigned long dft_interval, unsigned long sample_rate, unsigned long note_count, unsigned long buffer_size, int skip_output) {
+int process_input (unsigned long dft_size, unsigned long dft_interval, unsigned long note_count, unsigned long buffer_size, int skip_output) {
 
 	unsigned long output_count = 0;
 
@@ -180,7 +186,7 @@ int process_input (unsigned long dft_size, unsigned long dft_interval, unsigned 
 		if (m_has_output > 0) {
 
 			if (!skip_output) {
-				process_output(sample_rate, note_count, m_index, output_count);
+				process_output(dft_size, note_count, m_index, output_count);
 				output_count++;
 			}
 			
