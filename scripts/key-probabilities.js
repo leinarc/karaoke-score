@@ -95,7 +95,7 @@ function notesToIndex(notes) {
 	// Only take the 5 most frequent notes
 	return notes
 		.map((count, note) => [count, note])
-		.sort((a, b) => a[0] - b[0])
+		.sort((a, b) => b[0] - a[0])
 		.filter(arr => arr[0] > 0)
 		.slice(0, 5)
 		.reduce((a, b) => a + (b[0] > 0 ? 1 : 0) * 2**b[1], 0)

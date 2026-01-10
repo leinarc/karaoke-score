@@ -51,6 +51,18 @@ function removeSegment() {
 	oldMelodyData.next = undefined
 }
 
+function filterDissonantNotes(keyData) {
+	// Never allow a single note to remove another
+	// It requires max count + 1 number of adjacent notes to remove a note
+	const max = Math.max(...keyData.filter(x => x !== undefined), 0)
+	const oldKeyData = keyData.slice()
+	oldKeyData.forEach((x, i) => {
+		const p = (i+11)%12
+		const n = (i+1)%12
+		keyData[i] = x - x * ((oldKeyData[p]||0) + (oldKeyData[n]||0)) / (max + 1)
+	})
+}
+
 
 
 const minMelodyFreq = 50
@@ -130,8 +142,8 @@ function analyseKey(data) {
 		const visualizerChroma = []
 		let frameCount = 0
 
-		if (pMult > 0.01) pMult *= 0.95
-		if (iMult > 0.00001) iMult *= 0.95
+		if (pMult > 0.1) pMult *= 0.95
+		if (iMult > 0.0001) iMult *= 0.95
 
 		for (let k = 0; k < data.length; k++) {
 
@@ -180,7 +192,7 @@ function analyseKey(data) {
 				let { noiseFilter, errorAccumulation, lastNoiseFilter } = channelFilter
 
 				const E = fullChroma
-					.map((level, i) => (level+0.1)*peak - (noiseFilter[i]||0))
+					.map((level, i) => (level+0.1)*peak*1.1 - (noiseFilter[i]||0))
 					.map(error => error > 0 ? error/64 : error)
 
 				const P = E
@@ -221,10 +233,6 @@ function analyseKey(data) {
 				// Sensitivity filter
 				fullChroma = fullChroma.map((level, i) => level * sensitivities[i])
 
-				fullChroma.forEach((level, i) => {
-					visualizerChroma[i] =  (visualizerChroma[i]||0) + level
-				})
-
 				// log += 'Filt Chroma:\t'
 				// log += formatFullChroma(fullChroma)
 				// log += '\n'
@@ -250,6 +258,10 @@ function analyseKey(data) {
 					}
 				)
 
+				fullChroma.forEach((level, i) => {
+					visualizerChroma[i] =  (visualizerChroma[i]||0) + level
+				})
+
 
 
 				// Put chroma levels into 12 bins
@@ -265,10 +277,8 @@ function analyseKey(data) {
 
 
 				// Normalize
-				// {
-				// 	const norm = Math.hypot(...chroma) || 1
-				// 	chroma = chroma.map(x => x / (norm + 0.5) * 1.5)
-				// }
+				const norm = Math.hypot(...chroma) || 1
+				normalizedChroma = chroma.map(x => x / (norm + 1) * 2)
 
 				// log += 'Norm Chroma:\t'
 				// log += formatChroma(chroma)
@@ -277,28 +287,32 @@ function analyseKey(data) {
 
 
 				// Detect notes
-				const notes = chroma.map(x => x > 0.8 ? 1 : 0)
+				const newNotes = []
+				const noteAdded = {}
+
+				normalizedChroma.map(x => x > 0.5 ? 1 : 0).forEach(addNote)
+				chroma.map(x => x > 0.8 ? 1 : 0).forEach(addNote)
+
+
 
 				// log += 'Notes:  \t'
-				// log += notes.map((x, i) => x ? noteNames[i] : '').join('\t')
+				// log += newNotes.map((x, i) => x ? noteNames[i] : '').join('\t')
 				// log += '\n'
-				
-				notes.forEach((note, i) => {
-					if (note) {
-						// lastKeyData[i] = 1
-						// const p = (i+11)%12
-						// const n = (i+1)%12
-						lastKeyData[i] = (lastKeyData[i] || 0) + 1
-						// lastKeyData[p] = (lastKeyData[p] || 0) - 1
-						// lastKeyData[n] = (lastKeyData[n] || 0) - 1
+
+				function addNote(count, note) {
+					if (noteAdded[note]) return
+					noteAdded[note] = true
+					if (count) {
+						lastKeyData[note] = (lastKeyData[note] || 0) + 1
+						newNotes[note] = 1
 					}
-				})
+				}
 
 				// console.log(log)
 
-				// if (notes.some(x => x)) {
-				// 	console.log('Notes:  \t' + notes.map((x, i) => x ? noteNames[i] : '').join('\t'))
-				// }
+				if (newNotes.some(x => x)) {
+					console.log('Notes:  \t' + newNotes.map((x, i) => x ? noteNames[i] : '').join('\t'))
+				}
 
 
 
@@ -356,6 +370,9 @@ function analyseAudio() {
 		(lastKeyData.length || melodyDataOverflow) &&
 		expiredSegment
 	) {
+
+		filterDissonantNotes(lastKeyData)
+
 		if (segmentCount >= segmentLimit) {
 
 			console.log(
@@ -363,12 +380,12 @@ function analyseAudio() {
 				nextKeyData
 					// .map((x, i) => x > 0 ? noteNames[i] : '').join('\t')
 					.map((x, i) => [x, i])
-					.sort((a, b) => a[0] - b[0])
+					.sort((a, b) => b[0] - a[0])
 					.map((arr, i) =>  [...arr, i < 5])
 					.sort((a, b) => a[1] - b[1])
 					.reduce((a, b) => ({data: a.data.concat(new Array(b[1] - a.index),[b]), index: b[1] + 1}), {data:[], index: 0})
 					.data
-					.map((arr, i) => (arr[2] ? '' : '*') + (arr[0] ? noteNames[arr[1]] : ''))
+					.map((arr, i) => (arr[2] ? '' : '*') + (arr[0] > 0 ? noteNames[arr[1]] : '-'))
 					.join('\t')
 			)
 
@@ -399,6 +416,8 @@ function analyseAudio() {
 
 function getFinalScore() {
 
+	filterDissonantNotes(lastKeyData)
+
 	let keyData = nextKeyData
 	while (keyData) {
 		console.log(
@@ -406,12 +425,12 @@ function getFinalScore() {
 			keyData
 				// .map((x, i) => x > 0 ? noteNames[i] : '').join('\t')
 				.map((x, i) => [x, i])
-				.sort((a, b) => a[0] - b[0])
+				.sort((a, b) => b[0] - a[0])
 				.map((arr, i) =>  [...arr, i < 5])
 				.sort((a, b) => a[1] - b[1])
-				.reduce((a, b) => ({data: a.data.concat(new Array(b[1] - a.index),[b]), index: b[1] + 1}), {data:[], index: 0})
+				.reduce((a, b) => ({data: [...a.data, ...new Array(b[1]-a.index),...b], index: b[1]+ 1}), {data:[], index: 0})
 				.data
-				.map((arr, i) => (arr[2] ? '' : '*') + (arr[0] ? noteNames[arr[1]] : ''))
+				.map((arr, i) => (arr[2] ? '' : '*') + (arr[0] > 0 ? noteNames[arr[1]] : '-'))
 				.join('\t')
 		)
 		keyData = keyData.next
