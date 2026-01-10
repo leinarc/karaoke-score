@@ -98,8 +98,7 @@ function notesToIndex(notes) {
 		.sort((a, b) => a[0] - b[0])
 		.filter(arr => arr[0] > 0)
 		.slice(0, 5)
-		.map(arr => notes[arr[1]])
-		.reduce((a, b, i) => a + (b > 0 ? 1 : 0) * 2**i, 0)
+		.reduce((a, b) => a + (b[0] > 0 ? 1 : 0) * 2**b[1], 0)
 
 }
 
