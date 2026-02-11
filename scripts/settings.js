@@ -36,6 +36,26 @@ function testSound() {
 
 
 
+var analyserType
+
+const analyserNames = [
+	"Auto",
+	"WebAssembly Worklet",
+	"JavaScript Worklet",
+	"JavaScript Native"
+]
+
+function cycleAnalyserType() {
+	analyserType = (analyserType + 1) % analyserNames.length
+
+	if (analyser) {
+		connectAnalyser()
+	}
+ 
+	return analyserType + ': ' + analyserNames[analyserType]
+}
+
+
 var calculation
 
 const calculationNames = [
@@ -148,6 +168,7 @@ resetSettings()
 
 async function resetSettings() {
 	setVolume(50, true)
+	analyserType = 0
 	calculation = 0
 	randomization = 0
 
@@ -170,6 +191,9 @@ function exportSettings() {
 	const settings = {
 		volume: {
 			value: volume
+		},
+		'analyser-type': {
+			value: analyserType + ': ' + analyserNames[analyserType]
 		},
 		calculation: {
 			value: calculation + ': ' + calculationNames[calculation]

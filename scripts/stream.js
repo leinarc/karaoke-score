@@ -67,7 +67,8 @@ async function finishKaraoke() {
 	} catch (err) {
 
 		console.error(err)
-		alert('Failed to analyze audio at the end.\n' + err)
+		alert('Failed to calculate score at the end.\n' + err)
+		startEndAnimation(100) // default to 100 score when calculation fails xd
 
 	}
 
@@ -117,6 +118,7 @@ async function getMicAudio() {
 
 	} catch (err) {
 
+		console.error(err)
 		alert('Failed to get microphone audio.\n' + err)
 		throw err
 
@@ -237,12 +239,15 @@ async function connectAnalyser() {
 			source.disconnect(analyser)
 		}
 
-		// if auto || wasm-worklet
-		await createWorkletAnalyser('wasm')
-		// if js-worklet
-		// await createWorkletAnalyser()
-		// if js
-		// createNativeAnalyser()
+		const analyserName = analyserNames[analyserType]
+		
+		if (analyserName == "Auto" || analyserName == "WebAssembly Worklet") {
+			await createWorkletAnalyser('wasm')
+		} else if (analyserName == "JavaScript Worklet") {
+			await createWorkletAnalyser()
+		} else {
+			createNativeAnalyser()
+		}
 
 		source.connect(analyser)
 
@@ -252,7 +257,7 @@ async function connectAnalyser() {
 	} catch (err) {
 
 		console.error(err)
-		console.log('Failed to connect analyser.')
+		alert('Failed to connect analyser.\n' + err)
 		clearAudio()
 
 	}

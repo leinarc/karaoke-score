@@ -118,6 +118,12 @@ async function createWorkletAnalyser(type) {
 
 		source.disconnect(analyser)
 
+		const analyserName = analyserNames[analyserType]
+
+		if (analyserName != "Auto") {
+			alert('Analyser failed.\n' + err)
+		}
+
 		if (type === 'wasm') {
 			
 			console.log('Processor for WASM worklet analyser failed.')

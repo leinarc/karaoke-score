@@ -72,7 +72,7 @@ function analyseMelody(frequencies) {
 
 			if (!(freq >= minMelodyFreq && freq <= maxMelodyFreq)) continue
 
-			console.log(freq)
+			// console.log(freq)
 
 			if (!lastMelodyData.length && !lastKeyData.length) {
 				lastSegmentDate = Date.now()
