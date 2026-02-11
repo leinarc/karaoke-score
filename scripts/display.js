@@ -422,6 +422,26 @@ const gifCount = {
 	miku: 29
 }
 
+var gifs = {}
+
+function loadGIF(url) {
+	return new Promise(async (resolve, reject) => {
+		try {
+			// const img = new Image()
+			// img.src = url
+			// img.onload(resolve(img))
+
+			const response = await fetch(url)
+			const buffer = await response.arrayBuffer()
+			const blob = new Blob([buffer], { type: 'image/gif' })
+
+			resolve(URL.createObjectURL(blob))
+		} catch (err) {
+			reject(err)
+		}
+	})
+}
+
 function getGIF(score) {
 	const rating =
 		score == 39 ? 'miku' :
@@ -429,9 +449,9 @@ function getGIF(score) {
 		score < 90 ? 'normal':
 		'good'
 
-	const gifID = Math.floor(Math.random() * gifCount[rating]) + 1
+	const i = Math.floor(Math.random() * gifCount[rating])
 
-	return 'gifs/' + rating + gifID + '.gif'
+	return gifs[rating][i] || 'gifs/' + rating + (i+1) + '.gif'
 }
 
 
@@ -493,5 +513,7 @@ function displaySettings() {
 		}
 	}
 }
+
+
 
 onScriptLoad()

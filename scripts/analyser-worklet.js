@@ -10,21 +10,27 @@ async function loadProcessorWASM(url) {
 	return buffer
 }
 
-async function loadProcessorJS(url) {
+// Preloaded js files are not used since addModule does not accept url blob, and reader url breaks imports
+// However, it still gets cached as long as it's fetched which is weird
+function loadProcessorJS(url) {
+	return new Promise(async (resolve, reject) => {
+		try {
+			const response = await fetch(url)
+			const text = await response.text()
+			const blob = new Blob([text], { type: 'application/javascript; charset=utf-8' })
+			
+			resolve(URL.createObjectURL(blob))
 
-	const response = await fetch(url)
-	const text = await response.text()
-	const blob = new Blob([text], { type: 'application/javascript; charset=utf-8' })
-	
-	return URL.createObjectURL(blob)
+			// const reader = new FileReader();
+			// reader.readAsDataURL(blob);
 
-	const reader = new FileReader();
-	reader.readAsDataURL(blob);
-
-	return new Promise((resolve) => {
-		reader.onloadend = () => { resolve(reader.result); }
+			// reader.onloadend = () => {
+			// 	resolve(reader.result);
+			// }
+		} catch (err) {
+			reject(err)
+		}
 	})
-
 }
 
 async function createWorkletAnalyser(type) {
@@ -146,13 +152,6 @@ async function createWorkletAnalyser(type) {
 
 }
 
-loadProcessors()
 
-async function loadProcessors() {
-	processorJS = await loadProcessorJS('scripts/processors/analyser.js')
-	jsProcessorJS = await loadProcessorJS('scripts/processors/js-analyser.js')
-	wasmProcessorJS = await loadProcessorJS('scripts/processors/wasm-analyser.js')
-	wasmProcessorWASM = await loadProcessorWASM('scripts/processors/wasm-analyser.wasm')
 
-	onScriptLoad()
-}
+onScriptLoad()
