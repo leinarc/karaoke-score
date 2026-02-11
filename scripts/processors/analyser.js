@@ -58,8 +58,7 @@ export default class analyserProcessor extends AudioWorkletProcessor {
 					fftChannels,
 					startNote,
 					noteCount,
-					sampleRate,
-					lastSettingChangeDate
+					sampleRate
 				} = processorOptions
 
 				if (processor.error) return
@@ -109,7 +108,7 @@ export default class analyserProcessor extends AudioWorkletProcessor {
 
 				const endDate = Date.now()
 
-				if (!skipOutput && (lastSettingChangeDate === undefined || endDate - lastSettingChangeDate > 1000) && endDate - startDate > maxDelay) {
+				if (endDate - startDate > maxDelay) {
 
 					console.log('Excess delay detected in worklet processor, attempting to change settings...')
 
@@ -140,8 +139,6 @@ export default class analyserProcessor extends AudioWorkletProcessor {
 						console.log('FFT interval set to:', sampleInterval)
 
 					}
-
-					processorOptions.lastSettingChangeDate = endDate
 
 				}
 
