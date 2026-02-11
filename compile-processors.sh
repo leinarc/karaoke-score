@@ -1,8 +1,8 @@
 #!/bin/sh
 
-mkdir -p ./processors
+mkdir -p ./scripts/processors
 
-for input in ./processors/*.c; do
+for input in ./scripts/processors/*.c; do
 
     base="${input%.*}"
 

@@ -36,9 +36,11 @@ for (let mode = 0; mode < modeProfiles.length; mode++) {
 
 
 
-const modeNames = "Major Minor".split(' ')
+export const noteNames = "C C# D D# E F F# G G# A A# B".split(' ')
 
-const keyNames = []
+export const modeNames = "Major Minor".split(' ')
+
+export const keyNames = []
 
 for (let mode = 0; mode < modeNames.length; mode++) {
 	const modeName = modeNames[mode]
@@ -79,7 +81,7 @@ for (let i = 0; i < 2**12; i++) {
 
 
 
-function rotateProfile(profile, key) {
+export function rotateProfile(profile, key) {
 
 	const offset = (Math.floor(key / 12) * 3 + key)  % 12
 	const half1 = profile.slice(12 - offset)
@@ -90,7 +92,7 @@ function rotateProfile(profile, key) {
 	
 }
 
-function notesToIndex(notes) {
+export function notesToIndex(notes) {
 
 	// Only take the 5 most frequent notes
 	return notes
@@ -102,13 +104,13 @@ function notesToIndex(notes) {
 
 }
 
-function getStructureProb(lastKey, keys) {
+export function getStructureProb(lastKey, keys) {
 	let prob = 1
 
 	let key1 = lastKey
 
 	for (let i = 0; i < keys.length; i++) {
-		key2 = keys[i]
+		const key2 = keys[i]
 
 		if (key1 === undefined) {
 			continue
@@ -127,7 +129,7 @@ function getStructureProb(lastKey, keys) {
 	return prob
 }
 
-function getSurfaceProb(keys, notesIndexes) {
+export function getSurfaceProb(keys, notesIndexes) {
 	let prob = 1
 
 	for(let i = 0; i < notesIndexes.length; i++) {
@@ -139,7 +141,7 @@ function getSurfaceProb(keys, notesIndexes) {
 	return prob
 }
 
-function getStructureChoices(lastKey, notesIndexes) {
+export function getStructureChoices(lastKey, notesIndexes) {
 
 	const takenKeys = {}
 
@@ -194,5 +196,3 @@ function getStructureChoices(lastKey, notesIndexes) {
 	return keyStructures
 
 }
-
-onScriptLoad()

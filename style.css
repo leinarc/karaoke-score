@@ -277,7 +277,7 @@ body {
 
 	opacity: 60%;
 
-	z-index: -97;
+	z-index: -96;
 }
 
 #visualizer * {
@@ -286,6 +286,29 @@ body {
 	flex-grow: 1;
 	width: 1em;
 	margin: 0 0.1%;
+}
+
+
+
+#visualizer2 {
+	position: absolute;
+
+	width: 100svw;
+	height: 20em;
+
+	mix-blend-mode: screen;
+
+	mask: linear-gradient(to bottom, #000, #000a);
+
+	bottom: 0;
+
+	opacity: 60%;
+
+	z-index: -97;
+}
+
+#visualizer2-polygon {
+	fill: var(--accent2-dark);
 }
 
 

@@ -14,8 +14,6 @@ var scores
 var lastSegmentKey
 var lastSegmentDate
 
-const noteNames = "C C# D D# E F F# G G# A A# B".split(' ')
-
 resetVariables()
 
 function resetVariables() {
@@ -66,37 +64,15 @@ function filterDissonantNotes(keyData) {
 
 
 
-const minMelodyFreq = 50
-const maxMelodyFreq = 2000
-
-function analyseMelody(data) {
+function analyseMelody(frequencies) {
 
 	try {
 
-		flatData = data.flat()
+		for (const freq of frequencies) {
 
-		const averageLoudness = flatData.reduce((a, b) => a + b[1], 0) / data.length
-		displayLoudness(averageLoudness)
+			if (!(freq >= minMelodyFreq && freq <= maxMelodyFreq)) continue
 
-		const maxQuality = flatData.reduce((a, b) => {
-
-			const [ freq, peak ] = b
-
-			if (freq < minMelodyFreq || freq > maxMelodyFreq) return a
-
-			const frac = (12 * Math.log2(freq / 440) % 1 + 1) % 1
-			const quality = 1 - 4 * (1-frac) * frac
-
-			return Math.max(a, quality)
-
-		}, 0)
-		displayQuality(maxQuality)
-
-		for (const frame of flatData) {
-
-			const [ freq, peak ] = frame
-
-			if (freq < minMelodyFreq || freq > maxMelodyFreq) continue
+			console.log(freq)
 
 			if (!lastMelodyData.length && !lastKeyData.length) {
 				lastSegmentDate = Date.now()
@@ -120,245 +96,52 @@ function analyseMelody(data) {
 
 
 
-var keyNoiseFilters
-const keyMaxErrorAccumulation = 0.0001
-const keyMinErrorAccumulation = -keyMaxErrorAccumulation
-var pMult
-var iMult
-var dMult
+function analyseKey(chromas) {
 
-resetKeyNoise()
+	if (!lastMelodyData.length && !lastKeyData.length) {
+		lastSegmentDate = Date.now()
+	}
+	
+	for (let chroma of chromas) {
 
-function resetKeyNoise() {
-	keyNoiseFilters = []
-	pMult = 5
-	iMult = 0.5
-	dMult = 0
-}
+		// Normalize
+		const min = Math.min(...chroma)
+		const max = Math.max(...chroma)
+		normalizedChroma = chroma.map(x => (x - min) / (max - min || 1))
+		const hypot = Math.hypot(...normalizedChroma)
+		normalizedChroma = normalizedChroma.map(x => x / (hypot || 1))
 
-function analyseKey(data) {
-		
-	try {
 
-		const visualizerChroma = []
-		let frameCount = 0
 
-		if (pMult > 0.01) pMult *= 0.95
-		if (iMult > 0.001) iMult *= 0.95
+		// Detect notes
+		const newNotes = []
+		const noteAdded = {}
 
-		for (let k = 0; k < data.length; k++) {
+		normalizedChroma.map(x => x > 0.95 ? 1 : 0).forEach(addNote)
+		chroma.map(x => x > 0.9 ? 1 : 0).forEach(addNote)
 
-			const channel = data[k]
+		// console.log(chroma.map(x => '' + x.toFixed(3)).join('\t'))
 
-			let channelFilters = keyNoiseFilters[k]
-			if (!channelFilters) {
-				channelFilters = []
-				keyNoiseFilters[k] = channelFilters
+
+
+		function addNote(count, note) {
+			if (count) {
+				if (noteAdded[note]) return
+				noteAdded[note] = true
+				lastKeyData[note] = (lastKeyData[note] || 0) + 1
+				newNotes[note] = 1
 			}
-
-			for (let j = 0; j < channel.length; j++) {
-
-				// let log = ''
-
-				if (!lastMelodyData.length && !lastKeyData.length) {
-					lastSegmentDate = Date.now()
-				}
-
-				frameCount++
-
-				const frame = channel[j]
-				let [ fullChroma, peak ] = frame
-				
-				fullChroma.forEach((level, i) => {
-					visualizerChroma[i] =  (visualizerChroma[i]||0) + level
-				})
-
-				let channelFilter = channelFilters[j]
-				if (!channelFilter) {
-					channelFilter = {noiseFilter: [], errorAccumulation: [], lastNoiseFilter: []}
-					channelFilters[j] = channelFilter
-				}
-
-				// log += 'peak:\t'
-				// log += peak
-				// log += '\n'
-
-				// log += 'Full Chroma:\t'
-				// log += formatFullChroma(fullChroma)
-				// log += '\n'
-				
-				// log += 'True Chroma:\t'
-				// log += formatFullChromaInt(fullChroma.map(x => x * peak))
-				// log += '\n'
-
-
-
-				// Calculate PIDs for the filter
-				let { noiseFilter, errorAccumulation, lastNoiseFilter } = channelFilter
-
-				const E = fullChroma
-					.map((level, i) => (level+0.2)*peak*1.2 - (noiseFilter[i]||0))
-					.map(error => error > 0 ? error/64 : error)
-
-				const P = E
-
-				const I = errorAccumulation.slice()
-
-				E.forEach((e, i) => {
-					I[i] = Math.max(Math.min((I[i]||0) + e, keyMaxErrorAccumulation), keyMinErrorAccumulation)
-				})
-
-				const D = noiseFilter.map((e, i) => e - (lastNoiseFilter[i]||0))
-
-				// Update noise filter
-				lastNoiseFilter = noiseFilter
-				noiseFilter = []
-				I.forEach((I_i, i) => {
-					const change = (lastNoiseFilter[i]||0) + pMult*(P[i]||0) + iMult*I_i + dMult*(D[i]||0)
-					noiseFilter[i] = change 
-				})
-
-				channelFilter.noiseFilter = noiseFilter
-				channelFilter.errorAccumulation = I
-				channelFilter.lastNoiseFilter = lastNoiseFilter
-
-				// log += 'Noise Filter:\t'
-				// log += formatFullChroma(noiseFilter.map(x => (x / peak)))
-				// log += '\n'
-				
-				// log += 'True Filter:\t'
-				// log += formatFullChromaInt(noiseFilter)
-				// log += '\n'
-
-
-
-				// Apply noise filter
-				fullChroma = fullChroma.map((level, i) => (level - noiseFilter[i]/peak) / ((1-noiseFilter[i]/peak) || 1))
-
-				// Sensitivity filter
-				fullChroma = fullChroma.map((level, i) => level * sensitivities[i])
-
-				// log += 'Filt Chroma:\t'
-				// log += formatFullChroma(fullChroma)
-				// log += '\n'
-
-				// log += 'Filt Chroma:\t'
-				// log += formatFullChromaInt(fullChroma.map(x => x * peak))
-				// log += '\n'
-
-				
-
-				// Dissonance filter
-				fullChroma = fullChroma.map(
-					(x, i) => {
-						if (x < 0) return x
-
-						a = fullChroma[i-1]
-						b = fullChroma[i+1]
-						return (
-							x
-							+ (a>0 && x>a ? x-a : 0)
-							+ (b>0 && x>b ? x-b : 0)
-						) / 3
-					}
-				)
-
-
-
-				// Put chroma levels into 12 bins
-				let chroma = []
-				fullChroma.forEach((x, i) => {
-					chroma[i%12] = (chroma[i%12] || 0) + x
-				})
-
-				// log += 'Harm Chroma:  \t'
-				// log += formatChroma(chroma)
-				// log += '\n'
-
-
-
-				// Normalize
-				const min = Math.min(...chroma)
-				const max = Math.max(...chroma)
-				normalizedChroma = chroma.map(x => (x - min) / (max - min || 1))
-				const hypot = Math.hypot(...normalizedChroma)
-				normalizedChroma = normalizedChroma.map(x => x / (hypot || 1))
-
-				// log += 'Norm Chroma:\t'
-				// log += formatChroma(chroma)
-				// log += '\n'
-
-
-
-				// Detect notes
-				const newNotes = []
-				const noteAdded = {}
-
-				normalizedChroma.map(x => x > 0.6 ? 1 : 0).forEach(addNote)
-				chroma.map(x => x > 0.8 ? 1 : 0).forEach(addNote)
-
-
-
-				// log += 'Notes:  \t'
-				// log += newNotes.map((x, i) => x ? noteNames[i] : '').join('\t')
-				// log += '\n'
-
-				function addNote(count, note) {
-					if (count) {
-						if (noteAdded[note]) return
-						noteAdded[note] = true
-						lastKeyData[note] = (lastKeyData[note] || 0) + 1
-						newNotes[note] = 1
-					}
-				}
-
-				// console.log(log)
-
-				if (newNotes.some(x => x)) {
-					console.log('Notes:  \t' + newNotes.map((x, i) => x ? noteNames[i] : '').join('\t'))
-				}
-
-
-
-				function formatFullChroma(fullChroma) {
-					return fullChroma.map(
-						x => x.toFixed(3)
-					).join('\t').split('\t').map(
-						(x, i) => (i > 0 && i % 12 == 0 ? '\n\t\t' : '') + x 
-					).join('\t')
-				}
-
-				function formatChroma(chroma) {
-					return chroma.map(x => x.toFixed(3)).join('\t')
-				}
-
-				function formatFullChromaInt(fullChroma) {
-					return fullChroma.map(
-						x => Math.floor(x)
-					).join('\t').split('\t').map(
-						(x, i) => (i > 0 && i % 12 == 0 ? '\n\t\t' : '') + x 
-					).join('\t')
-				}
-
-				function formatChromaInt(chroma) {
-					return chroma.map(x => Math.floor(x)).join('\t')
-				}
-
-			}
-
 		}
-				
-		if (frameCount) displayVisualizer(visualizerChroma.map(x => x / frameCount))
 
-		analyseAudio()
+		
 
-	} catch (err) {
-
-		console.error(err)
-		alert('Failed to analyze audio key.\n' + err)
-		disconnectAnalyser()
+		// if (newNotes.some(x => x)) {
+		// 	console.log('Notes:  \t' + newNotes.map((x, i) => x ? noteNames[i] : '').join('\t'))
+		// }
 
 	}
+
+	analyseAudio()
 	
 }
 

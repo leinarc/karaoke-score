@@ -119,6 +119,9 @@
 		</div>
 
 		<div id="visualizer"></div>
+		<!-- <svg id="visualizer2" viewBox="0 0 0 0" preserveAspectRatio="none" >
+			<polygon id="visualizer2-polygon" points="" />
+		</svg> -->
 
 		<div id="fullscreen-button" onclick="toggleFullscreen()" class="extra-button">
 			<div class="icon-flipper">
@@ -209,7 +212,7 @@
 		<div class="bloom-container" style="top: 15%; left: 70%"><div class="bloom" id="bloom4"></div></div>
 
 		<script>
-			const totalScripts = 9
+			const totalScripts = 8
 			var loadedScripts = 0
 
 			function onScriptLoad() {
@@ -229,14 +232,14 @@
 			}
 		</script>
 
+		<script type="module" src="scripts/modules.js"></script>
+
 		<script src="scripts/stream.js"></script>
+		<script src="scripts/analyser-native.js"></script>
+		<script src="scripts/analyser-worklet.js"></script>
 		<script src="scripts/analysis.js"></script>
-		<script src="scripts/melody.js"></script>
-		<script src="scripts/key.js"></script>
-		<script src="scripts/key-probabilities.js"></script>
 		<script src="scripts/score.js"></script>
 		<script src="scripts/display.js"></script>
 		<script src="scripts/settings.js"></script>
-		<script src="scripts/sensitivity.js"></script>
 	</body>
 </html>

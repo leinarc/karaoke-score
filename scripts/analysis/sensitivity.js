@@ -1,18 +1,11 @@
-// Reference 3: https://cdn.standards.iteh.ai/samples/34222/d93363dbdafa470aab734f04d091065b/ISO-226-2003.pdf
-
-const sensitivities = getNoteSensitivities(0, safeNoteCount)
-
-function getNoteSensitivities(startNote, noteCount) {
+export function getSensitivities(sampleRate, fftSize) {
 
 	let sensitivities = []
 
-	for (let i = 0; i < noteCount; i++) {
-		const note = i + startNote
+	for (let i = 0; i < fftSize; i++) {
+		const freq = sampleRate * i / fftSize
 
-		const freq = 440 * 2**((note-69)/12)
-
-		sensitivities[note] = getFrequencySensitivity(freq)
-
+		sensitivities[i] = getFrequencySensitivity(freq)
 	}
 
 	// const max = Math.max(...sensitivities)
@@ -194,5 +187,3 @@ function getFrequencySensitivity(freq) {
 	return amplitude**0.1
 
 }
-
-onScriptLoad()

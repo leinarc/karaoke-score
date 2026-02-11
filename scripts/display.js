@@ -56,8 +56,6 @@ const soundGood = new Audio('sounds/karaoke-good.ogg')
 const soundNormal = new Audio('sounds/karaoke-normal.ogg')
 const soundBad = new Audio('sounds/karaoke-bad.ogg')
 
-createVisualizerBars()
-
 function startEndAnimation(score) {
 	
 	displayVisualizer()
@@ -211,32 +209,33 @@ function chooseRandom(choices) {
 	return choices[Math.floor(Math.random() * choices.length)]
 }
 
+
+
 const maxLoudnessDecay = 0.001
 var lastLoudnessDisplayDate
 
 var prevLoudness
 
-
-
-function setLoudnessAnimationTime(time) {
-
-	time += 0.01
-
-	const button = document.getElementById('finish-button')
-	
-	button.style.transition = `
-		font-weight 0.2s ease-out,
-		font-size 0.2s ease-out,
-		text-shadow 0.2s ease-out,
-		width 0.2s ease-out,
-		height 0.2s ease-out,
-		outline-width ${time}s ease,
-		box-shadow ${time}s ease
-	`
-
-}
+var loudnessAnimationTime
 
 function displayLoudness(loudness) {
+
+	const button = document.getElementById('finish-button')
+	const time = fftSampleInterval / audioContext?.sampleRate + 0.01  || 0
+
+	if (loudnessAnimationTime !== time) {
+		button.style.transition = `
+			font-weight 0.2s ease-out,
+			font-size 0.2s ease-out,
+			text-shadow 0.2s ease-out,
+			width 0.2s ease-out,
+			height 0.2s ease-out,
+			outline-width ${time}s ease,
+			box-shadow ${time}s ease
+		`
+	}
+
+
 
 	const date = Date.now()
 
@@ -248,8 +247,6 @@ function displayLoudness(loudness) {
 		}
 	}
 
-	const button = document.getElementById('finish-button')
-
 	button.style.outlineWidth = Math.log10(loudness + 1) * 8 + "em"
 	button.style.boxShadow = `0 0 ${loudness + 0.5}em var(--fg)`;
 
@@ -257,25 +254,27 @@ function displayLoudness(loudness) {
 
 	lastLoudnessDisplayDate = date
 
-}
-
-function setQualityAnimationTime(time) {
-
-	time += 0.01
-
-	const buttonContainer = document.getElementById('finish-button-container')
-
-	buttonContainer.style.transition = `
-		outline-width ${Math.max(time, 0.5)}s ease-out,
-		outline-offset ${Math.max(time, 0.5)}s ease-out,
-		outline-color 0.05s ease-out
-	`
+	loudnessAnimationTime = time
 
 }
+
+
+var qualityAnimationTime
 
 function displayQuality(quality) {
 
 	const buttonContainer = document.getElementById('finish-button-container')
+	const time = fftSampleInterval / audioContext?.sampleRate + 0.01  || 0
+
+	if (qualityAnimationTime !== time) {
+		buttonContainer.style.transition = `
+			outline-width ${Math.max(time, 0.5)}s ease-out,
+			outline-offset ${Math.max(time, 0.5)}s ease-out,
+			outline-color 0.05s ease-out
+		`
+	}
+
+
 
 	buttonContainer.style.outlineWidth = quality + "em"
 	buttonContainer.style.outlineOffset = (1 - quality) * 0.5 - 0.25 + "em"
@@ -284,6 +283,123 @@ function displayQuality(quality) {
 		buttonContainer.style.outlineColor = "white"
 	} else {
 		buttonContainer.style.outlineColor = "#ffffff77"
+	}
+
+	qualityAnimationTime = time
+
+}
+
+
+
+var visualizerAnimationTime
+// var visualizerSize
+
+function displayVisualizer(fullChroma) {
+
+	const visualizer = document.getElementById('visualizer')
+	// const visualizer2 = document.getElementById('visualizer2')
+	// const visualizer2Polygon = document.getElementById('visualizer2-polygon')
+	const time = fftSampleInterval / audioContext?.sampleRate + 0.01  || 0
+
+	let i = 0
+	// let points = '0,1 '
+
+	for (let j = 0; j < fullChroma?.length; j++) {
+
+		let level = fullChroma[j]
+
+		if (level === undefined) {
+			if (i === 0) continue;
+
+			level = 0
+		}
+
+		const barID = 'visualizer-bar-' + i
+		let bar = document.getElementById(barID)
+
+		if (!bar) {
+			bar = document.createElement('div')
+			bar.id = barID
+			setAnimation()
+			visualizer.appendChild(bar)
+		} else if (visualizerAnimationTime !== time) {
+			setAnimation()
+		}
+
+		function setAnimation() {
+			bar.style.transition = `
+				height ${Math.max(time, 0.1)}s linear,
+				opacity ${time}s linear,
+				background-color 2s ease-out
+			`
+		}
+
+		level = Math.max(0, Math.min(1, level || 0))
+		bar.style.height = level*100 + '%'
+		bar.style.opacity = level*50 + 50 + '%'
+
+		// points += `${i},${1 - level} `
+
+		i++
+
+	}
+
+	// const size = i
+
+	// points += `${size-1},1`
+
+	for (; true; i++) {
+
+		const bar = document.getElementById('visualizer-bar-' + i)
+
+		if (!bar) break;
+
+		visualizer.removeChild(bar)
+
+	}
+
+
+	// if (visualizerSize !== size) {
+	// 	visualizer2.setAttribute('viewBox', `0 0 ${size - 1} 1`)
+	// }
+	
+	// visualizer2Polygon.setAttribute('points', points)
+
+	// visualizerSize = size
+	visualizerAnimationTime = time
+	
+}
+
+
+
+function displayKey(key) {
+	
+	if (key === undefined) {
+		for (let i = 0; true; i++) {
+			
+			const bar = document.getElementById('visualizer-bar-' + i)
+
+			if (!bar) return;
+
+			bar.style.backgroundColor = 'var(--accent2)'
+
+		}
+	}
+
+	const profile = rotateProfile(onKeyNotes, key)
+	
+	for (let i = 0; true; i++) {
+
+		const bar = document.getElementById('visualizer-bar-' + i)
+
+		if (!bar) return;
+
+		if (profile[(i + startNote) % 12]) {
+			bar.style.backgroundColor = 'var(--accent2-light)'
+		} else {
+			bar.style.backgroundColor = 'var(--accent2)'
+		}
+
 	}
 
 }
@@ -316,66 +432,6 @@ function getGIF(score) {
 	const gifID = Math.floor(Math.random() * gifCount[rating]) + 1
 
 	return 'gifs/' + rating + gifID + '.gif'
-}
-
-
-
-function setVisualizerAnimationTime(time) {
-
-	time += 0.01
-
-	for (let i = 0; i < noteCount; i++) {
-		const bar = document.getElementById('visualizer-bar-' + i)
-		bar.style.transition = `
-			height ${Math.max(time, 0.1)}s ease-out,
-			opacity ${time}s ease-out,
-			background-color 2s ease-out
-		`
-	}
-
-}
-
-function displayVisualizer(fullChroma) {
-
-	for (let i = 0; i < noteCount; i++) {
-		const bar = document.getElementById('visualizer-bar-' + i)
-		const note = i + startNote
-		const level = Math.max(0, Math.min(1, fullChroma?.[note] || 0))
-		bar.style.height = level*100 + '%'
-		bar.style.opacity = level*50 + 50 + '%'
-	}
-	
-}
-
-function displayKey(key) {
-	if (key === undefined) {
-		for (let i = 0; i < noteCount; i++) {
-			const bar = document.getElementById('visualizer-bar-' + i)
-			bar.style.backgroundColor = 'var(--accent2)'
-		}
-		return
-	}
-
-	const profile = rotateProfile(onKeyNotes, key)
-	
-	for (let i = 0; i < noteCount; i++) {
-		const bar = document.getElementById('visualizer-bar-' + i)
-		const note = i + startNote
-		if (profile[note % 12]) {
-			bar.style.backgroundColor = 'var(--accent2-light)'
-		} else {
-			bar.style.backgroundColor = 'var(--accent2)'
-		}
-	}
-}
-
-function createVisualizerBars() {
-	const visualizer = document.getElementById('visualizer')
-	for (let i = 0; i < noteCount; i++) {
-		const bar = document.createElement('bar')
-		bar.id = 'visualizer-bar-' + i
-		visualizer.appendChild(bar)
-	}
 }
 
 
