@@ -64,7 +64,7 @@ export default class analyserProcessor extends AudioWorkletProcessor {
 
 				if (processor.error) return
 
-				const maxDelay = fftSampleInterval / sampleRate * 1000 * 2 - 1
+				const maxDelay = fftSampleInterval / sampleRate * 1000 - 1
 
 				const startDate = Date.now()
 
@@ -123,21 +123,21 @@ export default class analyserProcessor extends AudioWorkletProcessor {
 						processor.updateFFTSize?.(size)
 						this.port.postMessage({func: "setFFTSize", args: [size]})
 
-					} else if (fftSampleInterval < maxFFTSize) {
+					} else {
 
 						const size = maxFFTSize
-						console.log('FFT size set to:', size)
 
 						const sampleInterval = fftSampleInterval + maxBufferSize
-						console.log('FFT interval set to:', sampleInterval)
 
 						if (oldSize !== size) {
 							processor.updateFFTSize?.(size)
 							this.port.postMessage({func: "setFFTSize", args: [size]})
+							console.log('FFT size set to:', size)
 						}
 
 						processor.updateSampleInterval?.(sampleInterval)
 						this.port.postMessage({func: "setFFTSampleInterval", args: [sampleInterval]})
+						console.log('FFT interval set to:', sampleInterval)
 
 					}
 

@@ -8,10 +8,8 @@ const maxBufferSize = 128
 const maxFFTSize = 8192
 const minFFTSize = 8192
 
-// should only be a power of 2
-var fftSize = 8192
-
-var fftSampleInterval = maxBufferSize
+var fftSize
+var fftSampleInterval
 
 const fftChannels = 1
 
@@ -239,6 +237,19 @@ async function connectAnalyser() {
 			source.disconnect(analyser)
 		}
 
+	} catch (err) {
+
+		console.error(err)
+		console.log('Failed to disconnect analyser.')
+		analyser = undefined
+
+	}
+
+	try {
+
+		fftSize = maxFFTSize
+		fftSampleInterval = maxBufferSize
+
 		const analyserName = analyserNames[analyserType]
 		
 		if (analyserName == "Auto" || analyserName == "WebAssembly Worklet") {
@@ -301,6 +312,20 @@ function disconnectAnalyser() {
 
 
 async function connectLoopback() {
+
+	try {
+		
+		if (loopback) {
+			source.disconnect(loopback)
+		}
+
+	} catch (err) {
+
+		console.error(err)
+		console.log('Failed to disconnect loopback.')
+		loopback = undefined
+
+	}
 
 	try {
 

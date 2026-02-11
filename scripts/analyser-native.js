@@ -35,7 +35,7 @@ function setNativeAnalyserInterval() {
 
 			const sampleRate = audioContext.sampleRate
 
-			const maxDelay = fftSampleInterval / sampleRate * 1000 * 2 - 1
+			const maxDelay = fftSampleInterval / sampleRate * 1000 - 1
 
 			const startDate = Date.now()
 
@@ -81,28 +81,25 @@ function setNativeAnalyserInterval() {
 
 					const size = fftSize / 2
 					setFFTSize(size)
-
 					console.log('FFT size set to:', size)
 
 					connectAnalyser()
 
-				} else if (fftSampleInterval < 32768) {
+				} else {
 
 					const size = maxFFTSize
 					setFFTSize(size)
 
-					console.log('FFT size set to:', size)
-
 					const sampleInterval = fftSampleInterval + maxBufferSize
 					setFFTSampleInterval(sampleInterval)
 
-					console.log('FFT interval set to:', sampleInterval)
-
 					if (oldSize !== size) {
 						connectAnalyser()
+						console.log('FFT size set to:', size)
 					} else {
 						setNativeAnalyserInterval()
 					}
+					console.log('FFT interval set to:', sampleInterval)
 
 				}
 
