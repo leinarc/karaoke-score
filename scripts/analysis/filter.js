@@ -1,8 +1,8 @@
 const noiseMaxErrorAccumulation = 0.00001
 const noiseMinErrorAccumulation = -noiseMaxErrorAccumulation
 
-export const minFilterPeak = 0.0005
-export const filterSensitivityStart = 5
+export const minFilterPeak = 0
+export const filterSensitivityStart = 1
 export const filterSensitivityTarget = 0.01
 export const filterSensitivityMultiplier = 0.99
 
@@ -11,8 +11,9 @@ export const filterBias = 0.99
 export function createFilter(fftSize) {
 	return {
 		bed: (new Array(fftSize)).fill(0),
-		sensitivity: filterSensitivityStart,
-		peak: minFilterPeak
+		bedSensitivity: filterSensitivityStart,
+		peak: minFilterPeak,
+		peakSensitivity: filterSensitivityStart
 	}
 }
 
@@ -29,7 +30,7 @@ export function filterFFT(fft, sensitivities, filter) {
 
 
 
-	let { sensitivity, bed, peak } = filter
+	let { bed, bedSensitivity, peak, peakSensitivity } = filter
 
 	// Noise Filter
 
@@ -39,7 +40,7 @@ export function filterFFT(fft, sensitivities, filter) {
 		const value = bed[i]
 		const target = (level + 0.01*peak) * 1.1
 		
-		let newValue = target*sensitivity + value*(1-sensitivity)
+		let newValue = target*bedSensitivity + value*(1-bedSensitivity)
 
 		// Apply bias when raising bed
 		if (newValue > value) newValue = newValue*(1-filterBias) + value*(filterBias);
@@ -60,7 +61,7 @@ export function filterFFT(fft, sensitivities, filter) {
 	// Update peak
 	const max = Math.max(...fft.map(x => x || 0))
 
-	let newPeak = max*sensitivity + peak*(1-sensitivity);
+	let newPeak = max*peakSensitivity + peak*(1-peakSensitivity);
 
 	// Apply bias when lowering peak
 	if (newPeak < peak) newPeak = newPeak*(1-filterBias) + peak*filterBias;
@@ -79,7 +80,8 @@ export function filterFFT(fft, sensitivities, filter) {
 
 	
 	// Update sensitivity
-	if ( sensitivity > filterSensitivityTarget ) filter.sensitivity *= filterSensitivityMultiplier;
+	if ( bedSensitivity > filterSensitivityTarget ) filter.bedSensitivity *= filterSensitivityMultiplier;
+	else if ( peakSensitivity > filterSensitivityTarget ) filter.peakSensitivity *= filterSensitivityMultiplier;
 
 
 	

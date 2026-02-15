@@ -63,37 +63,38 @@ export default class wasmAnalyserProcessor extends analyserProcessor {
 
 			const buffer = exports.memory.buffer
 
-			;(new Float64Array(buffer, exports.min_filter_peak, 1)).set([minFilterPeak])
-			;(new Float64Array(buffer, exports.filter_sensitivity_target, 1)).set([filterSensitivityTarget])
-			;(new Float64Array(buffer, exports.filter_sensitivity_multiplier, 1)).set([filterSensitivityMultiplier])
-			;(new Float64Array(buffer, exports.filter_bias, 1)).set([filterBias])
+			;(new Float32Array(buffer, exports.min_filter_peak, 1)).set([minFilterPeak])
+			;(new Float32Array(buffer, exports.filter_sensitivity_target, 1)).set([filterSensitivityTarget])
+			;(new Float32Array(buffer, exports.filter_sensitivity_multiplier, 1)).set([filterSensitivityMultiplier])
+			;(new Float32Array(buffer, exports.filter_bias, 1)).set([filterBias])
 			
 			const filter = {
-				bed: new Float64Array(buffer, exports.filter_bed, maxFFTSize),
-				sensitivity: new Float64Array(buffer, exports.filter_sensitivity, 1),
-				peak: new Float64Array(buffer, exports.filter_peak, 1)
+				bed: new Float32Array(buffer, exports.filter_bed, maxFFTSize),
+				bedSensitivity: new Float32Array(buffer, exports.filter_bed_sensitivity, 1),
+				peak: new Float32Array(buffer, exports.filter_peak, 1),
+				peakSensitivity: new Float32Array(buffer, exports.filter_peak_sensitivity, 1)
 			}
 
 			const pitchClassesTable = new Uint32Array(buffer, exports.pitch_classes_table, maxFFTSize * 2)
-			const pitchMultipliersTable = new Float64Array(buffer, exports.pitch_multipliers_table, maxFFTSize * 2)
-			const totalMultipliersTable = new Float64Array(buffer, exports.total_multipliers_table, maxNoteCount)
+			const pitchMultipliersTable = new Float32Array(buffer, exports.pitch_multipliers_table, maxFFTSize * 2)
+			const pitchMaxMultipliersTable = new Float32Array(buffer, exports.pitch_max_multipliers_table, maxNoteCount)
 
-			const sensitivitiesTable = new Float64Array(buffer, exports.sensitivities_table, maxFFTSize)
+			const sensitivitiesTable = new Float32Array(buffer, exports.sensitivities_table, maxFFTSize)
 			
-			const cosTable = new Float64Array(buffer, exports.cos_table, maxFFTSize)
+			const cosTable = new Float32Array(buffer, exports.cos_table, maxFFTSize)
 
 
 
-			const inputBuffer = new Float64Array(buffer, exports.input_buffer, maxBufferSize)
+			const inputBuffer = new Float32Array(buffer, exports.input_buffer, maxBufferSize)
 
-			const outputBufferChromas          = new Float64Array(buffer, exports.output_buffer_chromas          , maxBufferSize * maxNoteCount)
-			const outputBufferVisualizerChroma = new Float64Array(buffer, exports.output_buffer_visualizer_chroma, maxNoteCount)
+			const outputBufferChromas          = new Float32Array(buffer, exports.output_buffer_chromas          , maxBufferSize * maxNoteCount)
+			const outputBufferVisualizerChroma = new Float32Array(buffer, exports.output_buffer_visualizer_chroma, maxNoteCount)
 
-			const outputBufferFrequencies = new Float64Array(buffer, exports.output_buffer_frequencies, maxBufferSize)
-			// const outputBufferQuality     = new Float64Array(buffer, exports.output_buffer_quality    , 1)
-			const outputBufferLoudness    = new Float64Array(buffer, exports.output_buffer_loudness   , 1)
+			const outputBufferFrequencies = new Float32Array(buffer, exports.output_buffer_frequencies, maxBufferSize)
+			// const outputBufferQuality     = new Float32Array(buffer, exports.output_buffer_quality    , 1)
+			const outputBufferLoudness    = new Float32Array(buffer, exports.output_buffer_loudness   , 1)
 
-			// const probe = new Float64Array(buffer, exports.real_bins, maxFFTSize)
+			// const probe = new Float32Array(buffer, exports.real_bins, maxFFTSize)
 
 			updateFFTSize(fftSize)
 
@@ -107,7 +108,7 @@ export default class wasmAnalyserProcessor extends analyserProcessor {
 
 				const newPitchClassesTable = []
 				const newPitchMultipliersTable = []
-				const newTotalMultipliersTable = (new Array(noteCount)).fill(0)
+				const newPitchMaxMultipliersTable = (new Array(noteCount)).fill(0)
 				for (let i = 0; i < fftSize; i++) {
 					const freq = sampleRate * i / fftSize;
 					const { class1, class2, multiplier1, multiplier2 } = getFrequencyPitchClass(freq)
@@ -115,12 +116,14 @@ export default class wasmAnalyserProcessor extends analyserProcessor {
 					newPitchMultipliersTable.push(multiplier1, multiplier2)
 					const n1 = class1 - startNote
 					const n2 = class2 - startNote
-					if (n1 >= 0 && n1 < noteCount) newTotalMultipliersTable[n1] += multiplier1 || 0
-					if (n2 >= 0 && n2 < noteCount) newTotalMultipliersTable[n2] += multiplier2 || 0
+					if (n1 >= 0 && n1 < noteCount) newPitchMaxMultipliersTable[n1] += multiplier1 || 0;
+					if (n2 >= 0 && n2 < noteCount) newPitchMaxMultipliersTable[n2] += multiplier2 || 0;
+					// if (n1 >= 0 && n1 < noteCount && !(newPitchMaxMultipliersTable[n1] > multiplier1)) newPitchMaxMultipliersTable[n1] = multiplier1 || 0;
+					// if (n2 >= 0 && n2 < noteCount && !(newPitchMaxMultipliersTable[n2] > multiplier2)) newPitchMaxMultipliersTable[n2] = multiplier2 || 0;
 				}
 				pitchClassesTable.set(newPitchClassesTable)
 				pitchMultipliersTable.set(newPitchMultipliersTable)
-				totalMultipliersTable.set(newTotalMultipliersTable)
+				pitchMaxMultipliersTable.set(newPitchMaxMultipliersTable)
 				
 				const newCosTable = []
 				for (let i = 0; i < fftSize; i++) newCosTable.push(Math.cos(i / fftSize * 2 * Math.PI));

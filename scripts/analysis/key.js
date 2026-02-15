@@ -50,11 +50,13 @@ export function getFullChroma(fft, fftSize, sampleRate, startNote, noteCount) {
 		if (class1 >= startNote && class1 <= lastNote) {
 			fullChroma[class1] = (fullChroma[class1]||0) + value * multiplier1
 			maxValues[class1] = (maxValues[class1]||0) + multiplier1
+			// if (!(maxValues[class1] > multiplier1)) maxValues[class1] = multiplier1;
 		}
 
 		if (class2 >= startNote && class2 <= lastNote) {
 			fullChroma[class2] = (fullChroma[class2]||0) + value * multiplier2
 			maxValues[class2] = (maxValues[class2]||0) + multiplier2
+			// if (!(maxValues[class2] > multiplier2)) maxValues[class2] = multiplier2;
 		}
 
 	}
